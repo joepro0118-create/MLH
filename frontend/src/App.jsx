@@ -1,55 +1,166 @@
-// App.jsx — PACT main application
+// frontend/src/App.jsx — PACT UI (purple/violet SaaS theme, UICheatSheet Rule of 3)
+// Hero: Glow-pulse upload zone  |  Micro: Shimmer skeletons  |  Delight: Confetti on brief
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { analyzePitch, getMatches, getGraph, getBrief } from './api.js'
+import './index.css'
 
-/* ─── Demo data ─────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────
+   DEMO DATA
+───────────────────────────────────────────────────────────────*/
 const DEMO_PROFILE = {
-  company_name:      'SmartTONG',
-  country:           'Malaysia',
-  sector:            'smart-city',
-  solution:          'IoT-enabled smart bins that optimise municipal waste collection routes in real time.',
-  capabilities:      ['iot-sensors', 'route-optimisation', 'real-time-dashboard', 'waste-analytics'],
-  needs:             ['municipal-pilot', 'government-procurement', 'local-distribution-network'],
-  target_markets:    ['Vietnam', 'Ho Chi Minh City', 'Hanoi'],
+  company_name: 'SmartTONG',
+  country: 'Malaysia',
+  sector: 'smart-city',
+  solution: 'IoT-enabled smart bins that optimise municipal waste collection routes in real time.',
+  capabilities: ['iot-sensors', 'route-optimisation', 'real-time-dashboard', 'waste-analytics'],
+  needs: ['municipal-pilot', 'government-procurement', 'local-distribution-network'],
+  target_markets: ['Vietnam', 'Ho Chi Minh City', 'Hanoi'],
   partnership_goals: ['pilot', 'distribution', 'market-access'],
 }
 
-/* ─── Helpers ───────────────────────────────────────────────────── */
-function scoreClass(score) {
-  if (score >= 70) return 'score-green'
-  if (score >= 40) return 'score-orange'
-  return 'score-red'
+/* ─────────────────────────────────────────────────────────────
+   DELIGHT — canvas confetti, no library needed
+───────────────────────────────────────────────────────────────*/
+function useConfetti() {
+  useEffect(() => {
+    const canvas = document.createElement('canvas')
+    canvas.style.cssText =
+      'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999'
+    document.body.appendChild(canvas)
+    const ctx = canvas.getContext('2d')
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+
+    const COLORS = ['#7c3aed', '#a78bfa', '#c4b5fd', '#fbbf24', '#34d399', '#60a5fa', '#f472b6', '#ffffff']
+    const particles = Array.from({ length: 150 }, () => ({
+      x: Math.random() * canvas.width,
+      y: -30 - Math.random() * 80,
+      w: Math.random() * 10 + 4,
+      h: Math.random() * 5 + 2,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      vy: Math.random() * 3.5 + 1.5,
+      vx: (Math.random() - 0.5) * 4,
+      rot: Math.random() * 360,
+      rotV: (Math.random() - 0.5) * 10,
+      alpha: 1,
+    }))
+
+    let frame, tick = 0
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      particles.forEach((p) => {
+        p.y += p.vy; p.x += p.vx; p.rot += p.rotV; p.vy += 0.055
+        if (tick > 100) p.alpha = Math.max(0, p.alpha - 0.012)
+        ctx.save()
+        ctx.globalAlpha = p.alpha
+        ctx.translate(p.x + p.w / 2, p.y + p.h / 2)
+        ctx.rotate((p.rot * Math.PI) / 180)
+        ctx.fillStyle = p.color
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h)
+        ctx.restore()
+      })
+      tick++
+      if (tick < 240) frame = requestAnimationFrame(draw)
+      else canvas.remove()
+    }
+    draw()
+    return () => { cancelAnimationFrame(frame); canvas.parentNode && canvas.remove() }
+  }, [])
 }
 
-function Spinner({ label = 'Loading…' }) {
+/* ─────────────────────────────────────────────────────────────
+   SCORE RING — animated SVG circle
+───────────────────────────────────────────────────────────────*/
+function ScoreRing({ score, size = 72 }) {
+  const r = size * 0.39, cx = size / 2, cy = size / 2
+  const circ = 2 * Math.PI * r
+  const offset = circ - (score / 100) * circ
+  const color = score >= 70 ? '#16a34a' : score >= 40 ? '#d97706' : '#dc2626'
   return (
-    <div className="spinner-wrap">
-      <div className="spinner" />
-      <span>{label}</span>
+    <svg width={size} height={size} style={{ flexShrink: 0 }}>
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke="#ede9fe" strokeWidth="5" />
+      <circle
+        cx={cx} cy={cy} r={r} fill="none"
+        stroke={color} strokeWidth="5"
+        strokeDasharray={circ}
+        strokeDashoffset={offset}
+        strokeLinecap="round"
+        transform={`rotate(-90 ${cx} ${cy})`}
+        style={{ transition: 'stroke-dashoffset 1s ease-out' }}
+      />
+      <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central"
+        fontSize={size * 0.19} fontWeight="700" fill={color}>{score}</text>
+    </svg>
+  )
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SPOTLIGHT CARD — radial glow follows mouse
+───────────────────────────────────────────────────────────────*/
+function SpotlightCard({ children, className = '' }) {
+  const ref = useRef(null)
+  const onMove = (e) => {
+    const rect = ref.current.getBoundingClientRect()
+    ref.current.style.setProperty('--mx', `${e.clientX - rect.left}px`)
+    ref.current.style.setProperty('--my', `${e.clientY - rect.top}px`)
+  }
+  return (
+    <div ref={ref} onMouseMove={onMove} className={`spotlight-card ${className}`}>
+      {children}
     </div>
   )
 }
 
-function ErrorBox({ message }) {
-  return <div className="error-box">⚠ {message}</div>
+/* ─────────────────────────────────────────────────────────────
+   MICRO — shimmer skeleton for 3 match cards
+───────────────────────────────────────────────────────────────*/
+function SkeletonMatches() {
+  return (
+    <div className="matches-grid">
+      {[0, 1, 2].map((i) => (
+        <div key={i} className="skeleton-card">
+          <div className="skeleton" style={{ height: 4, borderRadius: '4px 4px 0 0', marginBottom: '1.25rem' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+            <div className="skeleton skeleton-circle" style={{ width: 72, height: 72, borderRadius: '50%' }} />
+            <div style={{ flex: 1 }}>
+              <div className="skeleton" style={{ height: 16, width: '75%', marginBottom: 8 }} />
+              <div className="skeleton" style={{ height: 12, width: '40%' }} />
+            </div>
+          </div>
+          <div className="skeleton" style={{ height: 11, marginBottom: 7 }} />
+          <div className="skeleton" style={{ height: 11, width: '85%', marginBottom: 7 }} />
+          <div className="skeleton" style={{ height: 11, width: '60%', marginBottom: '1.5rem' }} />
+          <div className="skeleton" style={{ height: 40, borderRadius: 8 }} />
+        </div>
+      ))}
+    </div>
+  )
 }
 
-/* ─── Step Indicator ─────────────────────────────────────────────── */
-const STEP_LABELS = ['Upload', 'Matches', 'Graph', 'Brief']
+/* ─────────────────────────────────────────────────────────────
+   STEP INDICATOR
+───────────────────────────────────────────────────────────────*/
+const STEPS = [
+  { label: 'Upload', icon: '🖼️' },
+  { label: 'Matches', icon: '🤝' },
+  { label: 'Network', icon: '🌐' },
+  { label: 'Brief', icon: '📄' },
+]
 
 function StepIndicator({ current }) {
   return (
     <div className="steps">
-      {STEP_LABELS.map((label, i) => {
-        const num = i + 1
-        const state = num < current ? 'done' : num === current ? 'active' : ''
+      {STEPS.map((s, i) => {
+        const n = i + 1
+        const done = n < current
+        const active = n === current
         return (
-          <div key={label} style={{ display: 'flex', alignItems: 'center' }}>
-            <div className={`step-item ${state}`}>
-              <div className="step-dot">{num < current ? '✓' : num}</div>
-              {label}
+          <div key={s.label} className="step-item-wrap">
+            <div className={`step-item ${done ? 'done' : ''} ${active ? 'active' : ''}`}>
+              <div className="step-dot">{done ? '✓' : active ? s.icon : n}</div>
+              <span className="step-label">{s.label}</span>
             </div>
-            {i < STEP_LABELS.length - 1 && <div className="step-sep" />}
+            {i < STEPS.length - 1 && <div className={`step-connector ${done ? 'done' : ''}`} />}
           </div>
         )
       })}
@@ -57,35 +168,39 @@ function StepIndicator({ current }) {
   )
 }
 
-/* ─── Step 1: Upload ─────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────
+   STEP 1 — UPLOAD
+───────────────────────────────────────────────────────────────*/
 function UploadStep({ onProfile }) {
-  const [dragging, setDragging]   = useState(false)
-  const [loading, setLoading]     = useState(false)
-  const [error, setError]         = useState(null)
-  const inputRef                  = useRef(null)
+  const [dragging, setDragging] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const inputRef = useRef(null)
 
   const handleFile = useCallback(async (file) => {
     if (!file) return
-    setError(null)
-    setLoading(true)
-    try {
-      const profile = await analyzePitch(file)
-      onProfile(profile)
-    } catch (e) {
-      setError(e.message)
-    } finally {
-      setLoading(false)
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+      setError('Please upload a PNG, JPG, or WEBP image.')
+      return
     }
+    if (file.size > 5 * 1024 * 1024) { setError('Image must be under 5 MB.'); return }
+    setError(null); setLoading(true)
+    try { onProfile(await analyzePitch(file)) }
+    catch (e) { setError(e.message) }
+    finally { setLoading(false) }
   }, [onProfile])
 
-  const onDrop = (e) => {
-    e.preventDefault()
-    setDragging(false)
-    const file = e.dataTransfer.files[0]
-    if (file) handleFile(file)
-  }
-
-  if (loading) return <Spinner label="Analysing your pitch deck…" />
+  if (loading) return (
+    <div className="gemma-loading">
+      <div className="gemma-spinner">
+        <div className="g-ring" />
+        <div className="g-ring r2" />
+        <div className="g-ring r3" />
+      </div>
+      <div className="gemma-loading-title">Gemma 4 is reading your pitch deck…</div>
+      <div className="gemma-loading-sub">Extracting startup profile via multimodal AI</div>
+    </div>
+  )
 
   return (
     <div className="upload-wrap">
@@ -94,67 +209,66 @@ function UploadStep({ onProfile }) {
         onClick={() => inputRef.current?.click()}
         onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
         onDragLeave={() => setDragging(false)}
-        onDrop={onDrop}
+        onDrop={(e) => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files[0]) }}
       >
-        <div className="upload-icon">🖼️</div>
+        <div className="upload-icon-bg">🖼️</div>
         <div className="upload-label">Drop your pitch deck image here</div>
-        <div className="upload-hint">or click to browse · PNG, JPG, WEBP accepted</div>
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          className="upload-input"
-          onChange={(e) => handleFile(e.target.files[0])}
-        />
+        <div className="upload-hint">PNG · JPG · WEBP · max 5 MB</div>
+        <div className="upload-browse-pill">Click to browse files</div>
+        <input ref={inputRef} type="file" accept="image/*" className="upload-input"
+          onChange={(e) => handleFile(e.target.files[0])} />
       </div>
 
-      <div className="or-sep">or</div>
+      <div className="or-divider"><span>or skip to demo</span></div>
 
-      <button
-        className="btn btn-accent"
-        onClick={() => onProfile(DEMO_PROFILE)}
-      >
-        🚀 Use Demo — SmartTONG
+      <button className="btn btn-demo" onClick={() => onProfile(DEMO_PROFILE)}>
+        <span>🚀</span>
+        <span>Use Demo — SmartTONG (Malaysia → Vietnam)</span>
       </button>
 
-      {error && <ErrorBox message={error} />}
+      {error && <div className="error-toast">⚠️ {error}</div>}
     </div>
   )
 }
 
-/* ─── Startup Profile Card ───────────────────────────────────────── */
-function ProfileCard({ profile }) {
-  const fields = [
-    { label: 'Company',        value: profile.company_name },
-    { label: 'Country',        value: profile.country },
-    { label: 'Sector',         value: profile.sector },
-    { label: 'Solution',       value: profile.solution, wide: true },
-    { label: 'Capabilities',   value: profile.capabilities,      tags: true },
-    { label: 'Needs',          value: profile.needs,             tags: true },
-    { label: 'Target Markets', value: profile.target_markets,    tags: true },
-    { label: 'Goals',          value: profile.partnership_goals, tags: true },
-  ]
+/* ─────────────────────────────────────────────────────────────
+   PROFILE CARD
+───────────────────────────────────────────────────────────────*/
+const TAG_COLORS = {
+  capabilities: 'tag-blue',
+  needs: 'tag-purple',
+  target_markets: 'tag-teal',
+  partnership_goals: 'tag-orange',
+}
 
+function ProfileCard({ profile }) {
+  const groups = [
+    { key: 'capabilities',     label: 'Capabilities',    values: profile.capabilities },
+    { key: 'needs',            label: 'Needs',            values: profile.needs },
+    { key: 'target_markets',   label: 'Target Markets',   values: profile.target_markets },
+    { key: 'partnership_goals',label: 'Goals',            values: profile.partnership_goals },
+  ]
   return (
-    <div className="card">
-      <div className="card-title">🏢 Startup Profile</div>
-      <div className="profile-grid">
-        {fields.map(({ label, value, tags, wide }) => (
-          <div
-            key={label}
-            className="profile-field"
-            style={wide ? { gridColumn: '1 / -1' } : {}}
-          >
-            <label>{label}</label>
-            {tags ? (
-              <div className="tag-list">
-                {(Array.isArray(value) ? value : [value]).map((v) => (
-                  <span key={v} className="tag">{v}</span>
-                ))}
-              </div>
-            ) : (
-              <div className="value">{value}</div>
-            )}
+    <div className="profile-card">
+      <div className="profile-header">
+        <div className="profile-avatar">{profile.company_name[0]}</div>
+        <div className="profile-header-text">
+          <div className="profile-name">{profile.company_name}</div>
+          <div className="profile-meta">
+            <span>📍 {profile.country}</span>
+            <span className="sector-chip">{profile.sector}</span>
+          </div>
+        </div>
+        <div className="profile-gemma-badge">via Gemma 4</div>
+      </div>
+      <div className="profile-solution">"{profile.solution}"</div>
+      <div className="profile-tags-grid">
+        {groups.map(({ key, label, values }) => (
+          <div key={key} className="profile-tag-group">
+            <div className="tag-group-label">{label}</div>
+            <div className="tag-list">
+              {values.map((v) => <span key={v} className={`tag ${TAG_COLORS[key]}`}>{v}</span>)}
+            </div>
           </div>
         ))}
       </div>
@@ -162,157 +276,152 @@ function ProfileCard({ profile }) {
   )
 }
 
-/* ─── Match Card ─────────────────────────────────────────────────── */
-function MatchCard({ match, onSelect }) {
+/* ─────────────────────────────────────────────────────────────
+   MATCH CARD
+───────────────────────────────────────────────────────────────*/
+const RANK_ACCENT = ['#7c3aed', '#0d9488', '#d97706']
+const RANK_LABEL  = ['#1 Best Match', '#2 Strong Match', '#3 Good Match']
+
+function MatchCard({ match, onSelect, rank }) {
   return (
-    <div className="match-card">
-      <div className="match-header">
-        <div>
-          <div className="match-name">{match.name || match.partner_name}</div>
-          <div className="match-country">{match.country}</div>
-        </div>
-        <span className={`score-badge ${scoreClass(match.score)}`}>
-          {match.score}
-        </span>
+    <SpotlightCard className="match-card">
+      <div className="match-stripe" style={{ background: RANK_ACCENT[rank] }}>
+        <span className="match-rank">{RANK_LABEL[rank]}</span>
+        <span className="match-illustrative">illustrative</span>
       </div>
-
-      <div>
-        <div className="match-section-label">Why it fits</div>
-        <ul className="reason-list">
-          {(match.reasons || []).map((r, i) => <li key={i}>{r}</li>)}
-        </ul>
-      </div>
-
-      {match.opportunity && (
-        <div>
-          <div className="match-section-label">Opportunity</div>
-          <div className="opportunity-text">{match.opportunity}</div>
+      <div className="match-body">
+        <div className="match-top">
+          <div className="match-info">
+            <div className="match-name">{match.partner_name || match.name}</div>
+            <div className="match-country">📍 {match.country}</div>
+          </div>
+          <ScoreRing score={match.score} />
         </div>
-      )}
 
-      <button className="btn btn-primary btn-full" onClick={() => onSelect(match)}>
-        Select Partner →
-      </button>
-    </div>
+        <div className="match-reasons">
+          <div className="match-section-label">Why it fits</div>
+          <ul>
+            {(match.reasons || []).map((r, i) => (
+              <li key={i}><span className="reason-star">✦</span>{r}</li>
+            ))}
+          </ul>
+        </div>
+
+        {match.opportunity && (
+          <div className="match-opportunity">{match.opportunity}</div>
+        )}
+
+        <button className="btn btn-primary btn-full" onClick={() => onSelect(match)}>
+          Generate Partnership Brief →
+        </button>
+      </div>
+    </SpotlightCard>
   )
 }
 
-/* ─── Step 2: Profile + Matches ──────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────
+   STEP 2 — PROFILE + MATCHES
+───────────────────────────────────────────────────────────────*/
 function MatchesStep({ profile, onSelectPartner }) {
   const [matches, setMatches] = useState(null)
   const [error, setError]     = useState(null)
 
   useEffect(() => {
     getMatches(profile)
-      .then((data) => setMatches(data.matches || data))
+      .then((d) => setMatches(d.matches || d))
       .catch((e) => setError(e.message))
   }, [profile])
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+    <div className="step-content">
       <ProfileCard profile={profile} />
-
-      <div>
-        <div className="section-header">
-          <div className="section-title">🤝 Partner Matches</div>
-        </div>
-        <div className="section-sub">
-          Top 3 recommended ASEAN partners based on your startup profile.
-        </div>
-
-        {!matches && !error && <Spinner label="Finding your best partners…" />}
-        {error && <ErrorBox message={error} />}
-
-        {matches && (
-          <div className="matches-grid">
-            {matches.map((m, i) => (
-              <MatchCard key={m.partner_id || i} match={m} onSelect={onSelectPartner} />
-            ))}
+      <div className="matches-header">
+        <div>
+          <div className="section-title">Partner Matches</div>
+          <div className="section-sub">
+            Scored across industry · capabilities · target markets · goals
           </div>
-        )}
+        </div>
       </div>
+      {!matches && !error && <SkeletonMatches />}
+      {error && <div className="error-toast">⚠️ {error}</div>}
+      {matches && (
+        <div className="matches-grid">
+          {matches.map((m, i) => (
+            <MatchCard key={m.partner_id || i} match={m} onSelect={onSelectPartner} rank={i} />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
 
-/* ─── Network Graph (circular layout, SVG) ───────────────────────── */
-const NODE_COLORS = {
-  programme:    '#7c3aed',  // purple
-  organization: '#0d9488',  // teal
-  organisation: '#0d9488',  // teal (alt spelling)
-  startup:      '#ea580c',  // orange
-  default:      '#64748b',
+/* ─────────────────────────────────────────────────────────────
+   NETWORK GRAPH — dark card, glowing SVG nodes
+───────────────────────────────────────────────────────────────*/
+const NODE_COLOR = {
+  programme:    '#a78bfa',
+  organisation: '#2dd4bf',
+  organization: '#2dd4bf',
+  startup:      '#fb923c',
+  default:      '#94a3b8',
 }
 
 function NetworkGraph({ nodes, edges, highlightId }) {
-  const W = 700, H = 380, CX = W / 2, CY = H / 2, R = 145
+  const W = 720, H = 400, R = 158, CX = W / 2, CY = H / 2
 
-  // Assign positions in a circle
-  const positioned = nodes.map((n, i) => {
-    const angle = (2 * Math.PI * i) / nodes.length - Math.PI / 2
-    return {
-      ...n,
-      x: CX + R * Math.cos(angle),
-      y: CY + R * Math.sin(angle),
-    }
+  const pos = nodes.map((n, i) => {
+    const a = (2 * Math.PI * i) / nodes.length - Math.PI / 2
+    return { ...n, x: CX + R * Math.cos(a), y: CY + R * Math.sin(a) }
   })
-
-  const byId = Object.fromEntries(positioned.map((n) => [n.id, n]))
+  const byId = Object.fromEntries(pos.map((n) => [n.id, n]))
 
   return (
     <div className="graph-svg-wrap">
       <svg viewBox={`0 0 ${W} ${H}`} xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          {pos.map((n) => (
+            <radialGradient key={`g-${n.id}`} id={`g-${n.id}`}>
+              <stop offset="0%" stopColor={NODE_COLOR[n.type] || NODE_COLOR.default} stopOpacity="0.7" />
+              <stop offset="100%" stopColor={NODE_COLOR[n.type] || NODE_COLOR.default} stopOpacity="0" />
+            </radialGradient>
+          ))}
+        </defs>
+
         {/* Edges */}
         {edges.map((e, i) => {
-          const src = byId[e.source]
-          const tgt = byId[e.target]
-          if (!src || !tgt) return null
-          const opacity = 0.15 + (e.weight || 0.5) * 0.55
+          const s = byId[e.source], t = byId[e.target]
+          if (!s || !t) return null
           return (
-            <line
-              key={i}
-              x1={src.x} y1={src.y}
-              x2={tgt.x} y2={tgt.y}
-              stroke="#94a3b8"
-              strokeWidth={1.5}
-              strokeOpacity={opacity}
-            />
+            <line key={i} x1={s.x} y1={s.y} x2={t.x} y2={t.y}
+              stroke="#a78bfa" strokeWidth={1.2}
+              strokeOpacity={0.1 + (e.weight || 0.5) * 0.35} />
           )
         })}
 
         {/* Nodes */}
-        {positioned.map((n) => {
-          const isHL = n.id === highlightId
-          const color = NODE_COLORS[n.type] || NODE_COLORS.default
-          const label = (n.label || n.id).slice(0, 20)
+        {pos.map((n) => {
+          const hl = n.id === highlightId
+          const col = NODE_COLOR[n.type] || NODE_COLOR.default
           return (
             <g key={n.id}>
-              {isHL && (
-                <circle
-                  cx={n.x} cy={n.y} r={22}
-                  fill="none"
-                  stroke={color}
-                  strokeWidth={3}
-                  strokeOpacity={0.4}
-                />
+              {/* Glow halo */}
+              <circle cx={n.x} cy={n.y} r={hl ? 34 : 18}
+                fill={`url(#g-${n.id})`} opacity={hl ? 0.9 : 0.5} />
+              {/* Pulse on highlighted node */}
+              {hl && (
+                <circle cx={n.x} cy={n.y} r={20} fill="none" stroke={col} strokeWidth={2} opacity={0.7}>
+                  <animate attributeName="r" values="16;28;16" dur="2s" repeatCount="indefinite" />
+                  <animate attributeName="opacity" values="0.7;0;0.7" dur="2s" repeatCount="indefinite" />
+                </circle>
               )}
-              <circle
-                cx={n.x} cy={n.y}
-                r={isHL ? 16 : 11}
-                fill={color}
-                stroke={isHL ? '#fff' : 'none'}
-                strokeWidth={isHL ? 2.5 : 0}
-                opacity={isHL ? 1 : 0.85}
-              />
-              <text
-                x={n.x}
-                y={n.y + (isHL ? 28 : 23)}
-                textAnchor="middle"
-                fontSize={isHL ? 11 : 9.5}
-                fontWeight={isHL ? 700 : 400}
-                fill={isHL ? '#1e293b' : '#475569'}
-              >
-                {label}
+              <circle cx={n.x} cy={n.y} r={hl ? 13 : 8}
+                fill={col} stroke={hl ? '#fff' : 'none'} strokeWidth={hl ? 2.5 : 0} />
+              <text x={n.x} y={n.y + (hl ? 28 : 21)}
+                textAnchor="middle" fontSize={hl ? 10 : 8.5}
+                fontWeight={hl ? 700 : 400}
+                fill={hl ? '#e2e8f0' : '#64748b'}>
+                {(n.label || n.id).slice(0, 18)}
               </text>
             </g>
           )
@@ -322,236 +431,259 @@ function NetworkGraph({ nodes, edges, highlightId }) {
   )
 }
 
-/* ─── Step 3: Graph + Brief generation ──────────────────────────── */
+/* ─────────────────────────────────────────────────────────────
+   STEP 3 — GRAPH + BRIEF GENERATION
+───────────────────────────────────────────────────────────────*/
 function GraphStep({ profile, partner, onBrief }) {
-  const [graph, setGraph]       = useState(null)
-  const [graphErr, setGraphErr] = useState(null)
-  const [briefing, setBriefing] = useState(false)
-  const [briefErr, setBriefErr] = useState(null)
+  const [graph, setGraph]     = useState(null)
+  const [graphErr, setGErr]   = useState(null)
+  const [briefing, setBrief]  = useState(true)
+  const [briefErr, setBErr]   = useState(null)
 
   useEffect(() => {
-    // Fetch graph and brief simultaneously
-    getGraph()
-      .then(setGraph)
-      .catch((e) => setGraphErr(e.message))
-
-    setBriefing(true)
+    getGraph().then(setGraph).catch((e) => setGErr(e.message))
     getBrief(profile, partner.partner_id || partner.id || partner.name)
-      .then((b) => { setBriefing(false); onBrief(b) })
-      .catch((e) => { setBriefing(false); setBriefErr(e.message) })
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const partnerId = partner.partner_id || partner.id
+      .then((b) => { setBrief(false); onBrief(b) })
+      .catch((e) => { setBrief(false); setBErr(e.message) })
+  }, []) // eslint-disable-line
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+    <div className="step-content">
       {/* Selected partner summary */}
-      <div className="card">
-        <div className="card-title">📌 Selected Partner</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      <div className="selected-card">
+        <div className="selected-label">Selected Partner</div>
+        <div className="selected-row">
+          <div className="selected-avatar">{(partner.partner_name || partner.name || '?')[0]}</div>
           <div>
-            <div style={{ fontWeight: 700, fontSize: '1.05rem' }}>
-              {partner.name || partner.partner_name}
-            </div>
-            <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-              {partner.country}
-            </div>
+            <div className="selected-name">{partner.partner_name || partner.name}</div>
+            <div className="selected-country">📍 {partner.country}</div>
           </div>
-          <span className={`score-badge ${scoreClass(partner.score)}`} style={{ marginLeft: 'auto' }}>
-            Score: {partner.score}
-          </span>
+          <div style={{ marginLeft: 'auto' }}>
+            <ScoreRing score={partner.score} size={64} />
+          </div>
         </div>
       </div>
 
-      {/* Network Graph */}
-      <div className="card graph-card">
-        <div className="card-title">🌐 ASEAN Ecosystem Network</div>
-        {!graph && !graphErr && <Spinner label="Loading ecosystem graph…" />}
-        {graphErr && <ErrorBox message={graphErr} />}
-        {graph && (
-          <>
-            <NetworkGraph
-              nodes={graph.nodes}
-              edges={graph.edges}
-              highlightId={partnerId}
-            />
-            <div className="graph-legend">
-              {Object.entries({ programme: 'Programme', organisation: 'Organisation', startup: 'Startup' }).map(([type, label]) => (
-                <div key={type} className="legend-item">
-                  <div className="legend-dot" style={{ background: NODE_COLORS[type] }} />
-                  {label}
-                </div>
-              ))}
-            </div>
-          </>
+      {/* Network graph */}
+      <div className="graph-card">
+        <div className="graph-card-top">
+          <div className="card-title" style={{ color: '#e2e8f0' }}>🌐 ASEAN Ecosystem Network</div>
+          <div className="graph-legend">
+            {[['programme', 'Programme'], ['organisation', 'Organisation'], ['startup', 'Startup']].map(([t, l]) => (
+              <div key={t} className="legend-pill">
+                <div className="legend-dot" style={{ background: NODE_COLOR[t] }} />
+                {l}
+              </div>
+            ))}
+          </div>
+        </div>
+        {!graph && !graphErr && (
+          <div className="graph-spinner"><div className="spinner-ring" /><span>Loading graph…</span></div>
         )}
+        {graphErr && <div className="error-toast">⚠️ {graphErr}</div>}
+        {graph && <NetworkGraph nodes={graph.nodes} edges={graph.edges} highlightId={partner.partner_id || partner.id} />}
       </div>
 
-      {/* Brief loading / error */}
-      {briefing && <Spinner label="Generating partnership brief…" />}
-      {briefErr && <ErrorBox message={briefErr} />}
+      {/* Brief generation */}
+      {briefing && (
+        <div className="brief-generating">
+          <div className="gemma-spinner sm">
+            <div className="g-ring" /><div className="g-ring r2" />
+          </div>
+          <div>
+            <div className="bgen-title">Gemma 4 is generating your brief…</div>
+            <div className="bgen-sub">Crafting a 30-day partnership POC plan with thinking mode</div>
+          </div>
+        </div>
+      )}
+      {briefErr && <div className="error-toast">⚠️ {briefErr}</div>}
     </div>
   )
 }
 
-/* ─── Step 4: Partnership Brief ──────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────
+   STEP 4 — PARTNERSHIP BRIEF  (confetti on mount 🎉)
+───────────────────────────────────────────────────────────────*/
+const WEEK_CLR = ['#7c3aed', '#2563eb', '#0d9488', '#16a34a']
+
 function BriefStep({ brief, onReset }) {
-  // Normalise field names (snake_case or camelCase)
-  const objective  = brief.objective
-  const concept    = brief.collaboration_concept || brief.collaborationConcept
-  const poc        = brief.proposed_poc || brief.proposedPoc || brief.poc
-  const timeline   = brief.timeline || []
-  const metrics    = brief.success_metrics || brief.successMetrics || []
+  useConfetti()
+
+  const obj      = brief.objective
+  const concept  = brief.collaboration_concept || brief.collaborationConcept
+  const poc      = brief.proposed_poc || brief.proposedPoc
+  const timeline = brief.timeline || []
+  const metrics  = brief.success_metrics || brief.successMetrics || []
+
+  const copyBrief = () => {
+    const t = [
+      'PARTNERSHIP BRIEF — Generated by PACT × Gemma 4\n',
+      `Objective:\n${obj}\n`,
+      `\nCollaboration Concept:\n${concept}\n`,
+      `\nProposed POC:\n${poc}\n`,
+      `\n30-Day Timeline:\n${timeline.map((t, i) => `${i + 1}. ${t}`).join('\n')}\n`,
+      `\nSuccess Metrics:\n${metrics.map((m) => `• ${m}`).join('\n')}`,
+      '\n\n⚠️ All content is illustrative and AI-generated for demo purposes.',
+    ].join('')
+    navigator.clipboard?.writeText(t).catch(() => {})
+    alert('✅ Brief copied to clipboard!')
+  }
 
   return (
-    <div className="card">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <div className="card-title" style={{ margin: 0 }}>📄 Partnership Brief</div>
-        <button className="btn btn-secondary" onClick={onReset}>↩ Start Over</button>
+    <div className="brief-card">
+      {/* Header */}
+      <div className="brief-header">
+        <div>
+          <div className="brief-success">🎉 Partnership Brief Ready</div>
+          <div className="brief-title">30-Day POC Plan</div>
+        </div>
+        <div className="brief-actions">
+          <button className="btn btn-ghost" onClick={copyBrief}>📋 Copy</button>
+          <button className="btn btn-ghost" onClick={onReset}>↩ Start Over</button>
+        </div>
       </div>
 
-      {/* Objective */}
-      {objective && (
-        <div className="brief-section">
-          <div className="brief-label">Objective</div>
-          <div className="brief-objective">{objective}</div>
-        </div>
-      )}
+      {/* Objective — hero block */}
+      <div className="brief-objective-block">
+        <div className="brief-label">Objective</div>
+        <div className="brief-objective-text">{obj}</div>
+      </div>
 
-      <hr className="divider" />
-
-      {/* Collaboration Concept */}
-      {concept && (
+      {/* Two-col: concept + POC */}
+      <div className="brief-two-col">
         <div className="brief-section">
           <div className="brief-label">Collaboration Concept</div>
-          <div className="brief-text">{concept}</div>
+          <p className="brief-text">{concept}</p>
         </div>
-      )}
-
-      {/* Proposed POC */}
-      {poc && (
         <div className="brief-section">
           <div className="brief-label">Proposed Proof of Concept</div>
-          <div className="poc-highlight">{poc}</div>
+          <div className="poc-block">{poc}</div>
         </div>
-      )}
+      </div>
 
-      <hr className="divider" />
-
-      {/* Timeline */}
+      {/* Timeline stepper */}
       {timeline.length > 0 && (
         <div className="brief-section">
-          <div className="brief-label">30-Day POC Timeline</div>
-          <ol className="timeline-list">
+          <div className="brief-label">30-Day Pilot Timeline</div>
+          <div className="timeline-stepper">
             {timeline.map((item, i) => (
-              <li key={i}>
-                <span className="timeline-num">{i + 1}</span>
-                <span>{typeof item === 'string' ? item : item.task || JSON.stringify(item)}</span>
-              </li>
+              <div key={i} className="tl-step">
+                <div className="tl-dot" style={{ background: WEEK_CLR[i % 4] }}>
+                  {i + 1}
+                </div>
+                {i < timeline.length - 1 && <div className="tl-connector" />}
+                <div className="tl-text">
+                  {typeof item === 'string' ? item : item.task || JSON.stringify(item)}
+                </div>
+              </div>
             ))}
-          </ol>
+          </div>
         </div>
       )}
 
-      <hr className="divider" />
-
-      {/* Success Metrics */}
+      {/* Success metrics */}
       {metrics.length > 0 && (
         <div className="brief-section">
           <div className="brief-label">Success Metrics</div>
-          <ul className="metrics-list">
+          <div className="metrics-chips">
             {metrics.map((m, i) => (
-              <li key={i}>{typeof m === 'string' ? m : m.metric || JSON.stringify(m)}</li>
+              <div key={i} className="metric-chip">
+                <span className="metric-check">✓</span>
+                {typeof m === 'string' ? m : m.metric || JSON.stringify(m)}
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
 
-      <hr className="divider" />
-      <div style={{ textAlign: 'center' }}>
-        <button className="btn btn-primary" onClick={onReset}>
-          🔄 Start a New Analysis
-        </button>
+      {/* Footer */}
+      <div className="brief-footer">
+        <div className="brief-disclaimer">
+          ⚠️ All content is <strong>illustrative</strong> and AI-generated for demo purposes only.
+        </div>
+        <button className="btn btn-primary" onClick={onReset}>🔄 Analyse Another Startup</button>
       </div>
     </div>
   )
 }
 
-/* ─── App Root ───────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────
+   APP ROOT
+───────────────────────────────────────────────────────────────*/
 export default function App() {
   const [step, setStep]       = useState(1)
   const [profile, setProfile] = useState(null)
   const [partner, setPartner] = useState(null)
   const [brief, setBrief]     = useState(null)
 
-  const handleProfile = (p) => {
-    setProfile(p)
-    setStep(2)
-  }
-
-  const handleSelectPartner = (m) => {
-    setPartner(m)
-    setStep(3)
-  }
-
-  const handleBrief = (b) => {
-    setBrief(b)
-    setStep(4)
-  }
-
-  const handleReset = () => {
-    setStep(1)
-    setProfile(null)
-    setPartner(null)
-    setBrief(null)
-  }
+  const handleProfile = (p) => { setProfile(p); setStep(2) }
+  const handlePartner = (m) => { setPartner(m); setStep(3) }
+  const handleBrief   = (b) => { setBrief(b);  setStep(4) }
+  const handleReset   = () => { setStep(1); setProfile(null); setPartner(null); setBrief(null) }
 
   return (
     <>
-      {/* ── Navigation ── */}
+      {/* ── Nav ── */}
       <nav className="nav">
         <div className="nav-inner">
-          <div className="nav-logo">PACT</div>
-          <div className="nav-subtitle">ASEAN Startup Partnership Toolkit</div>
+          <div className="nav-brand">
+            <span className="nav-logo">PACT</span>
+            <span className="nav-tagline">ASEAN Partnership Toolkit</span>
+          </div>
           <StepIndicator current={step} />
+          <div className="nav-gemma">✦ Gemma 4</div>
         </div>
       </nav>
 
-      {/* ── Main Content ── */}
+      {/* ── Main ── */}
       <main className="main">
-        {/* Disclaimer banner */}
-        <div className="banner">
-          ⚠️ All partner data is illustrative and for demo purposes only.
-        </div>
-
         {step === 1 && (
-          <div className="card">
-            <div className="card-title" style={{ fontSize: '1.3rem', marginBottom: '0.25rem' }}>
-              Welcome to PACT 🌏
+          <>
+            {/* Hero banner */}
+            <div className="hero-banner">
+              <div className="hero-eyebrow">MLH Hacktoberfest KL 2026 · Open Source AI</div>
+              <h1 className="hero-title">
+                From ASEAN Connections<br />
+                <span className="hero-gradient">to Real Outcomes</span>
+              </h1>
+              <p className="hero-sub">
+                Upload your pitch deck · Gemma 4 extracts your startup profile ·
+                Discover top ASEAN partners · Get a 30-day action plan.
+              </p>
+              <div className="hero-badges">
+                <span className="hero-badge">🤖 Gemma 4 Multimodal</span>
+                <span className="hero-badge">🌏 ASEAN Ecosystem</span>
+                <span className="hero-badge">⚡ 4-hour Hackathon Build</span>
+              </div>
             </div>
-            <div className="section-sub">
-              Upload your pitch deck image to find the best ASEAN partners for your startup.
+            {/* Upload card */}
+            <div className="upload-card">
+              <UploadStep onProfile={handleProfile} />
             </div>
-            <UploadStep onProfile={handleProfile} />
+            {/* Disclaimer inside step 1 */}
+            <div className="disclaimer">
+              ⚠️ All partner data shown is <strong>illustrative</strong> and for demonstration purposes only.
+              No real partnerships are claimed or implied.
+            </div>
+          </>
+        )}
+
+        {step !== 1 && (
+          <div className="disclaimer">
+            ⚠️ All partner data is <strong>illustrative</strong> — demo purposes only.
           </div>
         )}
 
-        {step === 2 && profile && (
-          <MatchesStep profile={profile} onSelectPartner={handleSelectPartner} />
-        )}
-
-        {step === 3 && profile && partner && (
-          <GraphStep
-            profile={profile}
-            partner={partner}
-            onBrief={handleBrief}
-          />
-        )}
-
-        {step === 4 && brief && (
-          <BriefStep brief={brief} onReset={handleReset} />
-        )}
+        {step === 2 && profile && <MatchesStep profile={profile} onSelectPartner={handlePartner} />}
+        {step === 3 && profile && partner && <GraphStep profile={profile} partner={partner} onBrief={handleBrief} />}
+        {step === 4 && brief && <BriefStep brief={brief} onReset={handleReset} />}
       </main>
+
+      {/* ── Footer ── */}
+      <footer className="footer">
+        Powered by <strong>Gemma 4</strong> (open-weight) · Open source, MIT ·
+        MLH Hacktoberfest KL 2026 · Team PACT (Yap · Joe · Amn · Yuhang)
+      </footer>
     </>
   )
 }
