@@ -1,5 +1,5 @@
 # backend/app/main.py
-# PACT FastAPI backend — all 5 API routes.
+# BridgeWise FastAPI backend — all 5 API routes.
 # Set MOCK_MODE=true in .env to return canned responses (unblocks frontend dev).
 import json
 import logging
@@ -51,7 +51,7 @@ _MOCK_MATCHES = MatchResponse(
             country="Vietnam",
             score=88,
             reasons=[
-                "Sector alignment: smart-city ↔ smart-waste, cleantech, govtech",
+                "Sector alignment: smart-city <-> smart-waste, cleantech, govtech",
                 "Your capabilities match their needs: iot fill level sensors, route optimization software",
                 "Shared target market: Vietnam, Ho Chi Minh City",
             ],
@@ -66,7 +66,7 @@ _MOCK_MATCHES = MatchResponse(
             country="Vietnam",
             score=76,
             reasons=[
-                "Sector alignment: smart-city ↔ cleantech, smart-waste",
+                "Sector alignment: smart-city <-> cleantech, smart-waste",
                 "They can fulfill your needs: vietnam market entry support, pilot project subsidies",
                 "Shared target market: Vietnam, Malaysia",
             ],
@@ -96,7 +96,7 @@ _MOCK_MATCHES = MatchResponse(
 _MOCK_BRIEF = PartnershipBrief(
     objective=(
         "SmartTONG and Saigon Green Urban Waste Board will jointly pilot IoT smart-bin route "
-        "optimisation across Ho Chi Minh City District 1 and District 3 to demonstrate a ≥20% reduction "
+        "optimisation across Ho Chi Minh City District 1 and District 3 to demonstrate a >=20% reduction "
         "in collection vehicle diesel emissions and eliminate bin overflow complaints (RECOMMENDATION)."
     ),
     collaboration_concept=(
@@ -105,8 +105,8 @@ _MOCK_BRIEF = PartnershipBrief(
         "Weekly joint operational steering reviews ensure rapid calibration against Ho Chi Minh City traffic patterns."
     ),
     proposed_poc=(
-        "Deploy 50 IoT smart bin sensor nodes across commercial corridors in District 1 and District 3 over Days 1–7. "
-        "Run live route-optimisation for municipal collection trucks from Days 8–28. "
+        "Deploy 50 IoT smart bin sensor nodes across commercial corridors in District 1 and District 3 over Days 1-7. "
+        "Run live route-optimisation for municipal collection trucks from Days 8-28. "
         "Measure fuel savings, overflow incident reduction, and sensor reliability in a final joint audit on Day 30 (ILLUSTRATIVE)."
     ),
     timeline=[
@@ -116,8 +116,8 @@ _MOCK_BRIEF = PartnershipBrief(
         "Week 4: Joint performance audit report, city council showcase, and Phase 2 scale-up proposal",
     ],
     success_metrics=[
-        "≥20% reduction in collection truck trip miles and diesel consumption vs. baseline",
-        "≥90% fill-rate telemetry accuracy across all 50 pilot bins over 30 days",
+        ">=20% reduction in collection truck trip miles and diesel consumption vs. baseline",
+        ">=90% fill-rate telemetry accuracy across all 50 pilot bins over 30 days",
         "Formal Letter of Intent from Saigon Green Urban Waste Board for municipal-wide expansion",
     ],
 )
@@ -126,11 +126,11 @@ _MOCK_BRIEF = PartnershipBrief(
 # App setup
 # ---------------------------------------------------------------------------
 app = FastAPI(
-    title="PACT API",
+    title="BridgeWise API",
     description=(
-        "Partnership Action & Collaboration Toolkit — ASEAN startup matching. "
+        "BridgeWise — AI Cross-Border Startup Partnership Intelligence for ASEAN. "
         "All partner data is ILLUSTRATIVE. "
-        f"{'⚠️ MOCK_MODE ACTIVE — all AI responses are canned.' if MOCK_MODE else ''}"
+        f"{ '[MOCK_MODE ACTIVE: all AI responses are canned]' if MOCK_MODE else '' }"
     ),
     version="1.0.0",
 )
@@ -228,7 +228,7 @@ async def analyze_pitch(
 @app.post("/api/matches", response_model=MatchResponse)
 async def get_matches(startup: StartupProfile):
     """
-    Deterministic weighted matching — Python only, no LLM.
+    Deterministic weighted matching â€” Python only, no LLM.
     Returns top 3 partner matches from demo_ecosystem.json.
     MOCK_MODE still runs real matching (it's deterministic and fast).
     """
@@ -244,7 +244,7 @@ async def get_matches(startup: StartupProfile):
 async def partnership_brief(req: BriefRequest):
     """
     Gemma 4 generates a partnership brief + 30-day POC plan.
-    In MOCK_MODE returns the canned SmartTONG × GreenCity brief.
+    In MOCK_MODE returns the canned SmartTONG Ã— GreenCity brief.
     """
     if MOCK_MODE:
         logger.info("MOCK_MODE: returning canned PartnershipBrief")
@@ -278,3 +278,4 @@ async def ecosystem_graph():
         logger.error("Graph build failed: %s", exc)
         raise HTTPException(status_code=500, detail=f"Graph error: {exc}")
     return graph
+

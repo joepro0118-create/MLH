@@ -1,17 +1,17 @@
-// frontend/src/App.jsx — PACT v2.1
-// Flow: Auth (Demo Login/Signup) → Founder Upload → Passport → Matches → Brief Dashboard
+﻿// frontend/src/App.jsx â€” BridgeWise v2.1
+// Flow: Auth (Demo Login/Signup) â†’ Founder Upload â†’ Passport â†’ Matches â†’ Brief Dashboard
 // UICheatSheet Rule of 3:
-//   Hero    → Border-beam auth card + glow upload zone
-//   Micro   → Shimmer skeletons + Spotlight cards + Expandable dash cards
-//   Delight → Confetti + Export/Copy/Download/Share toolbar + toast system
+//   Hero    â†’ Border-beam auth card + glow upload zone
+//   Micro   â†’ Shimmer skeletons + Spotlight cards + Expandable dash cards
+//   Delight â†’ Confetti + Export/Copy/Download/Share toolbar + toast system
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { analyzePitch, getMatches, getGraph, getBrief } from './api.js'
 import { EcosystemGraph } from './components/EcosystemGraph.jsx'
 import './index.css'
 
-/* ─────────────────────────────────────────────────────────────
-   DEMO DATA — SmartTONG (Malaysia → Vietnam municipal pilot)
-───────────────────────────────────────────────────────────────*/
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+   DEMO DATA â€” SmartTONG (Malaysia â†’ Vietnam municipal pilot)
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€*/
 const DEMO_FOUNDER = {
   name: 'Alex Tan',
   company: 'SmartTONG',
@@ -34,9 +34,9 @@ const DEMO_PROFILE = {
 
 const DEMO_CREDENTIALS = { email: 'alex@smarttong.my', password: 'demo1234' }
 
-/* ─────────────────────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    TOAST NOTIFICATION SYSTEM
-───────────────────────────────────────────────────────────────*/
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€*/
 function useToast() {
   const [toasts, setToasts] = useState([])
   const show = useCallback((msg, type = 'success') => {
@@ -57,9 +57,9 @@ function ToastContainer({ toasts }) {
   )
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    CANVAS CONFETTI
-───────────────────────────────────────────────────────────────*/
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€*/
 function useConfetti() {
   useEffect(() => {
     const canvas = document.createElement('canvas')
@@ -95,9 +95,9 @@ function useConfetti() {
   }, [])
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    SCORE RING
-───────────────────────────────────────────────────────────────*/
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€*/
 function ScoreRing({ score, size = 68 }) {
   const r = size * 0.38, cx = size / 2, cy = size / 2
   const circ = 2 * Math.PI * r
@@ -116,9 +116,9 @@ function ScoreRing({ score, size = 68 }) {
   )
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    SPOTLIGHT CARD
-───────────────────────────────────────────────────────────────*/
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€*/
 function SpotlightCard({ children, className = '' }) {
   const ref = useRef(null)
   const onMove = (e) => {
@@ -130,9 +130,9 @@ function SpotlightCard({ children, className = '' }) {
   return <div ref={ref} onMouseMove={onMove} className={`spotlight-card ${className}`}>{children}</div>
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    FOUNDER AVATAR
-───────────────────────────────────────────────────────────────*/
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€*/
 function FounderAvatar({ founder, size = 36 }) {
   return (
     <div className="founder-avatar" style={{ width: size, height: size, fontSize: size * 0.38 }}>
@@ -141,14 +141,14 @@ function FounderAvatar({ founder, size = 36 }) {
   )
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    STEP INDICATOR (steps 1-4, shown after auth)
-───────────────────────────────────────────────────────────────*/
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€*/
 const STEPS = [
-  { label: 'Upload', icon: '📁' },
-  { label: 'Passport', icon: '🛂' },
-  { label: 'Matches', icon: '🤝' },
-  { label: 'Dashboard', icon: '📊' },
+  { label: 'Upload', icon: 'ðŸ“' },
+  { label: 'Passport', icon: 'ðŸ›‚' },
+  { label: 'Matches', icon: 'ðŸ¤' },
+  { label: 'Dashboard', icon: 'ðŸ“Š' },
 ]
 function StepIndicator({ current, onNavigate }) {
   return (
@@ -161,7 +161,7 @@ function StepIndicator({ current, onNavigate }) {
             <div className={`step-item ${done ? 'done' : ''} ${active ? 'active' : ''}`}
               onClick={() => done && onNavigate && onNavigate(n)}
               style={done ? { cursor: 'pointer' } : {}}>
-              <div className="step-dot">{done ? '✓' : active ? s.icon : n}</div>
+              <div className="step-dot">{done ? 'âœ“' : active ? s.icon : n}</div>
               <span className="step-label">{s.label}</span>
             </div>
             {i < STEPS.length - 1 && <div className={`step-connector ${done ? 'done' : ''}`} />}
@@ -172,11 +172,11 @@ function StepIndicator({ current, onNavigate }) {
   )
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   AUTH SCREEN — Demo Login / Sign Up
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   AUTH SCREEN â€” Demo Login / Sign Up
    No real backend. Demo credentials pre-filled.
    Stores founder context in React state only.
-═══════════════════════════════════════════════════════════════ */
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function AuthScreen({ onAuth }) {
   const [mode, setMode] = useState('login') // 'login' | 'signup'
   const [form, setForm] = useState({ name: '', company: '', email: '', password: '', country: 'Malaysia', role: 'Co-founder & CEO' })
@@ -227,11 +227,11 @@ function AuthScreen({ onAuth }) {
 
   return (
     <div className="auth-page">
-      {/* Left panel — Brand */}
+      {/* Left panel â€” Brand */}
       <div className="auth-left">
         <div className="auth-left-content">
-          <div className="auth-brand-logo">PACT</div>
-          <div className="auth-brand-tagline">Partnership Action &amp; Collaboration Toolkit</div>
+          <div className="auth-brand-logo">BridgeWise</div>
+          <div className="auth-brand-tagline">AI Cross-Border Partnership Intelligence</div>
           <div className="auth-brand-desc">
             AI-powered cross-border startup partnerships for ASEAN.<br />
             Upload your pitch. Gemma 4 finds your match. You execute.
@@ -256,41 +256,41 @@ function AuthScreen({ onAuth }) {
           {/* Testimonial / pitch */}
           <div className="auth-quote">
             <div className="auth-quote-text">
-              "From pitch deck to a signed 30-day POC outline — in under 4 minutes."
+              "From pitch deck to a signed 30-day POC outline â€” in under 4 minutes."
             </div>
-            <div className="auth-quote-author">— PACT Demo · MLH Hacktoberfest KL 2026</div>
+            <div className="auth-quote-author">â€” PACT Demo Â· MLH Hacktoberfest KL 2026</div>
           </div>
 
           {/* Badges */}
           <div className="auth-badges">
-            <span className="auth-badge">🤖 Gemma 4 Multimodal</span>
-            <span className="auth-badge">🌏 ASEAN Ecosystem</span>
-            <span className="auth-badge">⚡ Open Source · MIT</span>
+            <span className="auth-badge">ðŸ¤– Gemma 4 Multimodal</span>
+            <span className="auth-badge">ðŸŒ ASEAN Ecosystem</span>
+            <span className="auth-badge">âš¡ Open Source Â· MIT</span>
           </div>
         </div>
       </div>
 
-      {/* Right panel — Auth form */}
+      {/* Right panel â€” Auth form */}
       <div className="auth-right">
         <div className="auth-card">
           {/* Header */}
           <div className="auth-card-header">
-            <div className="auth-card-logo">PACT</div>
+            <div className="auth-card-logo">BridgeWise</div>
             <div className="auth-card-title">
               {mode === 'login' ? 'Welcome back, Founder' : 'Create your Founder account'}
             </div>
             <div className="auth-card-sub">
               {mode === 'login'
                 ? 'Sign in to continue your partnership journey'
-                : 'Join PACT and find your first ASEAN cross-border match'}
+                : 'Join BridgeWise and find your first ASEAN cross-border match'}
             </div>
           </div>
 
           {/* Demo quick login */}
           <div className="auth-demo-strip">
-            <span className="auth-demo-label">🚀 Hackathon Demo</span>
+            <span className="auth-demo-label">ðŸš€ Hackathon Demo</span>
             <button className="btn-demo-auth" onClick={handleDemoLogin} disabled={loading}>
-              {loading ? 'Signing in…' : 'One-Click Demo Login'}
+              {loading ? 'Signing inâ€¦' : 'One-Click Demo Login'}
             </button>
           </div>
 
@@ -353,13 +353,13 @@ function AuthScreen({ onAuth }) {
               </div>
             )}
 
-            {error && <div className="error-toast" style={{ fontSize: '0.8rem' }}>⚠️ {error}</div>}
+            {error && <div className="error-toast" style={{ fontSize: '0.8rem' }}>âš ï¸ {error}</div>}
 
             <button className="btn btn-primary btn-auth-submit" type="submit" disabled={loading}>
               {loading ? (
-                <><span className="auth-spinner" /> {mode === 'login' ? 'Signing in…' : 'Creating account…'}</>
+                <><span className="auth-spinner" /> {mode === 'login' ? 'Signing inâ€¦' : 'Creating accountâ€¦'}</>
               ) : (
-                mode === 'login' ? '→ Sign In to PACT' : '→ Create Account & Continue'
+                mode === 'login' ? 'â†’ Sign In to BridgeWise' : 'â†’ Create Account & Continue'
               )}
             </button>
           </form>
@@ -378,7 +378,7 @@ function AuthScreen({ onAuth }) {
           </div>
 
           <div className="auth-footer-note">
-            🔒 Demo only — no data stored. Open source, MIT Licence.
+            ðŸ”’ Demo only â€” no data stored. Open source, MIT Licence.
           </div>
         </div>
       </div>
@@ -386,10 +386,10 @@ function AuthScreen({ onAuth }) {
   )
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   STEP 1 — FOUNDER UPLOAD PROMPT PAGE
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   STEP 1 â€” FOUNDER UPLOAD PROMPT PAGE
    Personalized with founder context. Upload 1-3 files.
-═══════════════════════════════════════════════════════════════ */
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function UploadStep({ founder, onComplete }) {
   const [files, setFiles] = useState([])
   const [goal, setGoal] = useState('cross-border POC')
@@ -427,7 +427,7 @@ function UploadStep({ founder, onComplete }) {
   if (loading) return (
     <div className="gemma-loading">
       <div className="gemma-spinner"><div className="g-ring" /><div className="g-ring r2" /><div className="g-ring r3" /></div>
-      <div className="gemma-loading-title">Gemma 4 is synthesizing your documents…</div>
+      <div className="gemma-loading-title">Gemma 4 is synthesizing your documentsâ€¦</div>
       <div className="gemma-loading-sub">Reading {files.length} file{files.length > 1 ? 's' : ''} &amp; building your Startup Passport</div>
     </div>
   )
@@ -439,7 +439,7 @@ function UploadStep({ founder, onComplete }) {
         <div className="fwb-left">
           <FounderAvatar founder={founder} size={44} />
           <div>
-            <div className="fwb-greeting">Good to see you, <strong>{founder.name.split(' ')[0]}</strong> 👋</div>
+            <div className="fwb-greeting">Good to see you, <strong>{founder.name.split(' ')[0]}</strong> ðŸ‘‹</div>
             <div className="fwb-company">{founder.company} &bull; {founder.country} &bull; {founder.role}</div>
           </div>
         </div>
@@ -451,7 +451,7 @@ function UploadStep({ founder, onComplete }) {
         <div className="ush-step-pill">Step 1 of 4</div>
         <h2 className="ush-title">Upload Your Pitch Materials</h2>
         <p className="ush-sub">
-          Upload 1–3 files (pitch deck slides, brochures, flyers). Gemma 4 reads them all together
+          Upload 1â€“3 files (pitch deck slides, brochures, flyers). Gemma 4 reads them all together
           and builds a single unified Startup Passport for matching.
         </p>
       </div>
@@ -467,11 +467,11 @@ function UploadStep({ founder, onComplete }) {
             onDragLeave={() => setDragging(false)}
             onDrop={(e) => { e.preventDefault(); setDragging(false); addFiles(e.dataTransfer.files) }}
           >
-            <div className="upload-icon-bg">📑</div>
+            <div className="upload-icon-bg">ðŸ“‘</div>
             <div className="upload-label">
               {files.length > 0 ? `${files.length} of 3 file${files.length > 1 ? 's' : ''} selected` : 'Drop your pitch materials here'}
             </div>
-            <div className="upload-hint">PNG, JPG, WEBP · Up to 5 MB each · Up to 3 files</div>
+            <div className="upload-hint">PNG, JPG, WEBP Â· Up to 5 MB each Â· Up to 3 files</div>
             <div className="upload-browse-pill">Click or drag &amp; drop</div>
             <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp"
               multiple className="upload-input" onChange={(e) => addFiles(e.target.files)} />
@@ -482,10 +482,10 @@ function UploadStep({ founder, onComplete }) {
             <div className="uploaded-files-list" style={{ marginTop: '0.85rem' }}>
               {files.map((f, i) => (
                 <div key={i} className="file-chip">
-                  <span className="file-name">📄 {f.name}</span>
+                  <span className="file-name">ðŸ“„ {f.name}</span>
                   <span className="file-size">({(f.size / 1024).toFixed(0)} KB)</span>
                   <button className="btn-chip-remove" type="button"
-                    onClick={(e) => { e.stopPropagation(); removeFile(i) }}>✕</button>
+                    onClick={(e) => { e.stopPropagation(); removeFile(i) }}>âœ•</button>
                 </div>
               ))}
             </div>
@@ -503,7 +503,7 @@ function UploadStep({ founder, onComplete }) {
         {/* Right: Founder context options */}
         <div className="upload-options-panel">
           <div className="uop-header">
-            <span className="uop-icon">🎯</span>
+            <span className="uop-icon">ðŸŽ¯</span>
             <span className="uop-title">Partnership Context</span>
           </div>
 
@@ -538,26 +538,26 @@ function UploadStep({ founder, onComplete }) {
 
           {/* Gemma info box */}
           <div className="gemma-info-box">
-            <div className="gib-icon">✦</div>
+            <div className="gib-icon">âœ¦</div>
             <div>
               <div className="gib-title">Powered by Gemma 4 Vision</div>
-              <div className="gib-desc">Gemma reads all your files together and extracts a unified Startup Passport — then our deterministic engine ranks the best ASEAN partners.</div>
+              <div className="gib-desc">Gemma reads all your files together and extracts a unified Startup Passport â€” then our deterministic engine ranks the best ASEAN partners.</div>
             </div>
           </div>
         </div>
       </div>
 
-      {error && <div className="error-toast">⚠️ {error}</div>}
+      {error && <div className="error-toast">âš ï¸ {error}</div>}
 
       {/* CTA row */}
       <div className="upload-cta-row">
         <button className="btn btn-primary btn-large" onClick={handleAnalyze} disabled={files.length === 0}>
-          <span>🤖</span>
+          <span>ðŸ¤–</span>
           <span>Analyze with Gemma 4 &amp; Build Passport</span>
         </button>
         <span className="or-pill">OR</span>
         <button className="btn btn-demo" onClick={() => onComplete(DEMO_PROFILE)}>
-          <span>🚀</span>
+          <span>ðŸš€</span>
           <span>Use SmartTONG Demo</span>
         </button>
       </div>
@@ -565,9 +565,9 @@ function UploadStep({ founder, onComplete }) {
   )
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   STEP 2 — STARTUP PASSPORT (Review & Edit)
-═══════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   STEP 2 â€” STARTUP PASSPORT (Review & Edit)
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function PassportStep({ profile, founder, onSave, onBack }) {
   const [data, setData] = useState({ ...profile })
   const states = {
@@ -584,10 +584,10 @@ function PassportStep({ profile, founder, onSave, onBack }) {
   }
 
   const CHIP_GROUPS = [
-    { field: 'capabilities',      label: 'Core Capabilities',   cls: 'chip-blue',   key: 'newCap',    ph: '+ Add capability…' },
-    { field: 'needs',             label: 'Operational Needs',   cls: 'chip-purple', key: 'newNeed',   ph: '+ Add need…' },
-    { field: 'target_markets',    label: 'Target Markets',      cls: 'chip-teal',   key: 'newMarket', ph: '+ Add market…' },
-    { field: 'partnership_goals', label: 'Partnership Goals',   cls: 'chip-orange', key: 'newGoal',   ph: '+ Add goal…' },
+    { field: 'capabilities',      label: 'Core Capabilities',   cls: 'chip-blue',   key: 'newCap',    ph: '+ Add capabilityâ€¦' },
+    { field: 'needs',             label: 'Operational Needs',   cls: 'chip-purple', key: 'newNeed',   ph: '+ Add needâ€¦' },
+    { field: 'target_markets',    label: 'Target Markets',      cls: 'chip-teal',   key: 'newMarket', ph: '+ Add marketâ€¦' },
+    { field: 'partnership_goals', label: 'Partnership Goals',   cls: 'chip-orange', key: 'newGoal',   ph: '+ Add goalâ€¦' },
   ]
 
   return (
@@ -596,20 +596,20 @@ function PassportStep({ profile, founder, onSave, onBack }) {
       <div className="founder-context-bar">
         <FounderAvatar founder={founder} size={32} />
         <span className="fcb-name">{founder.name}</span>
-        <span className="fcb-dot">·</span>
+        <span className="fcb-dot">Â·</span>
         <span className="fcb-company">{founder.company}</span>
         <span className="fcb-sep" />
-        <span className="fcb-step">Step 2 of 4 — Review &amp; refine your Startup Passport</span>
+        <span className="fcb-step">Step 2 of 4 â€” Review &amp; refine your Startup Passport</span>
       </div>
 
       <div className="passport-card">
         <div className="passport-header">
-          <div className="passport-badge-icon">🛂</div>
+          <div className="passport-badge-icon">ðŸ›‚</div>
           <div>
             <div className="passport-title">Startup Passport</div>
             <div className="passport-sub">Gemma 4 extracted this from your materials. Review, correct, and add context before partner matching.</div>
           </div>
-          <div className="passport-ai-tag">✦ Synthesized via Gemma 4</div>
+          <div className="passport-ai-tag">âœ¦ Synthesized via Gemma 4</div>
         </div>
 
         <div className="passport-fields-grid">
@@ -641,7 +641,7 @@ function PassportStep({ profile, founder, onSave, onBack }) {
                   {(data[field] || []).map((c, i) => (
                     <span key={i} className={`chip ${cls}`}>
                       {c}
-                      <button type="button" onClick={() => handleRemoveChip(field, i)}>✕</button>
+                      <button type="button" onClick={() => handleRemoveChip(field, i)}>âœ•</button>
                     </span>
                   ))}
                 </div>
@@ -657,9 +657,9 @@ function PassportStep({ profile, founder, onSave, onBack }) {
         </div>
 
         <div className="passport-footer">
-          <button className="btn btn-ghost" onClick={onBack}>← Re-upload Files</button>
+          <button className="btn btn-ghost" onClick={onBack}>â† Re-upload Files</button>
           <button className="btn btn-primary btn-large" onClick={() => onSave(data)}>
-            <span>🤝</span><span>Confirm &amp; Find Top Partners →</span>
+            <span>ðŸ¤</span><span>Confirm &amp; Find Top Partners â†’</span>
           </button>
         </div>
       </div>
@@ -667,9 +667,9 @@ function PassportStep({ profile, founder, onSave, onBack }) {
   )
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   STEP 3 — PARTNER MATCHES & ECOSYSTEM GRAPH
-═══════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   STEP 3 â€” PARTNER MATCHES & ECOSYSTEM GRAPH
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 const RANK_ACCENT = ['#7c3aed', '#0d9488', '#ea580c']
 const RANK_LABEL  = ['#1 Best Match', '#2 Strong Match', '#3 Good Match']
 
@@ -689,30 +689,30 @@ function MatchesStep({ profile, founder, onSelectPartner, onEditPassport }) {
       <div className="founder-context-bar">
         <FounderAvatar founder={founder} size={32} />
         <span className="fcb-name">{founder.name}</span>
-        <span className="fcb-dot">·</span>
+        <span className="fcb-dot">Â·</span>
         <span className="fcb-company">{founder.company}</span>
         <span className="fcb-sep" />
-        <span className="fcb-step">Step 3 of 4 — Your top ASEAN partner matches</span>
+        <span className="fcb-step">Step 3 of 4 â€” Your top ASEAN partner matches</span>
       </div>
 
       <div className="profile-mini-bar">
         <div>
           <span className="mini-company">{profile.company_name}</span>
           <span className="mini-sub">
-            📍 {profile.country} &bull; {profile.sector} &bull; Target: {profile.target_markets.slice(0, 2).join(', ')}
+            ðŸ“ {profile.country} &bull; {profile.sector} &bull; Target: {profile.target_markets.slice(0, 2).join(', ')}
           </span>
         </div>
-        <button className="btn btn-ghost btn-sm" onClick={onEditPassport}>✏️ Edit Passport</button>
+        <button className="btn btn-ghost btn-sm" onClick={onEditPassport}>âœï¸ Edit Passport</button>
       </div>
 
       <div className="matches-header">
         <div>
           <div className="section-title">Top 3 ASEAN Partner Recommendations</div>
-          <div className="section-sub">Deterministic 30/30/20/20 weighted scoring — industry, capabilities, markets, goals. Choose a partner to generate your 30-day POC plan.</div>
+          <div className="section-sub">Deterministic 30/30/20/20 weighted scoring â€” industry, capabilities, markets, goals. Choose a partner to generate your 30-day POC plan.</div>
         </div>
       </div>
 
-      {error && <div className="error-toast">⚠️ {error}</div>}
+      {error && <div className="error-toast">âš ï¸ {error}</div>}
 
       {matches ? (
         <div className="matches-grid">
@@ -726,19 +726,19 @@ function MatchesStep({ profile, founder, onSelectPartner, onEditPassport }) {
                 <div className="match-top">
                   <div className="match-info">
                     <div className="match-name">{m.partner_name || m.name}</div>
-                    <div className="match-country">📍 {m.country}</div>
+                    <div className="match-country">ðŸ“ {m.country}</div>
                   </div>
                   <ScoreRing score={m.score} />
                 </div>
                 <div className="match-reasons">
                   <div className="match-section-label">Why It Fits</div>
                   <ul>{(m.reasons || []).map((r, idx) =>
-                    <li key={idx}><span className="reason-star">✦</span>{r}</li>
+                    <li key={idx}><span className="reason-star">âœ¦</span>{r}</li>
                   )}</ul>
                 </div>
                 {m.opportunity && <div className="match-opportunity">{m.opportunity}</div>}
                 <button className="btn btn-primary btn-full" onClick={() => onSelectPartner(m)}>
-                  Generate Partnership Brief →
+                  Generate Partnership Brief â†’
                 </button>
               </div>
             </SpotlightCard>
@@ -774,9 +774,9 @@ function MatchesStep({ profile, founder, onSelectPartner, onEditPassport }) {
   )
 }
 
-/* ═══════════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    COLLAPSIBLE DASH CARD
-═══════════════════════════════════════════════════════════════ */
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function DashCard({ icon, title, children, className = '', defaultOpen = true, editMode = false, onEdit, onDone }) {
   const [open, setOpen] = useState(defaultOpen)
   return (
@@ -787,10 +787,10 @@ function DashCard({ icon, title, children, className = '', defaultOpen = true, e
           <span className="dch-title">{title}</span>
         </div>
         <div className="dch-right" onClick={(e) => e.stopPropagation()}>
-          {onEdit && !editMode && <button className="dch-edit-btn" onClick={onEdit}>✏️ Edit</button>}
-          {editMode && <button className="dch-edit-btn active" onClick={onDone}>✓ Done</button>}
+          {onEdit && !editMode && <button className="dch-edit-btn" onClick={onEdit}>âœï¸ Edit</button>}
+          {editMode && <button className="dch-edit-btn active" onClick={onDone}>âœ“ Done</button>}
           <button className="dch-collapse-btn" onClick={(e) => { e.stopPropagation(); setOpen((v) => !v) }}>
-            {open ? '▲' : '▼'}
+            {open ? 'â–²' : 'â–¼'}
           </button>
         </div>
       </div>
@@ -799,10 +799,10 @@ function DashCard({ icon, title, children, className = '', defaultOpen = true, e
   )
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   STEP 4 — BRIEF DASHBOARD
-   Editable cards · Export · Copy · Download · Share · Layout toggle
-═══════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   STEP 4 â€” BRIEF DASHBOARD
+   Editable cards Â· Export Â· Copy Â· Download Â· Share Â· Layout toggle
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 const WEEK_CLR = ['#7c3aed', '#2563eb', '#0d9488', '#16a34a']
 
 function BriefStep({ profile, partner, founder, onBackToMatches, onReset }) {
@@ -827,56 +827,56 @@ function BriefStep({ profile, partner, founder, onBackToMatches, onReset }) {
   const eb = editedBrief || {}
 
   const buildText = () => [
-    `PARTNERSHIP ACTION BRIEF: ${profile.company_name} × ${partner.partner_name || partner.name}\n`,
-    `Prepared for: ${founder.name} (${founder.role}) · ${founder.company}\n`,
+    `PARTNERSHIP ACTION BRIEF: ${profile.company_name} Ã— ${partner.partner_name || partner.name}\n`,
+    `Prepared for: ${founder.name} (${founder.role}) Â· ${founder.company}\n`,
     `Generated: ${new Date().toLocaleDateString('en-MY', { dateStyle: 'full' })}\n\n`,
     `OBJECTIVE:\n${eb.objective || ''}\n\n`,
     `COLLABORATION CONCEPT:\n${eb.collaboration_concept || eb.collaborationConcept || ''}\n\n`,
     `PROPOSED 30-DAY POC:\n${eb.proposed_poc || eb.proposedPoc || ''}\n\n`,
     `30-DAY TIMELINE:\n${(eb.timeline || []).map((t, i) => `Week ${i+1}: ${typeof t === 'string' ? t : t.task}`).join('\n')}\n\n`,
-    `SUCCESS METRICS:\n${(eb.success_metrics || eb.successMetrics || []).map((m) => `• ${typeof m === 'string' ? m : m.metric}`).join('\n')}\n\n`,
-    `Generated by PACT with Gemma 4 · All records illustrative.`,
+    `SUCCESS METRICS:\n${(eb.success_metrics || eb.successMetrics || []).map((m) => `â€¢ ${typeof m === 'string' ? m : m.metric}`).join('\n')}\n\n`,
+    `Generated by BridgeWise with Gemma 4 Â· All records illustrative.`,
   ].join('')
 
   const buildMarkdown = () => [
     `# Partnership Action Brief\n`,
-    `**${profile.company_name} × ${partner.partner_name || partner.name}**\n\n`,
+    `**${profile.company_name} Ã— ${partner.partner_name || partner.name}**\n\n`,
     `> Prepared for **${founder.name}** (${founder.role}), ${founder.company}  \n`,
-    `> Powered by **PACT + Gemma 4** · Generated ${new Date().toLocaleDateString()}  \n`,
-    `> ⚠️ All data illustrative — for demonstration purposes only\n\n`,
+    `> Powered by **BridgeWise + Gemma 4** Â· Generated ${new Date().toLocaleDateString()}  \n`,
+    `> âš ï¸ All data illustrative â€” for demonstration purposes only\n\n`,
     `---\n\n`,
-    `## 🎯 Strategic Objective\n${eb.objective || ''}\n\n`,
-    `## 🤝 Collaboration Concept\n${eb.collaboration_concept || eb.collaborationConcept || ''}\n\n`,
-    `## 🧪 Proposed 30-Day Proof of Concept\n${eb.proposed_poc || eb.proposedPoc || ''}\n\n`,
-    `## 📅 30-Day Implementation Timeline\n`,
+    `## ðŸŽ¯ Strategic Objective\n${eb.objective || ''}\n\n`,
+    `## ðŸ¤ Collaboration Concept\n${eb.collaboration_concept || eb.collaborationConcept || ''}\n\n`,
+    `## ðŸ§ª Proposed 30-Day Proof of Concept\n${eb.proposed_poc || eb.proposedPoc || ''}\n\n`,
+    `## ðŸ“… 30-Day Implementation Timeline\n`,
     ...(eb.timeline || []).map((t, i) => `- **Week ${i+1}:** ${typeof t === 'string' ? t : t.task}\n`),
-    `\n## 📊 Measurable Success Metrics\n`,
+    `\n## ðŸ“Š Measurable Success Metrics\n`,
     ...(eb.success_metrics || eb.successMetrics || []).map((m) => `- [ ] ${typeof m === 'string' ? m : m.metric}\n`),
     `\n---\n`,
-    `*PACT · MLH Hacktoberfest KL 2026 · Compatibility Score: ${partner.score}/100*`,
+    `*PACT Â· MLH Hacktoberfest KL 2026 Â· Compatibility Score: ${partner.score}/100*`,
   ].join('')
 
   const handleCopy = () =>
     navigator.clipboard?.writeText(buildText())
-      .then(() => showToast('📋 Brief copied to clipboard!', 'success'))
-      .catch(() => showToast('Copy failed — try Download instead', 'info'))
+      .then(() => showToast('ðŸ“‹ Brief copied to clipboard!', 'success'))
+      .catch(() => showToast('Copy failed â€” try Download instead', 'info'))
 
   const handleDownloadMd = () => {
     const blob = new Blob([buildMarkdown()], { type: 'text/markdown' })
     const a = Object.assign(document.createElement('a'), {
       href: URL.createObjectURL(blob),
-      download: `PACT_Brief_${profile.company_name}_x_${(partner.partner_name || 'partner').replace(/\s+/g, '_')}.md`
+      download: `BridgeWise_Brief_${profile.company_name}_x_${(partner.partner_name || 'partner').replace(/\s+/g, '_')}.md`
     }); a.click(); URL.revokeObjectURL(a.href)
-    showToast('💾 Markdown downloaded!', 'success')
+    showToast('ðŸ’¾ Markdown downloaded!', 'success')
   }
 
   const handleDownloadTxt = () => {
     const blob = new Blob([buildText()], { type: 'text/plain' })
     const a = Object.assign(document.createElement('a'), {
       href: URL.createObjectURL(blob),
-      download: `PACT_Brief_${profile.company_name}.txt`
+      download: `BridgeWise_Brief_${profile.company_name}.txt`
     }); a.click(); URL.revokeObjectURL(a.href)
-    showToast('📄 Text file downloaded!', 'success')
+    showToast('ðŸ“„ Text file downloaded!', 'success')
   }
 
   const handleExportJSON = () => {
@@ -891,22 +891,22 @@ function BriefStep({ profile, partner, founder, onBackToMatches, onReset }) {
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
     const a = Object.assign(document.createElement('a'), {
       href: URL.createObjectURL(blob),
-      download: `PACT_Export_${profile.company_name}.json`
+      download: `BridgeWise_Export_${profile.company_name}.json`
     }); a.click(); URL.revokeObjectURL(a.href)
-    showToast('📦 JSON exported!', 'success')
+    showToast('ðŸ“¦ JSON exported!', 'success')
   }
 
   const handleShare = async () => {
     const shareData = {
-      title: `PACT Brief: ${profile.company_name} × ${partner.partner_name || partner.name}`,
-      text: `${founder.name} from ${founder.company} generated an ASEAN cross-border partnership brief via PACT!\n\nObjective: ${eb.objective || ''}`,
+      title: `BridgeWise Brief: ${profile.company_name} Ã— ${partner.partner_name || partner.name}`,
+      text: `${founder.name} from ${founder.company} generated an ASEAN cross-border partnership brief via BridgeWise!\n\nObjective: ${eb.objective || ''}`,
       url: window.location.href,
     }
     if (navigator.share) {
       try { await navigator.share(shareData); showToast('Shared!', 'success') } catch { /* cancelled */ }
     } else {
       await navigator.clipboard?.writeText(`${shareData.title}\n\n${shareData.text}\n${shareData.url}`)
-      showToast('🔗 Share link copied!', 'info')
+      showToast('ðŸ”— Share link copied!', 'info')
     }
   }
 
@@ -924,16 +924,16 @@ function BriefStep({ profile, partner, founder, onBackToMatches, onReset }) {
     <div className="brief-generating" style={{ minHeight: 320, justifyContent: 'center' }}>
       <div className="gemma-spinner"><div className="g-ring" /><div className="g-ring r2" /></div>
       <div>
-        <div className="bgen-title">Gemma 4 is crafting your 30-day POC plan…</div>
-        <div className="bgen-sub">Formulating milestones for {profile.company_name} × {partner.partner_name || partner.name}</div>
+        <div className="bgen-title">Gemma 4 is crafting your 30-day POC planâ€¦</div>
+        <div className="bgen-sub">Formulating milestones for {profile.company_name} Ã— {partner.partner_name || partner.name}</div>
       </div>
     </div>
   )
 
   if (error) return (
     <div className="dash-card" style={{ padding: '2rem', textAlign: 'center' }}>
-      <div className="error-toast" style={{ marginBottom: '1.5rem' }}>⚠️ {error}</div>
-      <button className="btn btn-primary" onClick={onBackToMatches}>← Return to Matches</button>
+      <div className="error-toast" style={{ marginBottom: '1.5rem' }}>âš ï¸ {error}</div>
+      <button className="btn btn-primary" onClick={onBackToMatches}>â† Return to Matches</button>
     </div>
   )
 
@@ -943,10 +943,10 @@ function BriefStep({ profile, partner, founder, onBackToMatches, onReset }) {
       <div className="founder-context-bar">
         <FounderAvatar founder={founder} size={32} />
         <span className="fcb-name">{founder.name}</span>
-        <span className="fcb-dot">·</span>
+        <span className="fcb-dot">Â·</span>
         <span className="fcb-company">{founder.company}</span>
         <span className="fcb-sep" />
-        <span className="fcb-step">Step 4 of 4 — Your partnership action brief is ready</span>
+        <span className="fcb-step">Step 4 of 4 â€” Your partnership action brief is ready</span>
       </div>
 
       {/* Dashboard header strip */}
@@ -954,16 +954,16 @@ function BriefStep({ profile, partner, founder, onBackToMatches, onReset }) {
         <div className="bdh-top">
           <div>
             <div className="bdh-badges">
-              <span className="bdh-badge bdh-badge-success">🎉 Match Converted to Action Plan</span>
+              <span className="bdh-badge bdh-badge-success">ðŸŽ‰ Match Converted to Action Plan</span>
               <span className="bdh-badge bdh-badge-type">Municipal Pilot Agreement</span>
               <span className="bdh-badge bdh-badge-type">illustrative</span>
             </div>
             <div className="bdh-title">
               {profile.company_name}
-              <span className="bdh-title-x">×</span>
+              <span className="bdh-title-x">Ã—</span>
               {partner.partner_name || partner.name}
             </div>
-            <div className="bdh-sub">📍 {partner.country} &bull; Powered by Gemma 4</div>
+            <div className="bdh-sub">ðŸ“ {partner.country} &bull; Powered by Gemma 4</div>
             <div className="bdh-score-pill">
               Compatibility Score &nbsp;<span className="bdh-score-num">{partner.score}</span>&nbsp;/ 100
             </div>
@@ -973,19 +973,19 @@ function BriefStep({ profile, partner, founder, onBackToMatches, onReset }) {
           <div className="bdh-actions">
             <div className="layout-toggle">
               <button className={`layout-btn ${layout === 'two-col' ? 'active' : ''}`}
-                title="2-col layout" onClick={() => setLayout('two-col')}>⊞</button>
+                title="2-col layout" onClick={() => setLayout('two-col')}>âŠž</button>
               <button className={`layout-btn ${layout === 'single' ? 'active' : ''}`}
-                title="Single col" onClick={() => setLayout('single')}>☰</button>
+                title="Single col" onClick={() => setLayout('single')}>â˜°</button>
             </div>
             <div className="dash-divider" />
-            <button className="btn-dash" onClick={handleCopy}>📋 Copy</button>
-            <button className="btn-dash btn-dash-primary" onClick={handleDownloadMd}>💾 .md</button>
-            <button className="btn-dash" onClick={handleDownloadTxt}>📄 .txt</button>
-            <button className="btn-dash btn-dash-export" onClick={handleExportJSON}>📦 JSON</button>
-            <button className="btn-dash btn-dash-share" onClick={handleShare}>🔗 Share</button>
+            <button className="btn-dash" onClick={handleCopy}>ðŸ“‹ Copy</button>
+            <button className="btn-dash btn-dash-primary" onClick={handleDownloadMd}>ðŸ’¾ .md</button>
+            <button className="btn-dash" onClick={handleDownloadTxt}>ðŸ“„ .txt</button>
+            <button className="btn-dash btn-dash-export" onClick={handleExportJSON}>ðŸ“¦ JSON</button>
+            <button className="btn-dash btn-dash-share" onClick={handleShare}>ðŸ”— Share</button>
             <div className="dash-divider" />
-            <button className="btn-dash" onClick={onBackToMatches}>🤝 Switch</button>
-            <button className="btn-dash" onClick={onReset}>🔄 Restart</button>
+            <button className="btn-dash" onClick={onBackToMatches}>ðŸ¤ Switch</button>
+            <button className="btn-dash" onClick={onReset}>ðŸ”„ Restart</button>
           </div>
         </div>
       </div>
@@ -993,8 +993,8 @@ function BriefStep({ profile, partner, founder, onBackToMatches, onReset }) {
       {/* Dashboard cards */}
       <div className="dash-grid" style={layout === 'single' ? { gridTemplateColumns: '1fr' } : {}}>
 
-        {/* Objective — full width */}
-        <DashCard icon="🎯" title="Strategic Objective" className="dash-grid-full"
+        {/* Objective â€” full width */}
+        <DashCard icon="ðŸŽ¯" title="Strategic Objective" className="dash-grid-full"
           editMode={editingCard === 'objective'}
           onEdit={() => setEditingCard('objective')} onDone={() => setEditingCard(null)}>
           <div className="brief-objective-block">
@@ -1010,7 +1010,7 @@ function BriefStep({ profile, partner, founder, onBackToMatches, onReset }) {
         </DashCard>
 
         {/* Collaboration Concept */}
-        <DashCard icon="🤝" title="Collaboration Concept"
+        <DashCard icon="ðŸ¤" title="Collaboration Concept"
           editMode={editingCard === 'collab'}
           onEdit={() => setEditingCard('collab')} onDone={() => setEditingCard(null)}>
           {editingCard === 'collab' ? (
@@ -1023,7 +1023,7 @@ function BriefStep({ profile, partner, founder, onBackToMatches, onReset }) {
         </DashCard>
 
         {/* Proof of Concept */}
-        <DashCard icon="🧪" title="Proposed Proof of Concept"
+        <DashCard icon="ðŸ§ª" title="Proposed Proof of Concept"
           editMode={editingCard === 'poc'}
           onEdit={() => setEditingCard('poc')} onDone={() => setEditingCard(null)}>
           {editingCard === 'poc' ? (
@@ -1037,8 +1037,8 @@ function BriefStep({ profile, partner, founder, onBackToMatches, onReset }) {
           )}
         </DashCard>
 
-        {/* 30-Day Timeline — full width */}
-        <DashCard icon="📅" title="30-Day Implementation Timeline" className="dash-grid-full"
+        {/* 30-Day Timeline â€” full width */}
+        <DashCard icon="ðŸ“…" title="30-Day Implementation Timeline" className="dash-grid-full"
           editMode={editingCard === 'timeline'}
           onEdit={() => setEditingCard('timeline')} onDone={() => setEditingCard(null)}>
           <div className="timeline-stepper">
@@ -1059,8 +1059,8 @@ function BriefStep({ profile, partner, founder, onBackToMatches, onReset }) {
           </div>
         </DashCard>
 
-        {/* Success Metrics — full width */}
-        <DashCard icon="📊" title="Measurable Success Metrics" className="dash-grid-full"
+        {/* Success Metrics â€” full width */}
+        <DashCard icon="ðŸ“Š" title="Measurable Success Metrics" className="dash-grid-full"
           editMode={editingCard === 'metrics'}
           onEdit={() => setEditingCard('metrics')} onDone={() => setEditingCard(null)}>
           <div className="metrics-chips">
@@ -1068,12 +1068,12 @@ function BriefStep({ profile, partner, founder, onBackToMatches, onReset }) {
               const text = typeof m === 'string' ? m : m.metric || JSON.stringify(m)
               return (
                 <div key={i} className={`metric-chip ${editingCard === 'metrics' ? 'is-editing' : ''}`}>
-                  <span className="metric-check">✓</span>
+                  <span className="metric-check">âœ“</span>
                   {editingCard === 'metrics' ? (
                     <>
                       <textarea rows={1} value={text} onChange={(e) => updateMetric(i, e.target.value)} />
                       <button onClick={() => removeMetric(i)}
-                        style={{ background: 'none', border: 'none', color: '#dc2626', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>✕</button>
+                        style={{ background: 'none', border: 'none', color: '#dc2626', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>âœ•</button>
                     </>
                   ) : text}
                 </div>
@@ -1081,7 +1081,7 @@ function BriefStep({ profile, partner, founder, onBackToMatches, onReset }) {
             })}
             {editingCard === 'metrics' && (
               <div className="metric-add-row">
-                <input type="text" placeholder="+ Add success metric…"
+                <input type="text" placeholder="+ Add success metricâ€¦"
                   value={newMetric} onChange={(e) => setNewMetric(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && addMetric()} />
                 <button onClick={addMetric}>Add</button>
@@ -1094,13 +1094,13 @@ function BriefStep({ profile, partner, founder, onBackToMatches, onReset }) {
       {/* Footer */}
       <div className="brief-footer">
         <div className="brief-disclaimer">
-          ⚠️ All generated outcomes and partner records are <strong>illustrative</strong> for demonstration.
-          Powered by Gemma 4 · MIT Licence.
+          âš ï¸ All generated outcomes and partner records are <strong>illustrative</strong> for demonstration.
+          Powered by Gemma 4 Â· MIT Licence.
         </div>
         <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
-          <button className="btn btn-ghost btn-sm" onClick={handleCopy}>📋 Copy</button>
-          <button className="btn btn-ghost btn-sm" onClick={handleDownloadMd}>💾 .md</button>
-          <button className="btn btn-primary btn-sm" onClick={onReset}>🔄 New Analysis</button>
+          <button className="btn btn-ghost btn-sm" onClick={handleCopy}>ðŸ“‹ Copy</button>
+          <button className="btn btn-ghost btn-sm" onClick={handleDownloadMd}>ðŸ’¾ .md</button>
+          <button className="btn btn-primary btn-sm" onClick={onReset}>ðŸ”„ New Analysis</button>
         </div>
       </div>
 
@@ -1109,10 +1109,10 @@ function BriefStep({ profile, partner, founder, onBackToMatches, onReset }) {
   )
 }
 
-/* ═══════════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    MAIN APPLICATION ROOT
-   Phase 0: Auth → Phase 1-4: Main flow
-═══════════════════════════════════════════════════════════════ */
+   Phase 0: Auth â†’ Phase 1-4: Main flow
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 export default function App() {
   const [founder, setFounder]           = useState(null)   // null = not logged in
   const [step, setStep]                 = useState(1)       // 1-4 within main flow
@@ -1127,18 +1127,18 @@ export default function App() {
   const handlePartnerPick = (pa)  => { setSelectedPartner(pa); setStep(4) }
   const handleReset = ()          => { setStep(1); setProfile(null); setSelectedPartner(null) }
 
-  /* ── AUTH GATE ── */
+  /* â”€â”€ AUTH GATE â”€â”€ */
   if (!founder) return <AuthScreen onAuth={handleAuth} />
 
-  /* ── MAIN APP (authenticated) ── */
+  /* â”€â”€ MAIN APP (authenticated) â”€â”€ */
   return (
     <>
       {/* Nav */}
       <nav className="nav">
         <div className="nav-inner">
           <div className="nav-brand">
-            <span className="nav-logo">PACT</span>
-            <span className="nav-tagline">Partnership Action &amp; Collaboration Toolkit</span>
+            <span className="nav-logo">BridgeWise</span>
+            <span className="nav-tagline">AI Cross-Border Partnership Intelligence</span>
           </div>
 
           <StepIndicator current={step} onNavigate={(s) => s < step && setStep(s)} />
@@ -1147,25 +1147,25 @@ export default function App() {
           <div className="nav-founder-pill">
             <FounderAvatar founder={founder} size={28} />
             <span className="nav-founder-name">{founder.name.split(' ')[0]}</span>
-            <button className="nav-logout-btn" onClick={handleLogout} title="Sign out">✕</button>
+            <button className="nav-logout-btn" onClick={handleLogout} title="Sign out">âœ•</button>
           </div>
         </div>
       </nav>
 
       <main className="main">
-        {/* Step 1 — Founder Upload Prompt */}
+        {/* Step 1 â€” Founder Upload Prompt */}
         {step === 1 && (
           <>
             {/* Hero banner above upload */}
             <div className="hero-banner">
-              <div className="hero-eyebrow">✦ MLH Hacktoberfest KL 2026 &bull; Best Use of Gemma 4</div>
+              <div className="hero-eyebrow">âœ¦ MLH Hacktoberfest KL 2026 &bull; Best Use of Gemma 4</div>
               <h1 className="hero-title">
                 Cross-Border Expansion is Chaotic.<br />
                 <span className="hero-gradient">We Automated the POC.</span>
               </h1>
               <p className="hero-sub">
-                Upload your pitch deck · Gemma 4 builds your Startup Passport · 
-                Discover cross-border matches · Get an executable 30-day POC plan.
+                Upload your pitch deck Â· Gemma 4 builds your Startup Passport Â· 
+                Discover cross-border matches Â· Get an executable 30-day POC plan.
               </p>
               <div className="hero-stats">
                 <div className="hero-stat">
@@ -1182,10 +1182,10 @@ export default function App() {
                 </div>
               </div>
               <div className="hero-badges">
-                <span className="hero-badge">🤖 Gemma 4 Multimodal Vision</span>
-                <span className="hero-badge">🌏 ASEAN Network</span>
-                <span className="hero-badge">⚖️ 30/30/20/20 Match Score</span>
-                <span className="hero-badge">📋 Editable 30-Day Plans</span>
+                <span className="hero-badge">ðŸ¤– Gemma 4 Multimodal Vision</span>
+                <span className="hero-badge">ðŸŒ ASEAN Network</span>
+                <span className="hero-badge">âš–ï¸ 30/30/20/20 Match Score</span>
+                <span className="hero-badge">ðŸ“‹ Editable 30-Day Plans</span>
               </div>
             </div>
 
@@ -1194,7 +1194,7 @@ export default function App() {
             </div>
 
             <div className="disclaimer">
-              ⚠️ All ecosystem records and partner profiles are <strong>illustrative</strong> for demonstration purposes.
+              âš ï¸ All ecosystem records and partner profiles are <strong>illustrative</strong> for demonstration purposes.
             </div>
           </>
         )}
@@ -1217,8 +1217,9 @@ export default function App() {
 
       <footer className="footer">
         Powered by <strong>Gemma 4</strong> (open-weight AI via Gemini API) &bull;
-        Open source, MIT Licence &bull; MLH Hacktoberfest KL 2026 &bull; Team PACT
+        Open source, MIT Licence &bull; MLH Hacktoberfest KL 2026 &bull; Team BridgeWise
       </footer>
     </>
   )
 }
+

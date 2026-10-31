@@ -1,13 +1,13 @@
-/* ═══════════════════════════════════════════════════════════════
-   PACT — Design System v2  ·  Modern SaaS Purple Theme
+﻿/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   PACT â€” Design System v2  Â·  Modern SaaS Purple Theme
    UICheatSheet Rule of 3:
-     Hero   → Glow-pulse upload zone + Border Beam CTA
-     Micro  → Shimmer skeleton + Spotlight cards + Expandable cards
-     Delight→ Confetti + Share/Export action toolbar on brief dashboard
+     Hero   â†’ Glow-pulse upload zone + Border Beam CTA
+     Micro  â†’ Shimmer skeleton + Spotlight cards + Expandable cards
+     Delightâ†’ Confetti + Share/Export action toolbar on brief dashboard
    Reference: attached SaaS image (violet gradient, 3-metric bar, clean cards)
-═══════════════════════════════════════════════════════════════ */
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ── Variables ─────────────────────────────────────────────── */
+/* â”€â”€ Variables â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 :root {
   --purple:        #7c3aed;
   --purple-mid:    #8b5cf6;
@@ -43,7 +43,7 @@
   --shadow-xl:     0 20px 60px rgba(109,40,217,0.18), 0 4px 16px rgba(109,40,217,0.10);
 }
 
-/* ── Reset ──────────────────────────────────────────────────── */
+/* â”€â”€ Reset â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
 html { scroll-behavior: smooth; font-size: 16px }
 body {
@@ -57,7 +57,7 @@ body {
 button { cursor: pointer; font-family: inherit }
 ul { list-style: none }
 
-/* ── Nav ────────────────────────────────────────────────────── */
+/* â”€â”€ Nav â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .nav {
   position: sticky;
   top: 0;
@@ -100,7 +100,7 @@ ul { list-style: none }
   border: 1px solid var(--border);
 }
 
-/* ── Step Indicator ─────────────────────────────────────────── */
+/* â”€â”€ Step Indicator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .steps {
   display: flex;
   align-items: center;
@@ -150,7 +150,7 @@ ul { list-style: none }
 .step-label { display: none }
 @media (min-width: 640px) { .step-label { display: inline } }
 
-/* ── Main Layout ─────────────────────────────────────────────── */
+/* â”€â”€ Main Layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .main {
   max-width: 1200px;
   margin: 0 auto;
@@ -161,10 +161,10 @@ ul { list-style: none }
 }
 .step-content { display: flex; flex-direction: column; gap: 1.75rem }
 
-/* ══════════════════════════════════════════════════════════════
-   STEP 1 HERO — SaaS Landing Style (from reference image)
-   3-Metric impact bar · Glowing upload zone
-══════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   STEP 1 HERO â€” SaaS Landing Style (from reference image)
+   3-Metric impact bar Â· Glowing upload zone
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 .hero-banner {
   text-align: center;
   padding: 3.5rem 2rem 2.5rem;
@@ -220,7 +220,7 @@ ul { list-style: none }
   line-height: 1.7;
 }
 
-/* ── 3-Metric Stats Bar (from reference design) ──────────────── */
+/* â”€â”€ 3-Metric Stats Bar (from reference design) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .hero-stats {
   display: flex;
   align-items: stretch;
@@ -275,7 +275,7 @@ ul { list-style: none }
   border-radius: 20px;
 }
 
-/* ── Upload Card ─────────────────────────────────────────────── */
+/* â”€â”€ Upload Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .upload-card {
   background: var(--bg-card);
   border-radius: var(--radius-lg);
@@ -285,7 +285,7 @@ ul { list-style: none }
 }
 .upload-wrap { display: flex; flex-direction: column; align-items: center; gap: 1.25rem }
 
-/* HERO INTERACTION — Border-beam glow upload zone */
+/* HERO INTERACTION â€” Border-beam glow upload zone */
 .upload-zone {
   width: 100%; max-width: 540px;
   border: 2px dashed #c4b5fd;
@@ -338,7 +338,7 @@ ul { list-style: none }
 }
 .upload-input { display: none }
 
-/* ── Buttons ─────────────────────────────────────────────────── */
+/* â”€â”€ Buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
   padding: 0.65rem 1.25rem;
@@ -426,7 +426,7 @@ ul { list-style: none }
 .btn-large { padding: 0.8rem 1.75rem; font-size: 0.95rem }
 .btn-sm    { padding: 0.35rem 0.75rem; font-size: 0.75rem }
 
-/* ── Action Toolbar (Step 4 Dashboard) ───────────────────────── */
+/* â”€â”€ Action Toolbar (Step 4 Dashboard) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .action-toolbar {
   display: flex;
   align-items: center;
@@ -448,7 +448,7 @@ ul { list-style: none }
   margin-right: 0.25rem;
 }
 
-/* ── Error Toast ─────────────────────────────────────────────── */
+/* â”€â”€ Error Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .error-toast {
   background: #fff1f2;
   color: #9f1239;
@@ -459,7 +459,7 @@ ul { list-style: none }
   width: 100%;
 }
 
-/* ── Toast Notification (copy success etc.) ──────────────────── */
+/* â”€â”€ Toast Notification (copy success etc.) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .toast-container {
   position: fixed;
   bottom: 1.5rem;
@@ -492,7 +492,7 @@ ul { list-style: none }
   to   { opacity: 0; transform: translateY(-4px) }
 }
 
-/* ── Disclaimer ──────────────────────────────────────────────── */
+/* â”€â”€ Disclaimer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .disclaimer {
   background: linear-gradient(135deg, #fffbeb, #fef3c7);
   border: 1px solid #fde68a;
@@ -503,7 +503,7 @@ ul { list-style: none }
   text-align: center;
 }
 
-/* ── Gemma Loading Spinner ───────────────────────────────────── */
+/* â”€â”€ Gemma Loading Spinner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .gemma-loading {
   display: flex; flex-direction: column; align-items: center;
   gap: 1rem; padding: 3rem 1rem; text-align: center;
@@ -529,7 +529,7 @@ ul { list-style: none }
 .gemma-loading-title { font-size: 1rem; font-weight: 600; color: var(--text) }
 .gemma-loading-sub   { font-size: 0.82rem; color: var(--text-muted) }
 
-/* ── Matches ─────────────────────────────────────────────────── */
+/* â”€â”€ Matches â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .matches-header {
   display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
   flex-wrap: wrap;
@@ -543,7 +543,7 @@ ul { list-style: none }
   gap: 1.25rem;
 }
 
-/* MICRO — Shimmer skeleton (UICheatSheet #19) */
+/* MICRO â€” Shimmer skeleton (UICheatSheet #19) */
 .skeleton-card {
   background: var(--bg-card);
   border-radius: var(--radius);
@@ -629,7 +629,7 @@ ul { list-style: none }
   line-height: 1.5;
 }
 
-/* ── Profile/Startup mini bar ────────────────────────────────── */
+/* â”€â”€ Profile/Startup mini bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .profile-mini-bar {
   display: flex;
   align-items: center;
@@ -645,7 +645,7 @@ ul { list-style: none }
 .mini-company { font-size: 1rem; font-weight: 800; color: var(--purple); margin-right: 0.75rem }
 .mini-sub     { font-size: 0.8rem; color: var(--text-muted) }
 
-/* ── Brief generating ────────────────────────────────────────── */
+/* â”€â”€ Brief generating â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .brief-generating {
   display: flex; align-items: center; gap: 1.25rem;
   background: linear-gradient(135deg, #f5f3ff, #ede9fe);
@@ -656,12 +656,12 @@ ul { list-style: none }
 .bgen-title { font-size: 0.95rem; font-weight: 600; color: var(--text) }
 .bgen-sub   { font-size: 0.8rem;  color: var(--text-muted); margin-top: 0.2rem }
 
-/* ══════════════════════════════════════════════════════════════
-   STEP 4 — BRIEF DASHBOARD (Full redesign)
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   STEP 4 â€” BRIEF DASHBOARD (Full redesign)
    Export / Copy / Download / Share / Edit / Resize
-══════════════════════════════════════════════════════════════ */
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* Main dashboard grid — resizable layout via CSS grid */
+/* Main dashboard grid â€” resizable layout via CSS grid */
 .brief-dashboard {
   display: flex;
   flex-direction: column;
@@ -810,7 +810,7 @@ ul { list-style: none }
   font-size: 1rem;
 }
 
-/* ── Dashboard Card Grid ─────────────────────────────────────── */
+/* â”€â”€ Dashboard Card Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .dash-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -928,7 +928,7 @@ ul { list-style: none }
   padding: 0.5rem 0.75rem;
 }
 
-/* ── Objective Dark Block ────────────────────────────────────── */
+/* â”€â”€ Objective Dark Block â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .brief-objective-block {
   background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
   border-radius: var(--radius-sm);
@@ -979,7 +979,7 @@ ul { list-style: none }
   outline: none;
 }
 
-/* ── Timeline Stepper ────────────────────────────────────────── */
+/* â”€â”€ Timeline Stepper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .timeline-stepper {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1026,7 +1026,7 @@ ul { list-style: none }
   .tl-step:not(:last-child)::after { display: none }
 }
 
-/* ── Metrics Chips ───────────────────────────────────────────── */
+/* â”€â”€ Metrics Chips â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .metrics-chips { display: flex; flex-direction: column; gap: 0.6rem }
 .metric-chip {
   display: flex; align-items: flex-start; gap: 0.6rem;
@@ -1083,7 +1083,7 @@ ul { list-style: none }
 }
 .metric-add-row button:hover { background: #ddd6fe }
 
-/* ── Dashboard Footer ────────────────────────────────────────── */
+/* â”€â”€ Dashboard Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .brief-footer {
   display: flex;
   align-items: center;
@@ -1097,7 +1097,7 @@ ul { list-style: none }
 }
 .brief-disclaimer { font-size: 0.75rem; color: var(--text-muted) }
 
-/* ── Layout resize controls ──────────────────────────────────── */
+/* â”€â”€ Layout resize controls â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .layout-toggle {
   display: flex;
   align-items: center;
@@ -1120,7 +1120,7 @@ ul { list-style: none }
 .layout-btn.active { background: var(--purple); color: #fff }
 .layout-btn:hover:not(.active) { background: var(--border-light) }
 
-/* ── Footer ──────────────────────────────────────────────────── */
+/* â”€â”€ Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .footer {
   text-align: center;
   padding: 1.5rem;
@@ -1130,7 +1130,7 @@ ul { list-style: none }
   margin-top: 2rem;
 }
 
-/* ── Responsive ──────────────────────────────────────────────── */
+/* â”€â”€ Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 768px) {
   .nav-tagline { display: none }
   .nav-gemma   { display: none }
@@ -1142,7 +1142,7 @@ ul { list-style: none }
   .bdh-actions { width: 100% }
 }
 
-/* ── Founder Options & Forms ─────────────────────────────────── */
+/* â”€â”€ Founder Options & Forms â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .uploaded-files-list {
   display: flex;
   flex-wrap: wrap;
@@ -1238,7 +1238,7 @@ ul { list-style: none }
   border-radius: 12px;
 }
 
-/* ── Passport Card ───────────────────────────────────────────── */
+/* â”€â”€ Passport Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .passport-card {
   background: var(--bg-card);
   border-radius: var(--radius-lg);
@@ -1368,7 +1368,7 @@ ul { list-style: none }
   gap: 1rem;
 }
 
-/* ── Brief Badges & misc ─────────────────────────────────────── */
+/* â”€â”€ Brief Badges & misc â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .brief-success-badge {
   display: flex;
   align-items: center;
@@ -1390,7 +1390,7 @@ ul { list-style: none }
 }
 .brief-sub { font-size: 0.82rem; color: var(--text-muted); margin-top: 0.2rem }
 
-/* ── Graph card ──────────────────────────────────────────────── */
+/* â”€â”€ Graph card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .graph-card {
   background: var(--bg-graph);
   border-radius: var(--radius);
@@ -1401,10 +1401,10 @@ ul { list-style: none }
 .card { background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border-light); box-shadow: var(--shadow-card) }
 
 
-/* ══════════════════════════════════════════════════════════════
-   AUTH SCREEN — Full-page split layout
-   Left: brand hero  ·  Right: login/signup form card
-══════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   AUTH SCREEN â€” Full-page split layout
+   Left: brand hero  Â·  Right: login/signup form card
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 .auth-page {
   min-height: 100vh;
   display: grid;
@@ -1415,7 +1415,7 @@ ul { list-style: none }
   .auth-page { grid-template-columns: 1fr }
 }
 
-/* ── Auth Left Panel ──────────────────────────────────────── */
+/* â”€â”€ Auth Left Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .auth-left {
   background: linear-gradient(145deg, #1e1b4b 0%, #312e81 45%, #4c1d95 100%);
   display: flex;
@@ -1517,7 +1517,7 @@ ul { list-style: none }
   border-radius: 20px;
 }
 
-/* ── Auth Right Panel ─────────────────────────────────────── */
+/* â”€â”€ Auth Right Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .auth-right {
   display: flex;
   align-items: center;
@@ -1689,7 +1689,7 @@ ul { list-style: none }
   background: #fafaf9;
 }
 
-/* ── Nav: Founder pill ────────────────────────────────────── */
+/* â”€â”€ Nav: Founder pill â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .nav-founder-pill {
   margin-left: auto;
   display: flex;
@@ -1731,7 +1731,7 @@ ul { list-style: none }
 }
 .nav-logout-btn:hover { background: rgba(220,38,38,0.1); color: var(--red) }
 
-/* ── Founder Context Bar (inside steps 2-4) ───────────────── */
+/* â”€â”€ Founder Context Bar (inside steps 2-4) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .founder-context-bar {
   display: flex;
   align-items: center;
@@ -1751,9 +1751,9 @@ ul { list-style: none }
 .fcb-step   { font-size: 0.75rem; font-weight: 600; color: var(--purple) }
 @media (max-width: 600px) { .fcb-sep { display: none }; .fcb-step { width: 100%; margin-top: 0.25rem } }
 
-/* ══════════════════════════════════════════════════════════════
-   UPLOAD PAGE — Two-column layout + Founder welcome bar
-══════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   UPLOAD PAGE â€” Two-column layout + Founder welcome bar
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 .upload-page {
   display: flex;
   flex-direction: column;
@@ -1892,3 +1892,4 @@ ul { list-style: none }
 
 /* Upload page footer CTA */
 .upload-card { background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-light); box-shadow: var(--shadow-card); padding: 2rem }
+

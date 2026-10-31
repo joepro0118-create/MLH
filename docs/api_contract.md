@@ -1,4 +1,4 @@
-# PACT API Contract
+# BridgeWise API Contract
 
 **Version:** 1.0.0  
 **Base URL:** `http://localhost:8000`  
