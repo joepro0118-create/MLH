@@ -19,6 +19,8 @@ Entering both categories. Evidence for each challenge is documented below.
 
 ## Project links
 
+- Live deployment: [https://mlh-vert.vercel.app/](https://mlh-vert.vercel.app/)
+- Video walkthrough: [Add your video demo link here]
 - Public GitHub repository: [https://github.com/joepro0118-create/MLH](https://github.com/joepro0118-create/MLH)
 - Open-source license: [MIT](LICENSE)
 

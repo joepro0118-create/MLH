@@ -15,6 +15,7 @@ It converts open-ended cross-border networking into concrete, measurable 30-day 
 ## Table of Contents
 
 - [Project Overview & Hackathon Submission Summary](#project-overview--hackathon-submission-summary)
+  - [Deployment & Live Demo Links](#deployment--live-demo-links)
   - [GitHub Repository & Open-Source License](#github-repository--open-source-license)
   - [Live Demo & Local Judge Evaluation](#live-demo--local-judge-evaluation)
   - [Project Description](#project-description)
@@ -52,6 +53,13 @@ It converts open-ended cross-border networking into concrete, measurable 30-day 
 ---
 
 ## Project Overview & Hackathon Submission Summary
+
+### Deployment & Live Demo Links
+
+- 🌐 **Live Web Application (Vercel):** [https://mlh-vert.vercel.app/](https://mlh-vert.vercel.app/)
+- 🎥 **Video Demo Walkthrough:** [Add your YouTube / Loom / Google Drive link here]
+
+---
 
 ### GitHub Repository & Open-Source License
 
