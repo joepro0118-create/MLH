@@ -159,6 +159,12 @@ class GemmaService:
         if max_output_tokens:
             config_kwargs["max_output_tokens"] = max_output_tokens
 
+        # For Gemma 4 thinking models, set minimal thinking level to avoid timeouts / server 500s
+        try:
+            config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_level="minimal")
+        except Exception:
+            pass
+
         try:
             response = client.models.generate_content(
                 model=self.model,
@@ -167,10 +173,20 @@ class GemmaService:
             )
         except Exception as exc:
             logger.warning("generate_content with config failed (%s); retrying with basic config.", exc)
-            response = client.models.generate_content(
-                model=self.model,
-                contents=contents,
-            )
+            try:
+                response = client.models.generate_content(
+                    model=self.model,
+                    contents=contents,
+                    config=types.GenerateContentConfig(
+                        temperature=temperature,
+                        thinking_config=types.ThinkingConfig(thinking_level="minimal")
+                    ),
+                )
+            except Exception:
+                response = client.models.generate_content(
+                    model=self.model,
+                    contents=contents,
+                )
 
         # Guard against safety blocks
         if not response.candidates:
