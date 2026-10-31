@@ -137,15 +137,14 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 DATA_PATH = Path(__file__).parent.parent.parent / "data" / "demo_ecosystem.json"
-ALLOWED_MIME = {"image/png", "image/jpeg", "image/webp"}
-MAX_IMAGE_BYTES = 5 * 1024 * 1024  # 5 MB
+MAX_FILE_BYTES = 20 * 1024 * 1024  # 20 MB per file
 
 gemma = GemmaService()
 
@@ -164,53 +163,53 @@ async def health():
 async def analyze_pitch(
     image: Optional[UploadFile] = File(None),
     images: Optional[List[UploadFile]] = File(None),
+    files: Optional[List[UploadFile]] = File(None),
     notes: Optional[str] = Form(None),
     goal: Optional[str] = Form(None),
     target_country: Optional[str] = Form(None),
 ):
     """
-    Accept 1 to 3 pitch deck / flyer / proposal images + optional notes and goal.
+    Accept multiple documents of any common format (PDF, DOCX, PPTX, TXT, MD, CSV, PNG, JPEG, WebP)
+    and/or founder prompt/notes + expansion goals.
     In MOCK_MODE returns the SmartTONG canned profile immediately.
-    Otherwise sends all files to Gemma 4 to synthesize a unified Startup Passport.
+    Otherwise sends all files and context to Gemma 4 to synthesize a unified Startup Passport.
     """
     if MOCK_MODE:
         logger.info("MOCK_MODE: returning canned StartupProfile")
         return _MOCK_PROFILE
 
-    # Collect files from either 'images' list or single 'image' parameter
+    # Collect files from 'files', 'images', or single 'image' parameter
     upload_list: List[UploadFile] = []
+    if files:
+        upload_list.extend(files)
     if images:
         upload_list.extend(images)
     if image:
         upload_list.append(image)
 
-    if not upload_list:
+    if not upload_list and not (notes and notes.strip()):
         raise HTTPException(
             status_code=400,
-            detail="At least one pitch deck or proposal image file is required.",
+            detail="Please upload at least one file (PDF, Word, PPTX, image, text) or enter a startup description.",
         )
 
-    # Restrict to 1-3 files
-    if len(upload_list) > 3:
+    if len(upload_list) > 10:
         raise HTTPException(
             status_code=400,
-            detail="Please upload a maximum of 3 document images.",
+            detail="Please upload a maximum of 10 files at once.",
         )
 
     prepared_files = []
     for f in upload_list:
-        if f.content_type not in ALLOWED_MIME:
-            raise HTTPException(
-                status_code=415,
-                detail=f"Unsupported image type '{f.content_type}' for {f.filename}. Use PNG, JPEG, or WebP.",
-            )
         f_bytes = await f.read()
-        if len(f_bytes) > MAX_IMAGE_BYTES:
+        if len(f_bytes) > MAX_FILE_BYTES:
             raise HTTPException(
                 status_code=413,
-                detail=f"Image {f.filename} exceeds 5 MB limit.",
+                detail=f"File '{f.filename}' exceeds the 20 MB limit.",
             )
-        prepared_files.append((f_bytes, f.content_type))
+        content_type = f.content_type or "application/octet-stream"
+        filename = f.filename or "uploaded_file"
+        prepared_files.append((f_bytes, content_type, filename))
 
     try:
         profile = await gemma.analyze_pitch(

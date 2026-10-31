@@ -2,11 +2,14 @@
 # GemmaService — single centralised class for all Gemma 4 calls.
 # Model: gemma-4-26b-a4b-it by default; override with GEMMA_MODEL env var.
 # NEVER substitute a Gemini (non-Gemma) model silently.
+import io
 import os
 import base64
 import json
 import re
 import logging
+import zipfile
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -23,6 +26,67 @@ logger = logging.getLogger(__name__)
 
 # Default model — configurable but must stay a Gemma model.
 DEFAULT_MODEL = "gemma-4-26b-a4b-it"
+
+IMAGE_MIMES = {"image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif"}
+
+
+def _extract_office_xml_text(file_bytes: bytes, ext: str) -> str:
+    """Extract text from .docx, .pptx, or .xlsx using Python stdlib zipfile + ElementTree."""
+    texts: List[str] = []
+    try:
+        with zipfile.ZipFile(io.BytesIO(file_bytes)) as zf:
+            names = zf.namelist()
+            target_xmls = []
+            if ext == ".docx":
+                target_xmls = [n for n in names if n.startswith("word/") and n.endswith(".xml")]
+            elif ext == ".pptx":
+                target_xmls = sorted(
+                    [n for n in names if n.startswith("ppt/slides/slide") and n.endswith(".xml")]
+                )
+            elif ext == ".xlsx":
+                target_xmls = [
+                    n for n in names if (n == "xl/sharedStrings.xml" or n.startswith("xl/worksheets/")) and n.endswith(".xml")
+                ]
+            else:
+                target_xmls = [n for n in names if n.endswith(".xml")]
+
+            for xml_name in target_xmls:
+                xml_bytes = zf.read(xml_name)
+                root = ET.fromstring(xml_bytes)
+                chunk = " ".join(t.strip() for t in root.itertext() if t and t.strip())
+                if chunk:
+                    texts.append(chunk)
+    except Exception as exc:
+        logger.warning("Failed to parse Office XML (%s): %s", ext, exc)
+    return "\n".join(texts)
+
+
+def _extract_pdf_text_and_images(pdf_bytes: bytes, max_pages_vision: int = 3) -> Tuple[str, List[Tuple[bytes, str]]]:
+    """
+    Extract text and rendered page PNGs from a PDF using PyMuPDF (if installed),
+    with a graceful fallback if PyMuPDF is not present.
+    """
+    extracted_text = []
+    page_images: List[Tuple[bytes, str]] = []
+    try:
+        try:
+            import pymupdf as fitz_mod
+        except ImportError:
+            import fitz as fitz_mod
+
+        doc = fitz_mod.open(stream=pdf_bytes, filetype="pdf")
+        for idx, page in enumerate(doc):
+            page_txt = page.get_text("text")
+            if page_txt and page_txt.strip():
+                extracted_text.append(f"[Page {idx + 1}]\n{page_txt.strip()}")
+            if idx < max_pages_vision:
+                pix = page.get_pixmap(dpi=140)
+                page_images.append((pix.tobytes("png"), "image/png"))
+        doc.close()
+    except Exception as exc:
+        logger.info("PyMuPDF extraction unavailable or failed (%s); falling back to raw PDF handling.", exc)
+
+    return "\n\n".join(extracted_text), page_images
 
 
 class GemmaService:
@@ -178,26 +242,74 @@ class GemmaService:
         target_country: Optional[str] = None,
     ) -> StartupProfile:
         """
-        Multimodal: analyze 1 to 3 pitch deck / flyer images with Gemma 4,
-        fusing them and founder context into a single unified StartupProfile.
-        Supports passing single image_bytes (bytes) or a list of (bytes, mime_type) tuples.
+        Multimodal + Multi-Format Document Analyzer:
+        Accepts any combination of PDFs, Word (.docx/.doc), PowerPoint (.pptx),
+        Excel/CSV, Markdown/Text, and Images (PNG/JPG/WebP/GIF), plus founder notes/goals,
+        fusing them into a single unified StartupProfile via Gemma 4.
         """
-        # Normalize files list
+        # Normalize files list into (bytes, mime_type, filename) tuples
+        files: List[Tuple[bytes, str, str]] = []
         if isinstance(image_bytes, (bytes, bytearray)):
-            files = [(bytes(image_bytes), mime_type)]
+            files = [(bytes(image_bytes), mime_type, "document")]
         elif isinstance(image_bytes, list):
-            files = []
-            for item in image_bytes:
-                if isinstance(item, tuple) and len(item) == 2:
-                    files.append(item)
+            for idx, item in enumerate(image_bytes):
+                if isinstance(item, tuple):
+                    if len(item) >= 3:
+                        files.append((bytes(item[0]), str(item[1]), str(item[2])))
+                    elif len(item) == 2:
+                        files.append((bytes(item[0]), str(item[1]), f"document_{idx + 1}"))
                 elif isinstance(item, (bytes, bytearray)):
-                    files.append((bytes(item), mime_type))
+                    files.append((bytes(item), mime_type, f"document_{idx + 1}"))
+        elif image_bytes is None:
+            files = []
         else:
-            raise ValueError("image_bytes must be bytes or list of (bytes, mime_type) tuples")
+            raise ValueError("image_bytes must be bytes or list of file tuples")
+
+        parts: List[Any] = []
+        extracted_doc_texts: List[str] = []
+
+        for f_bytes, f_mime, f_name in files:
+            lower_name = (f_name or "").lower()
+            ext = Path(lower_name).suffix.lower()
+            norm_mime = (f_mime or "").lower()
+
+            # 1. Image files -> send directly as multimodal vision part
+            if norm_mime in IMAGE_MIMES or ext in {".png", ".jpg", ".jpeg", ".webp", ".gif"}:
+                actual_mime = norm_mime if norm_mime in IMAGE_MIMES else "image/png"
+                if actual_mime == "image/jpg":
+                    actual_mime = "image/jpeg"
+                parts.append(types.Part.from_bytes(data=f_bytes, mime_type=actual_mime))
+
+            # 2. PDF files -> extract full text + render pages as vision PNGs (or fallback to application/pdf part)
+            elif norm_mime == "application/pdf" or ext == ".pdf":
+                pdf_text, pdf_page_imgs = _extract_pdf_text_and_images(f_bytes, max_pages_vision=3)
+                if pdf_text:
+                    extracted_doc_texts.append(f"--- PDF Document ({f_name}) ---\n{pdf_text[:15000]}")
+                for img_bytes, img_mime in pdf_page_imgs:
+                    parts.append(types.Part.from_bytes(data=img_bytes, mime_type=img_mime))
+                if not pdf_text and not pdf_page_imgs:
+                    # Fallback: pass raw PDF bytes to Gemini/Gemma API
+                    parts.append(types.Part.from_bytes(data=f_bytes, mime_type="application/pdf"))
+
+            # 3. Office Open XML (.docx, .pptx, .xlsx)
+            elif ext in {".docx", ".pptx", ".xlsx"} or "officedocument" in norm_mime:
+                office_text = _extract_office_xml_text(f_bytes, ext or ".docx")
+                if office_text:
+                    extracted_doc_texts.append(f"--- Office Document ({f_name}) ---\n{office_text[:15000]}")
+
+            # 4. Any text/markdown/CSV/JSON/HTML/legacy doc file
+            else:
+                decoded = f_bytes.decode("utf-8", errors="ignore").strip()
+                if not decoded:
+                    decoded = f_bytes.decode("latin-1", errors="ignore").strip()
+                # Filter out excessive binary noise if a binary file was uploaded
+                printable = "".join(ch for ch in decoded if ch.isprintable() or ch in "\n\r\t")
+                if printable.strip():
+                    extracted_doc_texts.append(f"--- Attached File ({f_name}) ---\n{printable[:15000]}")
 
         extra_context = []
         if notes and notes.strip():
-            extra_context.append(f"- Founder Note: {notes.strip()}")
+            extra_context.append(f"- Founder Prompt / Notes: {notes.strip()}")
         if goal and goal.strip():
             extra_context.append(f"- Primary Partnership Objective: {goal.strip()}")
         if target_country and target_country.strip():
@@ -207,10 +319,15 @@ class GemmaService:
         if context_str:
             context_str = f"\n\nAdditional Founder Intent:\n{context_str}\n"
 
+        docs_str = "\n\n".join(extracted_doc_texts)
+        if docs_str:
+            docs_str = f"\n\nExtracted Document Contents:\n{docs_str}\n"
+
         prompt = (
             "You are an ASEAN startup ecosystem analyst.\n"
-            "Analyse the uploaded startup document(s) (pitch deck slide, brochure, or proposal) "
+            "Analyse the uploaded startup document(s) (pitch deck slides, PDFs, Word docs, spreadsheets, images, or notes) "
             "and synthesize them into a single consolidated Startup Profile.\n"
+            f"{docs_str}"
             f"{context_str}\n"
             "Return ONLY a single valid JSON object — no markdown, no prose, no code fences:\n"
             "{\n"
@@ -224,13 +341,10 @@ class GemmaService:
             '  "target_markets": ["2–4 ASEAN countries or cities to expand into"],\n'
             '  "partnership_goals": ["2–4 actionable goals e.g. pilot, distribution, co-development"]\n'
             "}\n\n"
-            "If a field cannot be determined from the images, infer a realistic placeholder. "
+            "If a field cannot be determined from the inputs, infer a realistic placeholder. "
             "All output is illustrative."
         )
 
-        parts = []
-        for f_bytes, f_mime in files:
-            parts.append(types.Part.from_bytes(data=f_bytes, mime_type=f_mime))
         parts.append(prompt)
 
         def _parse(raw: str) -> StartupProfile:

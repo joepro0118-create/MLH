@@ -1,8 +1,9 @@
 // frontend/src/App.jsx — PACT: AI Cross-Border Startup Partnership Toolkit
-// Designed for Founders: Upload 1-3 files + notes + goal -> Gemma fuses into Passport -> Edit -> Match & Graph -> Brief & 30-Day POC
+// Designed for Founders: Upload/Paste multiple files (PDF, Word, PPTX, Images, Text) + notes + goal -> Gemma fuses into Passport -> Edit -> Match & Graph -> Brief & 30-Day POC (Export to Word, PDF, Markdown)
 import { useState, useEffect, useRef } from 'react'
 import { analyzePitch, getMatches, getGraph, getBrief, healthCheck } from './api.js'
 import { EcosystemGraph } from './components/EcosystemGraph.jsx'
+import { exportBriefToWord, exportBriefToPdf, exportBriefToMarkdown } from './exportUtils.js'
 import './index.css'
 
 /* ─────────────────────────────────────────────────────────────
@@ -79,6 +80,39 @@ const FALLBACK_BRIEF = {
     '≥90% fill-rate telemetry accuracy across all 50 pilot bins over 30 days',
     'Formal Letter of Intent from Saigon Green Urban Waste Board for municipal-wide expansion',
   ],
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FILE TYPE HELPERS (For Universal File Upload & Previews)
+───────────────────────────────────────────────────────────────*/
+const MAX_FILES = 10
+
+function isImageFile(file) {
+  if (!file) return false
+  const t = (file.type || '').toLowerCase()
+  const name = (file.name || '').toLowerCase()
+  return t.startsWith('image/') || /\.(png|jpe?g|webp|gif|bmp|svg)$/.test(name)
+}
+
+function getFileBadgeMeta(file) {
+  const name = (file?.name || '').toLowerCase()
+  const t = (file?.type || '').toLowerCase()
+  if (t === 'application/pdf' || name.endsWith('.pdf')) {
+    return { icon: '📕', typeLabel: 'PDF Document', accent: '#dc2626', bg: '#fef2f2' }
+  }
+  if (/\.(docx?|rtf)$/.test(name) || t.includes('word')) {
+    return { icon: '📘', typeLabel: 'Word Doc', accent: '#2563eb', bg: '#eff6ff' }
+  }
+  if (/\.(pptx?|key)$/.test(name) || t.includes('presentation')) {
+    return { icon: '📙', typeLabel: 'Pitch Deck', accent: '#ea580c', bg: '#fff7ed' }
+  }
+  if (/\.(xlsx?|csv)$/.test(name) || t.includes('spreadsheet') || t.includes('csv')) {
+    return { icon: '📗', typeLabel: 'Spreadsheet', accent: '#16a34a', bg: '#f0fdf4' }
+  }
+  if (/\.(txt|md|json|yaml|yml|xml|html)$/.test(name) || t.startsWith('text/')) {
+    return { icon: '📝', typeLabel: 'Text / Notes', accent: '#7c3aed', bg: '#f5f3ff' }
+  }
+  return { icon: '📄', typeLabel: 'Document', accent: '#4f46e5', bg: '#eef2ff' }
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -179,7 +213,7 @@ function SpotlightCard({ children, className = '' }) {
    STEP INDICATOR
 ───────────────────────────────────────────────────────────────*/
 const STEPS = [
-  { label: 'Upload Files', icon: '📁' },
+  { label: 'Upload / Paste Docs', icon: '📁' },
   { label: 'Startup Passport', icon: '🛂' },
   { label: 'Partner Matches', icon: '🤝' },
   { label: '30-Day POC Plan', icon: '📋' },
@@ -213,8 +247,11 @@ function StepIndicator({ current, onNavigate, maxStepReached }) {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   STEP 1: UPLOAD (1 to 3 files, note, goal, country)
+   STEP 1: UNIVERSAL UPLOAD + CLIPBOARD PASTE (PDF, DOCX, PPTX, Images, Text)
 ───────────────────────────────────────────────────────────────*/
+const ACCEPTED_FILE_ATTR =
+  '.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.csv,.txt,.md,.json,.png,.jpg,.jpeg,.webp,.gif,application/pdf,image/*,text/*'
+
 function UploadStep({ onComplete, onNotify }) {
   const [files, setFiles] = useState([])
   const [previews, setPreviews] = useState([])
@@ -227,51 +264,99 @@ function UploadStep({ onComplete, onNotify }) {
   const [error, setError] = useState(null)
   const inputRef = useRef(null)
 
+  // Generate object URLs only for image files
   useEffect(() => {
-    const urls = files.map((f) => URL.createObjectURL(f))
+    const urls = files.map((f) => (isImageFile(f) ? URL.createObjectURL(f) : null))
     setPreviews(urls)
-    return () => urls.forEach((u) => URL.revokeObjectURL(u))
+    return () => urls.forEach((u) => u && URL.revokeObjectURL(u))
   }, [files])
 
-  const addFiles = (newFiles) => {
+  const addFiles = (incomingFiles, fromClipboard = false) => {
     setError(null)
-    const valid = Array.from(newFiles).filter((f) =>
-      ['image/png', 'image/jpeg', 'image/webp'].includes(f.type)
-    )
-    if (valid.length === 0) {
-      setError('Please upload PNG, JPEG, or WebP images.')
-      return
-    }
+    const list = Array.from(incomingFiles || []).filter(Boolean)
+    if (list.length === 0) return
+
+    const namedList = list.map((f, idx) => {
+      if (!f.name || f.name === 'image.png' || f.name === 'blob') {
+        const ext = (f.type || '').split('/')[1] || 'png'
+        return new File([f], `pasted_file_${Date.now()}_${idx + 1}.${ext}`, { type: f.type })
+      }
+      return f
+    })
+
     setFiles((prev) => {
-      const combined = [...prev, ...valid].slice(0, 3)
-      if (prev.length + valid.length > 3) {
-        setError('Maximum 3 files allowed. Kept the first 3.')
+      const combined = [...prev, ...namedList].slice(0, MAX_FILES)
+      if (prev.length + namedList.length > MAX_FILES) {
+        setError(`Maximum ${MAX_FILES} files allowed. Kept the first ${MAX_FILES}.`)
       }
       return combined
     })
+
+    if (fromClipboard) {
+      onNotify?.(`📋 Pasted ${namedList.length} file${namedList.length > 1 ? 's' : ''} from clipboard!`)
+    }
   }
+
+  // Global Ctrl+V / Cmd+V paste listener (ChatGPT / Gemini style)
+  useEffect(() => {
+    const handleGlobalPaste = (e) => {
+      const cd = e.clipboardData
+      if (!cd) return
+
+      const pastedFiles = []
+      if (cd.files && cd.files.length > 0) {
+        for (let i = 0; i < cd.files.length; i++) {
+          pastedFiles.push(cd.files[i])
+        }
+      } else if (cd.items && cd.items.length > 0) {
+        for (let i = 0; i < cd.items.length; i++) {
+          const item = cd.items[i]
+          if (item.kind === 'file') {
+            const f = item.getAsFile()
+            if (f) pastedFiles.push(f)
+          }
+        }
+      }
+
+      if (pastedFiles.length > 0) {
+        e.preventDefault()
+        addFiles(pastedFiles, true)
+      }
+    }
+
+    window.addEventListener('paste', handleGlobalPaste)
+    return () => window.removeEventListener('paste', handleGlobalPaste)
+  }, [])
 
   const removeFile = (idx) => {
     setFiles((prev) => prev.filter((_, i) => i !== idx))
   }
 
-  const handleLoadSampleSlide = async (e) => {
+  const handleLoadSampleFile = async (e, type = 'pdf') => {
     e?.stopPropagation()
     setError(null)
     setLoadingSample(true)
     try {
-      const res = await fetch('/sample_pitch_deck.png')
-      if (!res.ok) throw new Error('Sample pitch slide not found.')
+      const fileName = type === 'pdf' ? 'sample_pitch_deck.pdf' : 'sample_pitch_deck.png'
+      const mime = type === 'pdf' ? 'application/pdf' : 'image/png'
+      const res = await fetch(`/${fileName}`)
+      if (!res.ok) throw new Error(`Sample file ${fileName} not found.`)
       const blob = await res.blob()
-      const sampleFile = new File([blob], 'sample_pitch_deck.png', { type: 'image/png' })
+      const sampleFile = new File([blob], fileName, { type: mime })
       setFiles((prev) => {
-        const filtered = prev.filter((f) => f.name !== 'sample_pitch_deck.png')
-        return [...filtered, sampleFile].slice(0, 3)
+        const filtered = prev.filter((f) => f.name !== fileName)
+        return [...filtered, sampleFile].slice(0, MAX_FILES)
       })
       if (!notes) {
-        setNotes('We have proven IoT smart-bin sensors in Malaysia and seek a 30-day municipal waste collection pilot in Ho Chi Minh City, Vietnam.')
+        setNotes(
+          'We have proven IoT smart-bin sensors in Malaysia and seek a 30-day municipal waste collection pilot in Ho Chi Minh City, Vietnam.'
+        )
       }
-      onNotify?.('Loaded SmartTONG sample pitch slide — ready for Gemma 4 Vision!')
+      onNotify?.(
+        type === 'pdf'
+          ? '📕 Loaded SmartTONG sample PDF pitch deck — ready for Gemma 4!'
+          : '🖼️ Loaded SmartTONG sample pitch slide — ready for Gemma 4!'
+      )
     } catch (err) {
       setError(err.message)
     } finally {
@@ -280,8 +365,8 @@ function UploadStep({ onComplete, onNotify }) {
   }
 
   const handleAnalyze = async () => {
-    if (files.length === 0) {
-      setError('Please upload at least 1 pitch deck or brochure image.')
+    if (files.length === 0 && !notes.trim()) {
+      setError('Please upload/paste at least 1 file (PDF, Word, PPTX, image, text) or describe your startup in the prompt box below.')
       return
     }
     setError(null)
@@ -309,9 +394,11 @@ function UploadStep({ onComplete, onNotify }) {
           <div className="g-ring r2" />
           <div className="g-ring r3" />
         </div>
-        <div className="gemma-loading-title">Gemma 4 is synthesizing your documents…</div>
+        <div className="gemma-loading-title">Gemma 4 is reading &amp; synthesizing your inputs…</div>
         <div className="gemma-loading-sub">
-          Reading {files.length} document{files.length > 1 ? 's' : ''} &amp; reconciling founder intent into a single Startup Passport
+          {files.length > 0
+            ? `Analyzing ${files.length} attached file(s) (${files.map((f) => f.name).join(', ')}) + founder prompt into a unified Startup Passport`
+            : 'Synthesizing your founder prompt and expansion goals into a structured Startup Passport'}
         </div>
       </div>
     )
@@ -319,7 +406,7 @@ function UploadStep({ onComplete, onNotify }) {
 
   return (
     <div className="upload-wrap">
-      {/* Upload Zone */}
+      {/* Universal Upload & Paste Zone */}
       <div
         className={`upload-zone ${dragging ? 'drag-over' : ''}`}
         onClick={() => inputRef.current?.click()}
@@ -329,62 +416,115 @@ function UploadStep({ onComplete, onNotify }) {
       >
         <div className="upload-icon-bg">📑</div>
         <div className="upload-label">
-          {files.length > 0 ? `Selected ${files.length} of 3 document(s)` : 'Upload Pitch Deck, Brochure, or Proposal'}
+          {files.length > 0
+            ? `Attached ${files.length} of ${MAX_FILES} file(s) — Drop or Paste more`
+            : 'Drop or Paste (Ctrl+V) PDFs, Word Docs, Slides, Spreadsheets, or Images'}
         </div>
-        <div className="upload-hint">Upload 1 to 3 images (PNG, JPG, WEBP, up to 5 MB each)</div>
-        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', justifyContent: 'center', marginTop: '0.35rem' }}>
-          <div className="upload-browse-pill">📁 Click or drag &amp; drop files</div>
+        <div className="upload-hint">
+          Supports <strong>PDF, DOCX, PPTX, XLSX, CSV, TXT, MD, PNG, JPG, WEBP</strong> (up to {MAX_FILES} files, 20 MB each) &bull; Or press <kbd className="kbd-pill">Ctrl+V</kbd> anywhere to paste!
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.55rem', flexWrap: 'wrap', justifyContent: 'center', marginTop: '0.45rem' }}>
+          <div className="upload-browse-pill">📎 Browse Any Files</div>
+          <button
+            type="button"
+            className="upload-sample-pill pdf-pill"
+            onClick={(e) => handleLoadSampleFile(e, 'pdf')}
+            disabled={loadingSample}
+          >
+            📕 {loadingSample ? 'Loading…' : 'Load Sample PDF Deck'}
+          </button>
           <button
             type="button"
             className="upload-sample-pill"
-            onClick={handleLoadSampleSlide}
+            onClick={(e) => handleLoadSampleFile(e, 'png')}
             disabled={loadingSample}
           >
-            🖼️ {loadingSample ? 'Loading Slide…' : 'Load Sample Pitch Slide'}
+            🖼️ {loadingSample ? 'Loading…' : 'Load Sample Image Slide'}
           </button>
         </div>
+
         <input
           ref={inputRef}
           type="file"
-          accept="image/png,image/jpeg,image/webp"
+          accept={ACCEPTED_FILE_ATTR}
           multiple
           className="upload-input"
-          onChange={(e) => addFiles(e.target.files)}
+          onChange={(e) => {
+            addFiles(e.target.files)
+            e.target.value = ''
+          }}
         />
       </div>
 
-      {/* Uploaded File Previews & Badges */}
+      {/* Attached Files Preview Grid (Handles Images + PDFs + Word + PPTX + CSV + Text) */}
       {files.length > 0 && (
         <div className="uploaded-previews-grid">
-          {files.map((f, i) => (
-            <div key={i} className="file-preview-card">
-              <div className="file-preview-thumb-wrap">
-                {previews[i] && <img src={previews[i]} alt={f.name} className="file-preview-thumb" />}
-                <span className="file-index-badge">Doc #{i + 1}</span>
-                <button
-                  type="button"
-                  className="file-preview-remove"
-                  onClick={(e) => { e.stopPropagation(); removeFile(i) }}
-                  title="Remove file"
+          {files.map((f, i) => {
+            const isImg = isImageFile(f)
+            const badge = getFileBadgeMeta(f)
+            return (
+              <div key={i} className="file-preview-card">
+                <div
+                  className="file-preview-thumb-wrap"
+                  style={!isImg ? { background: badge.bg, borderBottom: '1px solid #ede9fe' } : {}}
                 >
-                  ✕
-                </button>
+                  {isImg && previews[i] ? (
+                    <img src={previews[i]} alt={f.name} className="file-preview-thumb" />
+                  ) : (
+                    <div className="doc-preview-placeholder">
+                      <span className="doc-preview-icon">{badge.icon}</span>
+                      <span className="doc-preview-type" style={{ color: badge.accent }}>
+                        {badge.typeLabel}
+                      </span>
+                    </div>
+                  )}
+                  <span className="file-index-badge">#{i + 1}</span>
+                  <button
+                    type="button"
+                    className="file-preview-remove"
+                    onClick={(e) => { e.stopPropagation(); removeFile(i) }}
+                    title="Remove file"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="file-preview-meta">
+                  <span className="file-name" title={f.name}>
+                    {isImg ? '🖼️' : badge.icon} {f.name}
+                  </span>
+                  <span className="file-size">
+                    {f.size >= 1024 * 1024
+                      ? `${(f.size / (1024 * 1024)).toFixed(1)} MB`
+                      : `${Math.max(1, Math.round(f.size / 1024))} KB`}
+                  </span>
+                </div>
               </div>
-              <div className="file-preview-meta">
-                <span className="file-name" title={f.name}>📄 {f.name}</span>
-                <span className="file-size">{(f.size / 1024).toFixed(0)} KB</span>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
-      {/* Founder Intent Options */}
+      {/* AI Prompt & Founder Intent Options (ChatGPT / Gemini style input) */}
       <div className="founder-options-card">
         <div className="founder-options-header">
-          <span className="founder-options-badge">✦ Founder Expansion Context</span>
-          <span className="founder-options-hint">Fused with your uploaded visuals by Gemma 4</span>
+          <span className="founder-options-badge">💬 AI Prompt &amp; Founder Expansion Context</span>
+          <span className="founder-options-hint">Paste text/screenshots (Ctrl+V) or describe your startup &amp; goals</span>
         </div>
+
+        <div className="form-group" style={{ marginBottom: '0.9rem' }}>
+          <label className="form-label">
+            Startup Description, Pitch Notes, or Custom Prompt (Paste text or files with Ctrl+V)
+          </label>
+          <textarea
+            className="form-textarea"
+            rows="3"
+            placeholder="Ask or tell Gemma 4 anything about your startup — e.g. 'We are SmartTONG from Malaysia building solar-powered IoT ultrasonic waste sensors. See our attached PDF pitch deck and match us with a municipal waste partner in Ho Chi Minh City, Vietnam.'"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          />
+        </div>
+
         <div className="founder-options-grid">
           <div className="form-group">
             <label className="form-label">Primary Partnership Objective</label>
@@ -416,17 +556,6 @@ function UploadStep({ onComplete, onNotify }) {
             </select>
           </div>
         </div>
-
-        <div className="form-group" style={{ marginTop: '0.85rem' }}>
-          <label className="form-label">Founder Note or Specific Requirements (Optional)</label>
-          <textarea
-            className="form-textarea"
-            rows="2"
-            placeholder="e.g. We have proven IoT sensors in Malaysia and want to test route optimization for 50 municipal bins in District 1, Ho Chi Minh City."
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
-        </div>
       </div>
 
       {/* CTA Buttons */}
@@ -434,10 +563,14 @@ function UploadStep({ onComplete, onNotify }) {
         <button
           className="btn btn-primary btn-large"
           onClick={handleAnalyze}
-          disabled={files.length === 0}
+          disabled={files.length === 0 && !notes.trim()}
         >
           <span>🤖</span>
-          <span>Analyze &amp; Build Startup Passport</span>
+          <span>
+            {files.length > 0
+              ? `Analyze ${files.length} File${files.length > 1 ? 's' : ''} & Build Startup Passport`
+              : 'Analyze Prompt & Build Startup Passport'}
+          </span>
         </button>
 
         <span className="or-pill">OR</span>
@@ -866,7 +999,7 @@ function MatchesStep({ profile, onSelectPartner, onEditPassport, onNotify }) {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   STEP 4: PARTNERSHIP BRIEF & 30-DAY POC PLAN
+   STEP 4: PARTNERSHIP BRIEF & 30-DAY POC PLAN (With Word, PDF, Markdown Exports)
 ───────────────────────────────────────────────────────────────*/
 const WEEK_CLR = ['#7c3aed', '#2563eb', '#0d9488', '#16a34a']
 
@@ -908,33 +1041,22 @@ function BriefStep({ profile, partner, onBackToMatches, onReset, onNotify }) {
     ].join('')
 
     navigator.clipboard?.writeText(text).catch(() => {})
-    onNotify?.('✅ Partnership Brief copied to clipboard!')
+    onNotify?.('📋 Partnership Brief copied to clipboard!')
   }
 
-  const downloadMarkdown = () => {
-    if (!brief) return
-    const md = [
-      `# Partnership Action Brief: ${profile.company_name} × ${partner.partner_name || partner.name}\n`,
-      `> **Generated by PACT (Partnership Action & Collaboration Toolkit)**  `,
-      `> Powered by Gemma 4 (gemma-4-26b-a4b-it) · All data illustrative\n\n`,
-      `## 1. Strategic Objective\n${brief.objective}\n\n`,
-      `## 2. Collaboration Concept\n${brief.collaboration_concept || brief.collaborationConcept}\n\n`,
-      `## 3. Proposed 30-Day Proof of Concept\n${brief.proposed_poc || brief.proposedPoc}\n\n`,
-      `## 4. 30-Day Implementation Timeline\n`,
-      ...(brief.timeline || []).map((t, i) => `- **Week ${i + 1}:** ${t}\n`),
-      `\n## 5. Measurable Success Metrics\n`,
-      ...(brief.success_metrics || brief.successMetrics || []).map((m) => `- [ ] ${m}\n`),
-      `\n---\n*PACT Hackathon Demo · MLH Hacktoberfest KL 2026*`,
-    ].join('')
+  const handleExportWord = () => {
+    exportBriefToWord(profile, partner, brief)
+    onNotify?.('📘 Exported Partnership Brief & 30-Day POC as Word (.doc)!')
+  }
 
-    const blob = new Blob([md], { type: 'text/markdown' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `PACT_Brief_${profile.company_name}_x_${(partner.partner_name || 'partner').replace(/\s+/g, '_')}.md`
-    a.click()
-    URL.revokeObjectURL(url)
-    onNotify?.('💾 Downloaded 30-Day POC Plan as Markdown (.md)!')
+  const handleExportPdf = () => {
+    exportBriefToPdf(profile, partner, brief)
+    onNotify?.('📕 Exported Partnership Brief & 30-Day POC as PDF (.pdf)!')
+  }
+
+  const handleExportMarkdown = () => {
+    exportBriefToMarkdown(profile, partner, brief)
+    onNotify?.('💾 Exported Partnership Brief & 30-Day POC as Markdown (.md)!')
   }
 
   if (loading) {
@@ -979,15 +1101,23 @@ function BriefStep({ profile, partner, onBackToMatches, onReset, onNotify }) {
           </div>
           <div className="brief-sub">📍 {partner.country} &bull; Compatibility Score: <strong>{partner.score}/100</strong></div>
         </div>
+
+        {/* Multi-Format Export Toolbar */}
         <div className="brief-actions">
-          <button className="btn btn-ghost" onClick={copyBrief} title="Copy to clipboard">
-            📋 Copy Brief
+          <button className="btn btn-export-word" onClick={handleExportWord} title="Export to Microsoft Word (.doc)">
+            📘 Export Word (.doc)
           </button>
-          <button className="btn btn-primary" onClick={downloadMarkdown} title="Download Markdown">
-            💾 Download .md
+          <button className="btn btn-export-pdf" onClick={handleExportPdf} title="Export to PDF (.pdf)">
+            📕 Export PDF (.pdf)
+          </button>
+          <button className="btn btn-ghost" onClick={handleExportMarkdown} title="Download Markdown (.md)">
+            💾 Markdown (.md)
+          </button>
+          <button className="btn btn-ghost" onClick={copyBrief} title="Copy to clipboard">
+            📋 Copy
           </button>
           <button className="btn btn-ghost" onClick={onBackToMatches}>
-            🤝 Choose Another Partner
+            🤝 Another Partner
           </button>
         </div>
       </div>
@@ -1057,9 +1187,17 @@ function BriefStep({ profile, partner, onBackToMatches, onReset, onNotify }) {
         <div className="brief-disclaimer">
           ⚠️ All generated outcomes and partner records are <strong>illustrative</strong> for demonstration purposes.
         </div>
-        <button className="btn btn-primary" onClick={onReset}>
-          🔄 Start New Analysis
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <button className="btn btn-export-word" onClick={handleExportWord}>
+            📘 Word (.doc)
+          </button>
+          <button className="btn btn-export-pdf" onClick={handleExportPdf}>
+            📕 PDF (.pdf)
+          </button>
+          <button className="btn btn-primary" onClick={onReset}>
+            🔄 Start New Analysis
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -1158,14 +1296,14 @@ export default function App() {
                 <span className="hero-gradient">to Real Partner Outcomes</span>
               </h1>
               <p className="hero-sub">
-                Upload 1–3 pitch slides or brochures &bull; Gemma 4 builds your Startup Passport &bull;
-                Discover verified cross-border partner matches &bull; Generate an executable 30-day POC plan.
+                Drop or paste (<kbd className="kbd-pill">Ctrl+V</kbd>) PDFs, Word docs, slides, or images &bull; Gemma 4 builds your Startup Passport &bull;
+                Discover verified cross-border partner matches &bull; Export your 30-day POC plan to Word or PDF.
               </p>
               <div className="hero-badges">
-                <span className="hero-badge">🤖 Gemma 4 Multi-Doc Vision</span>
-                <span className="hero-badge">🌏 ASEAN Ecosystem</span>
-                <span className="hero-badge">⚖️ Transparent 30/30/20/20 Match</span>
-                <span className="hero-badge">📋 30-Day Action Plans</span>
+                <span className="hero-badge">🤖 Gemma 4 Multimodal + PDF/Docx</span>
+                <span className="hero-badge">📋 Paste Anything (Ctrl+V)</span>
+                <span className="hero-badge">⚖️ 30/30/20/20 Weighted Match</span>
+                <span className="hero-badge">📘 Word &amp; 📕 PDF Export</span>
               </div>
             </div>
 

@@ -23,14 +23,14 @@ async function handleResponse(res) {
 
 /**
  * analyzePitch(files: File | File[], options: { notes?, goal?, target_country? }): Promise<StartupProfile>
- * Sends 1 to 3 pitch deck / flyer images + optional founder note & goals for AI analysis.
+ * Sends multiple files (PDF, DOCX, PPTX, CSV, TXT, PNG, JPG, WEBP) + optional founder prompt & goals for AI analysis.
  */
 export async function analyzePitch(files, options = {}) {
   const form = new FormData();
   if (Array.isArray(files)) {
-    files.forEach((f) => form.append('images', f));
+    files.forEach((f) => form.append('files', f));
   } else if (files) {
-    form.append('image', files);
+    form.append('files', files);
   }
   if (options.notes) form.append('notes', options.notes);
   if (options.goal) form.append('goal', options.goal);
