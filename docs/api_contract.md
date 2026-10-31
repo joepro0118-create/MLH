@@ -12,11 +12,11 @@
 ## Quick Reference
 
 | Method | Path | Who calls it | Needs AI |
-|--------|------|--------------|----------|
+| --- | --- | --- | --- |
 | GET | `/health` | Anyone | No |
-| POST | `/api/pitch/analyze` | Frontend (Step 1) | ✅ Gemma 4 |
-| POST | `/api/matches` | Frontend (Step 2) | No — pure Python |
-| POST | `/api/partnership/brief` | Frontend (Step 4) | ✅ Gemma 4 |
+| POST | `/api/pitch/analyze` | Frontend (Step 1) | Gemma 4 |
+| POST | `/api/matches` | Frontend (Step 2) | No (deterministic Python) |
+| POST | `/api/partnership/brief` | Frontend (Step 4) | Gemma 4 |
 | GET | `/api/ecosystem/graph` | Frontend (Step 3) | No |
 
 ---
@@ -25,7 +25,8 @@
 
 Liveness check. Also reports whether `MOCK_MODE` is active.
 
-**Response 200**
+### Response 200
+
 ```json
 {
   "status": "ok",
@@ -39,13 +40,14 @@ Liveness check. Also reports whether `MOCK_MODE` is active.
 
 Upload a pitch deck image. Gemma 4 extracts the startup profile via multimodal understanding.
 
-**Request** — `multipart/form-data`
+### Request (`multipart/form-data`)
 
 | Field | Type | Required | Notes |
-|-------|------|----------|-------|
-| `image` | file | ✅ | PNG, JPEG, or WebP; max 5 MB |
+| --- | --- | --- | --- |
+| `image` | file | Yes | PNG, JPEG, or WebP; max 5 MB |
 
-**Response 200** — `StartupProfile`
+### Response 200 (`StartupProfile`)
+
 ```json
 {
   "company_name": "SmartTONG",
@@ -59,10 +61,10 @@ Upload a pitch deck image. Gemma 4 extracts the startup profile via multimodal u
 }
 ```
 
-**Errors**
+### Errors
 
 | Status | Condition |
-|--------|-----------|
+| --- | --- |
 | 413 | Image > 5 MB |
 | 415 | Unsupported MIME type |
 | 502 | Gemma API error or quota exceeded |
@@ -73,13 +75,15 @@ Upload a pitch deck image. Gemma 4 extracts the startup profile via multimodal u
 
 Deterministic weighted matching — **no LLM involved**. Returns top 3 partners.
 
-**Weights (MVP, not validated metrics):**
+### Matching Weights (Deterministic MVP)
+
 - Industry compatibility 30%
 - Complementary capabilities/needs 30%
 - Target market overlap 20%
 - Partnership goal alignment 20%
 
-**Request body** — `application/json` (`StartupProfile`)
+### Request Body (`application/json` · `StartupProfile`)
+
 ```json
 {
   "company_name": "SmartTONG",
@@ -93,7 +97,8 @@ Deterministic weighted matching — **no LLM involved**. Returns top 3 partners.
 }
 ```
 
-**Response 200**
+### Response 200
+
 ```json
 {
   "matches": [
@@ -103,7 +108,7 @@ Deterministic weighted matching — **no LLM involved**. Returns top 3 partners.
       "country": "Vietnam",
       "score": 87,
       "reasons": [
-        "Sector alignment: smart-city ↔ smart-city",
+        "Sector alignment: smart-city <-> smart-city",
         "They can fulfill your needs: municipal-pilot, government-procurement",
         "Shared target markets: Vietnam, Ho Chi Minh City"
       ],
@@ -115,7 +120,7 @@ Deterministic weighted matching — **no LLM involved**. Returns top 3 partners.
       "country": "Singapore",
       "score": 74,
       "reasons": [
-        "Sector alignment: smart-city ↔ sustainability",
+        "Sector alignment: smart-city <-> sustainability",
         "Your capabilities match their needs: iot-sensors, waste-analytics",
         "Shared target markets: Vietnam, Ho Chi Minh City"
       ],
@@ -137,10 +142,10 @@ Deterministic weighted matching — **no LLM involved**. Returns top 3 partners.
 }
 ```
 
-**Errors**
+### Errors
 
 | Status | Condition |
-|--------|-----------|
+| --- | --- |
 | 422 | Request body fails `StartupProfile` validation |
 | 500 | Internal matching error |
 
@@ -151,7 +156,8 @@ Deterministic weighted matching — **no LLM involved**. Returns top 3 partners.
 Gemma 4 generates a partnership brief and 30-day POC plan grounded on the supplied profiles.  
 All recommendations are labelled `(RECOMMENDATION)`.
 
-**Request body** — `application/json`
+### Request Body (`application/json`)
+
 ```json
 {
   "startup": {
@@ -168,12 +174,13 @@ All recommendations are labelled `(RECOMMENDATION)`.
 }
 ```
 
-**Response 200** — `PartnershipBrief`
+### Response 200 (`PartnershipBrief`)
+
 ```json
 {
-  "objective": "SmartTONG and GreenCity Vietnam Initiative will jointly pilot IoT smart-bin route optimisation across two Ho Chi Minh City districts to demonstrate ≥20% reduction in collection vehicle trips (RECOMMENDATION).",
+  "objective": "SmartTONG and GreenCity Vietnam Initiative will jointly pilot IoT smart-bin route optimisation across two Ho Chi Minh City districts to demonstrate >=20% reduction in collection vehicle trips (RECOMMENDATION).",
   "collaboration_concept": "SmartTONG deploys its IoT sensor hardware and route-optimisation dashboard; GreenCity Vietnam Initiative provides municipal access, on-the-ground coordination with district waste authorities, and local technician support. Weekly joint steering calls ensure rapid iteration on collection schedules.",
-  "proposed_poc": "Install 30 smart bins across District 1 and District 3, Ho Chi Minh City over Days 1–7. Run live route-optimisation for collection trucks from Days 8–28. Measure trip reduction, bin fill-rate accuracy, and resident satisfaction in a final joint report on Day 30 (ILLUSTRATIVE).",
+  "proposed_poc": "Install 30 smart bins across District 1 and District 3, Ho Chi Minh City over Days 1-7. Run live route-optimisation for collection trucks from Days 8-28. Measure trip reduction, bin fill-rate accuracy, and resident satisfaction in a final joint report on Day 30 (ILLUSTRATIVE).",
   "timeline": [
     "Week 1: MOU signing, site survey, bin installation (30 units, 2 districts)",
     "Week 2: Dashboard onboarding for municipal drivers; baseline KPI capture",
@@ -181,17 +188,17 @@ All recommendations are labelled `(RECOMMENDATION)`.
     "Week 4: Impact report, media kit, and joint press release for next-phase funding"
   ],
   "success_metrics": [
-    "≥20% reduction in collection vehicle trips vs. pre-pilot baseline",
-    "≥85% bin fill-rate prediction accuracy over the 30-day window",
+    ">=20% reduction in collection vehicle trips vs. pre-pilot baseline",
+    ">=85% bin fill-rate prediction accuracy over the 30-day window",
     "Letter of intent from Ho Chi Minh City waste authority for Phase 2 scale-up"
   ]
 }
 ```
 
-**Errors**
+### Errors
 
 | Status | Condition |
-|--------|-----------|
+| --- | --- |
 | 404 | `partner_id` not found in `demo_ecosystem.json` |
 | 422 | Request body fails schema validation |
 | 502 | Gemma API error, quota exceeded, or safety block |
@@ -201,9 +208,10 @@ All recommendations are labelled `(RECOMMENDATION)`.
 ## `GET /api/ecosystem/graph`
 
 Returns the full ASEAN network graph for visualisation. Built from `demo_ecosystem.json` by `graph_service.py`.  
-Edges exist between partners that share ≥1 target market or ≥1 partnership goal.
+Edges exist between partners that share >=1 target market or >=1 partnership goal.
 
-**Response 200** — `EcosystemGraph`
+### Response 200 (`EcosystemGraph`)
+
 ```json
 {
   "nodes": [
@@ -219,13 +227,13 @@ Edges exist between partners that share ≥1 target market or ≥1 partnership g
 }
 ```
 
-**Node types:** `"organisation"` | `"programme"` | `"startup"`  
+**Node types:** `"organisation"` \| `"programme"` \| `"startup"`  
 **Edge weight:** float 0.1–1.0 (higher = stronger shared context)
 
-**Errors**
+### Errors
 
 | Status | Condition |
-|--------|-----------|
+| --- | --- |
 | 500 | Graph build error (malformed data file) |
 
 ---
@@ -233,6 +241,7 @@ Edges exist between partners that share ≥1 target market or ≥1 partnership g
 ## Error Envelope
 
 All errors return an HTTP status code and:
+
 ```json
 { "detail": "human readable message" }
 ```
@@ -241,7 +250,7 @@ All errors return an HTTP status code and:
 
 ## MOCK_MODE
 
-Set `MOCK_MODE=true` in `.env` to return the SmartTONG → Vietnam canned responses for all AI-backed endpoints.  
+Set `MOCK_MODE=true` in `.env` to return the SmartTONG -> Vietnam canned responses for all AI-backed endpoints.  
 `/api/matches` always runs real Python matching (deterministic, < 5 ms).
 
 ```bash
@@ -251,7 +260,7 @@ GEMINI_API_KEY=           # not needed in mock mode
 ```
 
 | Endpoint | MOCK_MODE behaviour |
-|----------|---------------------|
+| --- | --- |
 | `GET /health` | `{"status":"ok","mock_mode":true}` |
 | `POST /api/pitch/analyze` | Returns SmartTONG profile instantly |
 | `POST /api/matches` | Real matching against `demo_ecosystem.json` |
@@ -260,7 +269,7 @@ GEMINI_API_KEY=           # not needed in mock mode
 
 ---
 
-## Pydantic Schemas (canonical reference)
+## Pydantic Schemas (Canonical Reference)
 
 ```python
 class StartupProfile(BaseModel):
@@ -277,7 +286,7 @@ class PartnerMatch(BaseModel):
     partner_id: str
     partner_name: str
     country: str
-    score: int          # 0–100
+    score: int          # 0-100
     reasons: List[str]
     opportunity: str
 
@@ -307,4 +316,3 @@ class EcosystemGraph(BaseModel):
     nodes: List[GraphNode]
     edges: List[GraphEdge]
 ```
-
