@@ -1,4 +1,28 @@
 FOR REFERENCE README MD FORMAT
+GitHub Repository
+Provide a link to your project's source code. The repository must be public.
+Your repository should include:
+An open-source licence file (such as MIT, Apache 2.0 or GPL) in the main (root) folder. This is required for every team.
+A clear README
+Project setup and installation instructions
+Information about how to run the project
+Any relevant technical documentation
+
+Live Demo
+Provide a link to a working deployment of your project.
+
+If a live demo is not applicable, provide clear instructions for judges to run and evaluate your project locally.
+
+Project Description
+Include a concise description covering:
+Which problem statement you tackled
+The problem you're solving
+Your proposed solution
+How your solution works
+The technologies and tools you used
+The target users or beneficiaries
+What makes your solution unique
+
 
 # Already Built?
 
