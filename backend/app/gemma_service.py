@@ -7,7 +7,7 @@ import base64
 import json
 import re
 import logging
-from typing import Optional
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from google import genai
 from google.genai import types
