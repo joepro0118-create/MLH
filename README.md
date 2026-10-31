@@ -74,7 +74,10 @@ It converts open-ended cross-border networking into concrete, measurable 30-day 
 
 ### Live Demo & Local Judge Evaluation
 
-BridgeWise is designed so judges can evaluate the complete end-to-end product locally in **under 2 minutes** — either with **live Gemma 4 multimodal inference** (using a free Google AI Studio key) or **completely offline** using `MOCK_MODE=true` and the built-in **One-Click Demo Login** + **SmartTONG Sample Pitch Deck**.
+- 🌐 **Live Web Application (Vercel):** [https://mlh-vert.vercel.app/](https://mlh-vert.vercel.app/)
+- 🎥 **Video Demo Walkthrough:** [Add your YouTube / Loom / Google Drive link here]
+
+BridgeWise is designed so judges can evaluate the complete end-to-end product either live in production or locally in **under 2 minutes** — either with **live Gemma 4 multimodal inference** (using a free Google AI Studio key) or **completely offline** using `MOCK_MODE=true` and the built-in **One-Click Demo Login** + **SmartTONG Sample Pitch Deck**.
 
 See [Getting Started](#getting-started) and [7. Judge Evaluation Walkthrough](#7-judge-evaluation-walkthrough-under-3-minutes) below for copy-pasteable startup commands.
 
