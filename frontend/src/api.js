@@ -1,5 +1,16 @@
 // api.js — all backend calls go through this module
-const BASE = import.meta.env.VITE_API_URL?.replace(/\/$/, '') || 'http://localhost:8000';
+const BASE = import.meta.env.VITE_API_URL
+  ? import.meta.env.VITE_API_URL.replace(/\/$/, '')
+  : import.meta.env.PROD
+    ? ''
+    : 'http://127.0.0.1:8000';
+
+let _graphCachePromise = null;
+const _briefCachePromises = new Map();
+
+function _briefCacheKey(startup, partner_id) {
+  return `${partner_id}::${JSON.stringify(startup)}`;
+}
 
 /** Throw a descriptive error for non-2xx responses */
 async function handleResponse(res) {
@@ -58,24 +69,50 @@ export async function getMatches(profile) {
 
 /**
  * getGraph(): Promise<{nodes, edges}>
- * Returns the ASEAN ecosystem network graph data.
+ * Returns the ASEAN ecosystem network graph data (cached across step transitions).
  */
 export async function getGraph() {
-  const res = await fetch(`${BASE}/api/ecosystem/graph`);
-  return handleResponse(res);
+  if (!_graphCachePromise) {
+    _graphCachePromise = fetch(`${BASE}/api/ecosystem/graph`)
+      .then(handleResponse)
+      .catch((err) => {
+        _graphCachePromise = null;
+        throw err;
+      });
+  }
+  return _graphCachePromise;
 }
 
 /**
  * getBrief(startup: StartupProfile, partner_id: string): Promise<PartnershipBrief>
- * Generates a partnership brief and 30-day POC plan.
+ * Generates a partnership brief and 30-day POC plan, deduplicating in-flight/cached requests.
  */
 export async function getBrief(startup, partner_id) {
-  const res = await fetch(`${BASE}/api/partnership/brief`, {
+  const key = _briefCacheKey(startup, partner_id);
+  if (_briefCachePromises.has(key)) {
+    return _briefCachePromises.get(key);
+  }
+  const promise = fetch(`${BASE}/api/partnership/brief`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ startup, partner_id }),
-  });
-  return handleResponse(res);
+  })
+    .then(handleResponse)
+    .catch((err) => {
+      _briefCachePromises.delete(key);
+      throw err;
+    });
+  _briefCachePromises.set(key, promise);
+  return promise;
+}
+
+/**
+ * prefetchBrief(startup: StartupProfile, partner_id: string): void
+ * Warms up the brief cache on hover so clicking "Generate Partnership Brief" feels near-instant.
+ */
+export function prefetchBrief(startup, partner_id) {
+  if (!startup || !partner_id) return;
+  getBrief(startup, partner_id).catch(() => {});
 }
 
 /**

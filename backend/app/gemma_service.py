@@ -2,6 +2,8 @@
 # GemmaService — single centralised class for all Gemma 4 calls.
 # Model: gemma-4-26b-a4b-it by default; override with GEMMA_MODEL env var.
 # NEVER substitute a Gemini (non-Gemma) model silently.
+import asyncio
+import hashlib
 import io
 import os
 import json
@@ -105,6 +107,8 @@ class GemmaService:
             self._client: Optional[genai.Client] = None
         else:
             self._client = genai.Client(api_key=api_key)
+        self._brief_cache: Dict[str, PartnershipBrief] = {}
+        self._inflight_briefs: Dict[str, asyncio.Future] = {}
         logger.info("GemmaService ready (model=%s)", self.model)
 
     # ------------------------------------------------------------------
@@ -153,7 +157,7 @@ class GemmaService:
             "temperature": temperature,
         }
         if max_output_tokens:
-            config_kwargs["max_output_tokens"] = max(max_output_tokens, 8192)
+            config_kwargs["max_output_tokens"] = max_output_tokens
 
         try:
             response = client.models.generate_content(
@@ -280,7 +284,9 @@ class GemmaService:
 
             # 2. PDF files -> extract full text + render pages as vision PNGs (or fallback to application/pdf part)
             elif norm_mime == "application/pdf" or ext == ".pdf":
-                pdf_text, pdf_page_imgs = _extract_pdf_text_and_images(f_bytes, max_pages_vision=3)
+                pdf_text, pdf_page_imgs = await asyncio.to_thread(
+                    _extract_pdf_text_and_images, f_bytes, 3
+                )
                 if pdf_text:
                     extracted_doc_texts.append(f"--- PDF Document ({f_name}) ---\n{pdf_text[:15000]}")
                 for img_bytes, img_mime in pdf_page_imgs:
@@ -290,7 +296,9 @@ class GemmaService:
 
             # 3. Office Open XML (.docx, .pptx, .xlsx)
             elif ext in {".docx", ".pptx", ".xlsx"} or "officedocument" in norm_mime:
-                office_text = _extract_office_xml_text(f_bytes, ext or ".docx")
+                office_text = await asyncio.to_thread(
+                    _extract_office_xml_text, f_bytes, ext or ".docx"
+                )
                 if office_text:
                     extracted_doc_texts.append(f"--- Office Document ({f_name}) ---\n{office_text[:15000]}")
 
@@ -356,11 +364,12 @@ class GemmaService:
             data = self._extract_json(raw)
             return StartupProfile(**data)  # Pydantic validates
 
-        return self._call_with_retry(
+        return await asyncio.to_thread(
+            self._call_with_retry,
             parts,
             parse_fn=_parse,
             temperature=0.2,
-            max_output_tokens=8192,
+            max_output_tokens=4096,
         )
 
     async def generate_brief(
@@ -373,6 +382,38 @@ class GemmaService:
         Disclaimer is always overridden in Python after generation.
         """
         startup_data = startup.model_dump()
+        cache_raw = json.dumps({"s": startup_data, "p": partner.get("id", partner.get("name", ""))}, sort_keys=True)
+        cache_key = hashlib.sha256(cache_raw.encode("utf-8")).hexdigest()
+
+        if cache_key in self._brief_cache:
+            logger.info("Returning cached PartnershipBrief for partner=%s", partner.get("id"))
+            return self._brief_cache[cache_key].model_copy(deep=True)
+
+        if cache_key in self._inflight_briefs:
+            logger.info("Joining in-flight PartnershipBrief generation for partner=%s", partner.get("id"))
+            res = await self._inflight_briefs[cache_key]
+            return res.model_copy(deep=True)
+
+        loop = asyncio.get_running_loop()
+        inflight_future: asyncio.Future = loop.create_future()
+        self._inflight_briefs[cache_key] = inflight_future
+
+        try:
+            brief = await self._generate_brief_uncached(startup, startup_data, partner)
+            self._brief_cache[cache_key] = brief
+            if not inflight_future.done():
+                inflight_future.set_result(brief)
+            return brief.model_copy(deep=True)
+        except Exception as exc:
+            if not inflight_future.done():
+                inflight_future.set_exception(exc)
+            raise
+        finally:
+            self._inflight_briefs.pop(cache_key, None)
+
+    async def _generate_brief_uncached(
+        self, startup: StartupProfile, startup_data: dict, partner: dict
+    ) -> PartnershipBrief:
         grounded_fields = [
             k for k, v in startup_data.items()
             if v and k not in ("missing_fields", "confidence", "goal", "target_country")
@@ -442,11 +483,12 @@ class GemmaService:
             )
         ]
 
-        brief = self._call_with_retry(
+        brief = await asyncio.to_thread(
+            self._call_with_retry,
             contents,
             parse_fn=_parse,
             temperature=0.3,
-            max_output_tokens=8192,
+            max_output_tokens=2048,
         )
 
         chosen_partner_name = partner.get("name", "")

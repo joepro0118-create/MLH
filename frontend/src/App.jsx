@@ -5,7 +5,7 @@
 //   Micro   → Shimmer skeletons + Spotlight cards + Expandable dash cards
 //   Delight → Confetti + Export/Copy/Download/Share toolbar + toast system
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { analyzePitch, getMatches, getGraph, getBrief } from './api.js'
+import { analyzePitch, getMatches, getGraph, getBrief, prefetchBrief } from './api.js'
 import { EcosystemGraph } from './components/EcosystemGraph.jsx'
 import { exportBriefToWord, exportBriefToPdf } from './exportUtils.js'
 import './index.css'
@@ -156,7 +156,7 @@ function ScoreRing({ score, size = 68 }) {
 /* ─────────────────────────────────────────────────────────────
    SPOTLIGHT CARD
 ───────────────────────────────────────────────────────────────*/
-function SpotlightCard({ children, className = '' }) {
+function SpotlightCard({ children, className = '', onMouseEnter }) {
   const ref = useRef(null)
   const onMove = (e) => {
     if (!ref.current) return
@@ -164,7 +164,7 @@ function SpotlightCard({ children, className = '' }) {
     ref.current.style.setProperty('--mx', `${e.clientX - rect.left}px`)
     ref.current.style.setProperty('--my', `${e.clientY - rect.top}px`)
   }
-  return <div ref={ref} onMouseMove={onMove} className={`spotlight-card ${className}`}>{children}</div>
+  return <div ref={ref} onMouseMove={onMove} onMouseEnter={onMouseEnter} className={`spotlight-card ${className}`}>{children}</div>
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -851,7 +851,11 @@ function MatchesStep({ profile, founder, onSelectPartner, onEditPassport }) {
       {matches ? (
         <div className="matches-grid">
           {matches.map((m, i) => (
-            <SpotlightCard key={m.partner_id || i} className="match-card">
+            <SpotlightCard
+              key={m.partner_id || i}
+              className="match-card"
+              onMouseEnter={() => prefetchBrief(profile, m.partner_id || m.id || m.name)}
+            >
               <div className="match-stripe" style={{ background: RANK_ACCENT[i] }}>
                 <span className="match-rank">{RANK_LABEL[i]}</span>
                 <span className="match-illustrative">illustrative</span>
@@ -901,6 +905,7 @@ function MatchesStep({ profile, founder, onSelectPartner, onEditPassport }) {
         <EcosystemGraph
           startup={profile} matches={matches || []}
           nodes={graphData?.nodes} edges={graphData?.edges}
+          disableAutoFetch={true}
           onNodeClick={(n) => console.log('Node:', n)}
         />
       </div>

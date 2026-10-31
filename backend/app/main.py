@@ -9,10 +9,12 @@ from pathlib import Path
 from typing import List, Optional
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from .gemma_service import GemmaService
 from .graph_service import build_graph
-from .matching_service import get_top_matches
+from .matching_service import get_top_matches, _load_partners
 from .schemas import (
     BriefRequest,
     EcosystemGraph,
@@ -167,9 +169,12 @@ app = FastAPI(
     version="1.0.0",
 )
 
+_cors_env = os.environ.get("CORS_ORIGINS", "*")
+_allow_origins = [o.strip() for o in _cors_env.split(",") if o.strip()] if _cors_env != "*" else ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=_allow_origins,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -268,8 +273,7 @@ async def get_matches(startup: StartupProfile):
         logger.error("Matching failed: %s", exc)
         raise HTTPException(status_code=500, detail=f"Matching error: {exc}")
     try:
-        with open(DATA_PATH, encoding="utf-8") as _f:
-            _partners = {p["id"] for p in json.load(_f)}
+        _partners = {p["id"] for p in _load_partners()}
         matches = [m for m in matches if m.partner_id in _partners]
     except Exception as exc:
         logger.warning("Could not verify partner_ids: %s", exc)
@@ -286,8 +290,7 @@ async def partnership_brief(req: BriefRequest):
         logger.info("MOCK_MODE: returning canned PartnershipBrief")
         return _MOCK_BRIEF
 
-    with open(DATA_PATH, encoding="utf-8") as f:
-        partners = json.load(f)
+    partners = _load_partners()
     partner = next((p for p in partners if p["id"] == req.partner_id), None)
     if not partner:
         raise HTTPException(
@@ -314,3 +317,21 @@ async def ecosystem_graph():
         logger.error("Graph build failed: %s", exc)
         raise HTTPException(status_code=500, detail=f"Graph error: {exc}")
     return graph
+
+
+# ---------------------------------------------------------------------------
+# Static Frontend Serving (Production / Unified Container)
+# ---------------------------------------------------------------------------
+FRONTEND_DIST = Path(__file__).parent.parent.parent / "frontend" / "dist"
+if FRONTEND_DIST.exists() and (FRONTEND_DIST / "index.html").exists():
+    assets_dir = FRONTEND_DIST / "assets"
+    if assets_dir.exists():
+        app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def serve_spa(full_path: str):
+        candidate = (FRONTEND_DIST / full_path).resolve()
+        if full_path and candidate.is_file() and str(candidate).startswith(str(FRONTEND_DIST.resolve())):
+            return FileResponse(str(candidate))
+        return FileResponse(str(FRONTEND_DIST / "index.html"))
+

@@ -11,11 +11,23 @@ from typing import Any, Dict, List, Set
 from .schemas import StartupProfile, PartnerMatch
 
 DATA_PATH = Path(__file__).parent.parent.parent / "data" / "demo_ecosystem.json"
+_PARTNERS_CACHE: List[Dict[str, Any]] | None = None
+_PARTNERS_MTIME: float | None = None
 
 
 def _load_partners() -> List[Dict[str, Any]]:
+    global _PARTNERS_CACHE, _PARTNERS_MTIME
+    try:
+        mtime = DATA_PATH.stat().st_mtime
+    except OSError:
+        mtime = None
+    if _PARTNERS_CACHE is not None and mtime == _PARTNERS_MTIME:
+        return _PARTNERS_CACHE
     with open(DATA_PATH, encoding="utf-8") as f:
-        return json.load(f)
+        _PARTNERS_CACHE = json.load(f)
+        _PARTNERS_MTIME = mtime
+        return _PARTNERS_CACHE
+
 
 
 def _tokenize(items: Any) -> Set[str]:
@@ -68,14 +80,49 @@ def _token_jaccard(toks_a: Set[str], toks_b: Set[str]) -> float:
     return len(toks_a & toks_b) / max(len(toks_a | toks_b), 1)
 
 
+_STOPWORDS = {
+    "and", "or", "the", "to", "in", "of", "for", "with", "on", "by", "a", "an", "across", "into", "from"
+}
+
+
+def _clean_tokens(items: Any) -> Set[str]:
+    return _tokenize(items) - _STOPWORDS
+
+
+def _item_coverage(source_items: List[str], target_pool: Any) -> float:
+    """
+    Measures what fraction of source_items have keyword overlap with target_pool,
+    blended with the Szymkiewicz-Simpson overlap coefficient.
+    """
+    if not source_items:
+        return 0.0
+    target_toks = _clean_tokens(target_pool)
+    if not target_toks:
+        return 0.0
+
+    matched_items = 0
+    for item in source_items:
+        item_toks = _clean_tokens(item)
+        if item_toks and (item_toks & target_toks):
+            matched_items += 1
+
+    source_toks = _clean_tokens(source_items)
+    if not source_toks:
+        return 0.0
+
+    overlap_coeff = len(source_toks & target_toks) / max(min(len(source_toks), len(target_toks)), 1)
+    item_ratio = matched_items / len(source_items)
+    return min(1.0, item_ratio * 0.65 + overlap_coeff * 0.35)
+
+
 def _sector_match(startup_sector: str, partner: Dict[str, Any]) -> float:
     """
     Calculate sector compatibility score between 0.0 and 1.0.
     Considers partner['sector'] and partner['sectors'].
     """
     p_sectors = [partner.get("sector", "")] + partner.get("sectors", [])
-    s_tok = _tokenize(startup_sector)
-    p_tok = _tokenize(p_sectors)
+    s_tok = _clean_tokens(startup_sector)
+    p_tok = _clean_tokens(p_sectors)
 
     exact = _token_jaccard(s_tok, p_tok)
     if exact >= 0.5:
@@ -84,7 +131,7 @@ def _sector_match(startup_sector: str, partner: Dict[str, Any]) -> float:
     # Related cross-border innovation clusters
     smart_sustainability = {"smart", "waste", "city", "cleantech", "govtech", "sustainability", "iot"}
     if (s_tok & smart_sustainability) and (p_tok & smart_sustainability):
-        return 0.85
+        return 0.90 if len(p_tok & smart_sustainability) >= 2 else 0.80
 
     logistics_supply = {"logistic", "supply", "chain", "fleet", "transport"}
     if (s_tok & logistics_supply) and (p_tok & logistics_supply):
@@ -107,14 +154,14 @@ def _complementary_score(startup: StartupProfile, partner: Dict[str, Any]) -> fl
     1. startup capabilities fulfilling partner needs
     2. partner capabilities fulfilling startup needs
     """
-    s_cap = _tokenize(startup.capabilities)
-    p_need = _tokenize(partner.get("needs", []))
-    cap_to_needs = _token_jaccard(s_cap, p_need)
-
-    s_need = _tokenize(startup.needs)
-    p_cap = _tokenize(partner.get("capabilities", []))
-    needs_to_cap = _token_jaccard(s_need, p_cap)
-
+    cap_to_needs = _item_coverage(
+        startup.capabilities,
+        partner.get("needs", []) + partner.get("partnership_goals", []),
+    )
+    needs_to_cap = _item_coverage(
+        startup.needs,
+        partner.get("capabilities", []) + [partner.get("description", "")],
+    )
     return (cap_to_needs + needs_to_cap) / 2
 
 
@@ -129,15 +176,28 @@ def score_partner(startup: StartupProfile, partner: Dict[str, Any]) -> int:
     industry = _sector_match(startup.sector, partner)
     complementary = _complementary_score(startup, partner)
 
-    # Market overlap (includes city)
-    s_mkt = _tokenize(startup.target_markets)
-    p_mkt = _tokenize(partner.get("target_markets", [])) | _tokenize(partner.get("city", ""))
-    market = _token_jaccard(s_mkt, p_mkt)
+    # Market overlap (includes country and city)
+    s_mkt_list = list(startup.target_markets or [])
+    if startup.target_country and startup.target_country not in s_mkt_list:
+        s_mkt_list.append(startup.target_country)
+    s_mkt = _clean_tokens(s_mkt_list)
+    p_mkt = _clean_tokens(
+        partner.get("target_markets", []) + [partner.get("country", ""), partner.get("city", "")]
+    )
+    market = (
+        len(s_mkt & p_mkt) / max(min(len(s_mkt), len(p_mkt)), 1)
+        if (s_mkt and p_mkt)
+        else 0.0
+    )
 
     # Goals overlap
-    s_goals = _tokenize(startup.partnership_goals)
-    p_goals = _tokenize(partner.get("partnership_goals", []))
-    goals = _token_jaccard(s_goals, p_goals)
+    s_goal_list = list(startup.partnership_goals or [])
+    if startup.goal:
+        s_goal_list.append(startup.goal)
+    goals = _item_coverage(
+        s_goal_list,
+        partner.get("partnership_goals", []) + partner.get("capabilities", []) + [partner.get("description", "")],
+    )
 
     raw = (
         industry * 0.30

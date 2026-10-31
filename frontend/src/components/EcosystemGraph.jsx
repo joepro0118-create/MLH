@@ -52,18 +52,24 @@ export function EcosystemGraph({
   startup,
   matches,
   allowOfflineFallback = true,
+  disableAutoFetch = false,
   onNodeClick,
 }) {
   const [fetchedGraph, setFetchedGraph] = useState(null);
 
   // Attempt to fetch graph from API if nodes/edges are not directly supplied
   useEffect(() => {
-    if (nodes && edges) return;
+    if ((nodes && edges) || disableAutoFetch) return;
 
     let isMounted = true;
     const fetchGraph = async () => {
       try {
-        const apiUrl = (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) || "http://localhost:8000";
+        const apiUrl =
+          typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL
+            ? import.meta.env.VITE_API_URL.replace(/\/$/, "")
+            : typeof import.meta !== "undefined" && import.meta.env?.PROD
+              ? ""
+              : "http://127.0.0.1:8000";
         const res = await fetch(`${apiUrl}/api/ecosystem/graph`);
         if (res.ok) {
           const data = await res.json();
@@ -81,7 +87,7 @@ export function EcosystemGraph({
     return () => {
       isMounted = false;
     };
-  }, [nodes, edges, allowOfflineFallback]);
+  }, [nodes, edges, allowOfflineFallback, disableAutoFetch]);
 
   // Determine active nodes, injecting active startup if provided
   const activeNodesData = useMemo(() => {

@@ -30,6 +30,10 @@ except ImportError:
         StartupProfile = None
 
 DATA_PATH = Path(__file__).parent.parent.parent / "data" / "demo_ecosystem.json"
+_ECOSYSTEM_CACHE: Optional[List[Dict[str, Any]]] = None
+_ECOSYSTEM_MTIME: Optional[float] = None
+_DEFAULT_GRAPH_CACHE: Any = None
+_DEFAULT_GRAPH_MTIME: Optional[float] = None
 
 
 def load_ecosystem_data(path: Optional[Union[str, Path]] = None) -> List[Dict[str, Any]]:
@@ -40,6 +44,19 @@ def load_ecosystem_data(path: Optional[Union[str, Path]] = None) -> List[Dict[st
         file_path = Path("data/demo_ecosystem.json").resolve()
     if not file_path.exists():
         return []
+    global _ECOSYSTEM_CACHE, _ECOSYSTEM_MTIME
+    if path is None:
+        try:
+            mtime = file_path.stat().st_mtime
+        except OSError:
+            mtime = None
+        if _ECOSYSTEM_CACHE is not None and mtime == _ECOSYSTEM_MTIME:
+            return _ECOSYSTEM_CACHE
+        with open(file_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            _ECOSYSTEM_CACHE = data if isinstance(data, list) else []
+            _ECOSYSTEM_MTIME = mtime
+            return _ECOSYSTEM_CACHE
     with open(file_path, "r", encoding="utf-8") as f:
         data = json.load(f)
         if isinstance(data, list):
@@ -183,8 +200,11 @@ def build_graph(
         build_graph() -> EcosystemGraph
         build_graph(startup: StartupProfile) -> EcosystemGraph
     """
+    global _DEFAULT_GRAPH_CACHE, _DEFAULT_GRAPH_MTIME
     if partners is None:
         raw_partners = load_ecosystem_data()
+        if startup is None and _DEFAULT_GRAPH_CACHE is not None and _DEFAULT_GRAPH_MTIME == _ECOSYSTEM_MTIME:
+            return _DEFAULT_GRAPH_CACHE
     else:
         raw_partners = list(partners)
 
@@ -237,7 +257,11 @@ def build_graph(
             )
             for e in edges_raw
         ]
-        return EcosystemGraph(nodes=nodes_out, edges=edges_out)
+        result = EcosystemGraph(nodes=nodes_out, edges=edges_out)
+        if startup is None and partners is None:
+            _DEFAULT_GRAPH_CACHE = result
+            _DEFAULT_GRAPH_MTIME = _ECOSYSTEM_MTIME
+        return result
 
     # Fallback to dictionary
     return {

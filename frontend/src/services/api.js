@@ -5,8 +5,11 @@ import {
   DEMO_GRAPH,
 } from './demoData';
 
-export const API_BASE_URL =
-  import.meta.env.VITE_API_URL?.replace(/\/$/, '') || 'http://localhost:8000';
+export const API_BASE_URL = import.meta.env.VITE_API_URL
+  ? import.meta.env.VITE_API_URL.replace(/\/$/, '')
+  : import.meta.env.PROD
+    ? ''
+    : 'http://127.0.0.1:8000';
 
 /**
  * Helper to parse FastAPI error format: {"detail": "human readable message"}
