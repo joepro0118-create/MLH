@@ -3,17 +3,20 @@
 # Model: gemma-4-26b-a4b-it by default; override with GEMMA_MODEL env var.
 # NEVER substitute a Gemini (non-Gemma) model silently.
 import os
-import base64
 import json
 import re
 import logging
+from pathlib import Path
 from typing import Optional
 
+from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from pydantic import ValidationError
 
 from .schemas import StartupProfile, PartnershipBrief
+
+load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent.parent / ".env")
 
 logger = logging.getLogger(__name__)
 
@@ -45,10 +48,14 @@ class GemmaService:
 
     def _require_client(self) -> genai.Client:
         if self._client is None:
-            raise RuntimeError(
-                "GEMINI_API_KEY is not set. "
-                "Add it to .env or set MOCK_MODE=true for canned responses."
-            )
+            api_key = os.environ.get("GEMINI_API_KEY", "")
+            if api_key:
+                self._client = genai.Client(api_key=api_key)
+            else:
+                raise RuntimeError(
+                    "GEMINI_API_KEY is not set. "
+                    "Add it to .env or set MOCK_MODE=true for canned responses."
+                )
         return self._client
 
     @staticmethod
@@ -57,7 +64,6 @@ class GemmaService:
         Extract the first JSON object from model output.
         Strips markdown fences (```json ... ```) before parsing.
         """
-        # Remove optional markdown code fences
         text = re.sub(r"```(?:json)?\s*", "", text)
         match = re.search(r"\{.*\}", text, re.DOTALL)
         if not match:
@@ -69,23 +75,19 @@ class GemmaService:
         contents,
         *,
         temperature: float = 0.3,
-        max_output_tokens: int = 1024,
+        max_output_tokens: int = 2048,
         use_thinking: bool = False,
     ) -> str:
         """
         Thin wrapper around generate_content.
-        Sets thinking_config when use_thinking=True (supported on gemma-4 models).
         Returns response.text; raises on safety blocks or empty responses.
         """
         client = self._require_client()
 
         config_kwargs: dict = {
             "temperature": temperature,
-            "max_output_tokens": max_output_tokens,
+            "max_output_tokens": max(max_output_tokens, 2048) if use_thinking else max_output_tokens,
         }
-        if use_thinking:
-            # thinking_level="high" gives the model extra reasoning budget.
-            config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_budget=8192)
 
         response = client.models.generate_content(
             model=self.model,
@@ -121,7 +123,6 @@ class GemmaService:
                         "Gemma parse failed on attempt 1 (%s); retrying with stricter prompt.",
                         exc,
                     )
-                    # Append a hard reminder to the last user part
                     if isinstance(contents, list):
                         contents = contents + [
                             types.Content(
@@ -158,8 +159,6 @@ class GemmaService:
         Retries once if the model returns malformed JSON.
         Raises RuntimeError with a human-readable message on failure.
         """
-        image_b64 = base64.standard_b64encode(image_bytes).decode()
-
         prompt = (
             "You are an ASEAN startup ecosystem analyst.\n"
             "Analyse this pitch deck image and extract the startup's profile.\n\n"
@@ -183,10 +182,8 @@ class GemmaService:
             types.Content(
                 role="user",
                 parts=[
-                    types.Part(
-                        inline_data=types.Blob(mime_type=mime_type, data=image_b64)
-                    ),
-                    types.Part(text=prompt),
+                    types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
+                    types.Part.from_text(text=prompt),
                 ],
             )
         ]
@@ -199,7 +196,7 @@ class GemmaService:
             contents,
             parse_fn=_parse,
             temperature=0.2,
-            max_output_tokens=1024,
+            max_output_tokens=2048,
         )
 
     async def generate_brief(
@@ -207,7 +204,6 @@ class GemmaService:
     ) -> PartnershipBrief:
         """
         Generate a partnership brief + 30-day POC plan from startup × partner context.
-        Uses thinking_level="high" for deeper reasoning.
         All generated content is grounded only on the supplied records.
         Recommendations are explicitly labelled as RECOMMENDATIONS.
         """
@@ -251,6 +247,6 @@ class GemmaService:
             prompt,
             parse_fn=_parse,
             temperature=0.4,
-            max_output_tokens=1024,
-            use_thinking=True,  # thinking_level="high" for brief quality
+            max_output_tokens=2048,
+            use_thinking=True,
         )
