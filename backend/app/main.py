@@ -110,10 +110,34 @@ _MOCK_BRIEF = PartnershipBrief(
         "Measure fuel savings, overflow incident reduction, and sensor reliability in a final joint audit on Day 30 (ILLUSTRATIVE)."
     ),
     timeline=[
-        "Week 1: MOU signing, site survey in District 1/3, sensor installation on 50 civic bins",
-        "Week 2: Dashboard onboarding for municipal dispatchers; baseline route fuel telemetry capture",
-        "Week 3: Live dynamic routing execution; daily driver sync with Saigon Green operations team",
-        "Week 4: Joint performance audit report, city council showcase, and Phase 2 scale-up proposal",
+        (
+            "Week 1 (Days 1–7): Governance & Field Telemetry Deployment\n"
+            "• Execute bilateral Pilot MOU and municipal safety protocol compliance agreements\n"
+            "• Conduct joint on-site bin infrastructure survey across District 1 and 3 transfer corridors\n"
+            "• Mount 50 ruggedized IP68 ultrasonic fill-level sensors across high-density civic bins\n"
+            "• Verify NB-IoT signal connectivity and real-time telemetry stream ingestion into cloud console"
+        ),
+        (
+            "Week 2 (Days 8–14): Baseline Calibration & Dispatcher Onboarding\n"
+            "• Onboard Saigon Green municipal dispatchers onto dynamic route management dashboard\n"
+            "• Capture 7-day baseline fuel consumption, truck idle hours, and bin fill cycle patterns\n"
+            "• Train collection truck drivers on mobile tablet automated route adjustments and incident reporting\n"
+            "• Calibrate threshold alert triggers to eliminate false overflow alarms in high-temperature zones"
+        ),
+        (
+            "Week 3 (Days 15–21): Live Dynamic Route Execution & Fleet Sync\n"
+            "• Activate dynamic routing algorithms across 12 municipal collection compactors\n"
+            "• Execute real-time automated dispatch triggered by 80% bin fill sensor telemetry alerts\n"
+            "• Conduct daily morning operational standups with Saigon Green fleet supervisors to refine routes\n"
+            "• Monitor mid-pilot turnaround time improvements and fuel reduction benchmarks against Week 2 baseline"
+        ),
+        (
+            "Week 4 (Days 22–30): Performance Audit & Scale-Up LOI\n"
+            "• Complete joint sensor reliability, battery endurance, and diesel savings audit (target: >=20% reduction)\n"
+            "• Present pilot outcome conversion report to Ho Chi Minh City Urban Administration Board\n"
+            "• Co-author commercial concession terms and District-wide Phase 2 expansion specifications\n"
+            "• Secure signed tri-party Letter of Intent (LOI) with local concessionaires for 500-bin commercial rollout"
+        ),
     ],
     success_metrics=[
         ">=20% reduction in collection truck trip miles and diesel consumption vs. baseline",
