@@ -4,7 +4,6 @@
 # NEVER substitute a Gemini (non-Gemma) model silently.
 import io
 import os
-import base64
 import json
 import re
 import logging
@@ -130,7 +129,6 @@ class GemmaService:
         Extract the first JSON object from model output.
         Strips markdown fences (```json ... ```) before parsing.
         """
-        # Remove optional markdown code fences
         text = re.sub(r"```(?:json)?\s*", "", text)
         match = re.search(r"\{.*\}", text, re.DOTALL)
         if not match:
@@ -205,7 +203,6 @@ class GemmaService:
                         "Gemma parse failed on attempt 1 (%s); retrying with stricter prompt.",
                         exc,
                     )
-                    # Append a hard reminder to the last user part
                     if isinstance(contents, list):
                         contents = contents + [
                             types.Content(
@@ -246,6 +243,7 @@ class GemmaService:
         Accepts any combination of PDFs, Word (.docx/.doc), PowerPoint (.pptx),
         Excel/CSV, Markdown/Text, and Images (PNG/JPG/WebP/GIF), plus founder notes/goals,
         fusing them into a single unified StartupProfile via Gemma 4.
+        Strict fact-grounded extraction: never guesses missing fields.
         """
         # Normalize files list into (bytes, mime_type, filename) tuples
         files: List[Tuple[bytes, str, str]] = []
@@ -288,7 +286,6 @@ class GemmaService:
                 for img_bytes, img_mime in pdf_page_imgs:
                     parts.append(types.Part.from_bytes(data=img_bytes, mime_type=img_mime))
                 if not pdf_text and not pdf_page_imgs:
-                    # Fallback: pass raw PDF bytes to Gemini/Gemma API
                     parts.append(types.Part.from_bytes(data=f_bytes, mime_type="application/pdf"))
 
             # 3. Office Open XML (.docx, .pptx, .xlsx)
@@ -302,7 +299,6 @@ class GemmaService:
                 decoded = f_bytes.decode("utf-8", errors="ignore").strip()
                 if not decoded:
                     decoded = f_bytes.decode("latin-1", errors="ignore").strip()
-                # Filter out excessive binary noise if a binary file was uploaded
                 printable = "".join(ch for ch in decoded if ch.isprintable() or ch in "\n\r\t")
                 if printable.strip():
                     extracted_doc_texts.append(f"--- Attached File ({f_name}) ---\n{printable[:15000]}")
@@ -329,20 +325,29 @@ class GemmaService:
             "and synthesize them into a single consolidated Startup Profile.\n"
             f"{docs_str}"
             f"{context_str}\n"
-            "Return ONLY a single valid JSON object — no markdown, no prose, no code fences:\n"
+            "STRICT RULES:\n"
+            "- Use ONLY information clearly visible in the uploaded documents/images or the founder note provided.\n"
+            "- If a field is not stated in the materials, set it to an empty string or empty list "
+            "and include its field name in missing_fields.\n"
+            "- Do NOT infer funding amounts, revenue, customer names, or partner organisations.\n"
+            "- Do NOT guess or hallucinate any field.\n"
+            "- Output ONLY a valid JSON object — no markdown, no prose, no code fences.\n\n"
+            "Return this JSON schema exactly:\n"
             "{\n"
             '  "company_name": "string",\n'
             '  "country": "string (country where the startup is based)",\n'
             '  "sector": "string — one of: smart-city, sustainability, fintech, agritech, '
             'logistics, healthtech, edtech, govtech, other",\n'
-            '  "solution": "string (one concise sentence describing the core product/service)",\n'
-            '  "capabilities": ["3–5 core capabilities the startup brings"],\n'
-            '  "needs": ["3–5 operational things the startup seeks from partners"],\n'
-            '  "target_markets": ["2–4 ASEAN countries or cities to expand into"],\n'
-            '  "partnership_goals": ["2–4 actionable goals e.g. pilot, distribution, co-development"]\n'
-            "}\n\n"
-            "If a field cannot be determined from the inputs, infer a realistic placeholder. "
-            "All output is illustrative."
+            '  "solution": "string (one concise sentence; leave empty if not in the documents)",\n'
+            '  "capabilities": ["list of core capabilities visible in documents; empty list if none"],\n'
+            '  "needs": ["list of operational needs visible in documents; empty list if none"],\n'
+            '  "target_markets": ["list of ASEAN countries/cities visible in documents; empty list if none"],\n'
+            '  "partnership_goals": ["list of goals visible in documents; empty list if none"],\n'
+            f'  "goal": "{goal or ""}",\n'
+            f'  "target_country": "{target_country or ""}",\n'
+            '  "missing_fields": ["list of field names above that were not found in the documents"],\n'
+            '  "confidence": "high|medium|low — high if most fields found, low if few fields found"\n'
+            "}\n"
         )
 
         parts.append(prompt)
@@ -362,46 +367,63 @@ class GemmaService:
         self, startup: StartupProfile, partner: dict
     ) -> PartnershipBrief:
         """
-        Generate a partnership brief + 30-day POC plan from startup × partner context.
-        Uses thinking_level="high" for deeper reasoning.
-        All generated content is grounded only on the supplied records.
-        Recommendations are explicitly labelled as RECOMMENDATIONS.
+        Generate a partnership brief + 30-day POC plan from startup x partner context.
+        Strict fact-grounding: only uses the two supplied records.
+        Adds assumptions list for anything inferred beyond the records.
+        Disclaimer is always overridden in Python after generation.
         """
+        startup_data = startup.model_dump()
+        grounded_fields = [
+            k for k, v in startup_data.items()
+            if v and k not in ("missing_fields", "confidence", "goal", "target_country")
+        ]
+
+        goal_raw = (startup.goal or "cross_border_poc").lower().replace(" ", "_")
+        valid_outcomes = {"commercial_partnership", "market_expansion", "cross_border_poc"}
+        outcome_type = goal_raw if goal_raw in valid_outcomes else "cross_border_poc"
+
+        startup_json = json.dumps(startup_data, indent=2)
+        partner_json = json.dumps(partner, indent=2)
+
         prompt = (
             "You are an ASEAN cross-border partnership strategist.\n"
-            "Generate a partnership brief grounded ONLY on the two profiles below.\n"
-            "Do not invent organisations, data, or claims not present in the profiles.\n"
-            "All recommendations must be clearly labelled '(RECOMMENDATION)'.\n\n"
-            f"Startup Profile (ILLUSTRATIVE):\n"
-            f"- Name: {startup.company_name}\n"
-            f"- Country: {startup.country}\n"
-            f"- Sector: {startup.sector}\n"
-            f"- Solution: {startup.solution}\n"
-            f"- Capabilities: {', '.join(startup.capabilities)}\n"
-            f"- Needs: {', '.join(startup.needs)}\n"
-            f"- Target Markets: {', '.join(startup.target_markets)}\n"
-            f"- Partnership Goals: {', '.join(startup.partnership_goals)}\n\n"
-            f"Partner Profile (ILLUSTRATIVE):\n"
-            f"- Name: {partner['name']}\n"
-            f"- Country: {partner['country']}\n"
-            f"- Type: {partner['type']}\n"
-            f"- Sector: {partner['sector']}\n"
-            f"- Description: {partner['description']}\n"
-            f"- Capabilities: {', '.join(partner['capabilities'])}\n"
-            f"- Target Markets: {', '.join(partner['target_markets'])}\n\n"
-            "Return ONLY a single valid JSON object — no markdown, no prose, no code fences:\n"
+            "You are given exactly two records: a startup profile and one partner record.\n\n"
+            "STRICT RULES:\n"
+            "- Use ONLY these two records below. Do NOT add new organisations, statistics, "
+            "funding amounts, government regulations, or any claims not present in the records.\n"
+            "- If you make any assumption beyond the records, add it to the assumptions list.\n"
+            "- success_metrics must each contain a specific number AND a deadline "
+            "(e.g. '1 discovery meeting by Day 7', '>=20% reduction by Day 30').\n"
+            "- Do NOT invent partner names other than the one provided.\n"
+            "- Output ONLY a valid JSON object — no markdown, no prose, no code fences.\n\n"
+            f"=== STARTUP PROFILE ===\n{startup_json}\n\n"
+            f"=== PARTNER RECORD ===\n{partner_json}\n\n"
+            "Return this JSON schema exactly:\n"
             "{\n"
-            '  "objective": "One sentence: shared goal of this partnership",\n'
-            '  "collaboration_concept": "2–3 sentences: how they work together",\n'
-            '  "proposed_poc": "2–3 sentences: specific 30-day proof-of-concept pilot",\n'
+            '  "objective": "One sentence shared goal of this partnership",\n'
+            '  "collaboration_concept": "2-3 sentences how they work together, grounded in the records",\n'
+            '  "proposed_poc": "2-3 sentences specific 30-day proof-of-concept pilot",\n'
             '  "timeline": ["Week 1: ...", "Week 2: ...", "Week 3: ...", "Week 4: ..."],\n'
-            '  "success_metrics": ["metric 1", "metric 2", "metric 3"]\n'
-            "}"
+            '  "success_metrics": [\n'
+            '    "metric with specific number and deadline, e.g. 1 joint demo by Day 14",\n'
+            '    "metric with specific number and deadline",\n'
+            '    "metric with specific number and deadline"\n'
+            "  ],\n"
+            f'  "outcome_type": "{outcome_type}",\n'
+            '  "assumptions": ["list any inferences made beyond the two records above"],\n'
+            f'  "grounded_in": {json.dumps(grounded_fields)},\n'
+            '  "disclaimer": "Illustrative demo data. Recommendations are AI-generated suggestions, not verified facts."\n'
+            "}\n"
         )
 
         def _parse(raw: str) -> PartnershipBrief:
             data = self._extract_json(raw)
-            return PartnershipBrief(**data)
+            brief = PartnershipBrief(**data)
+            brief.disclaimer = (
+                "Illustrative demo data. "
+                "Recommendations are AI-generated suggestions, not verified facts."
+            )
+            return brief
 
         contents = [
             types.Content(
@@ -410,9 +432,32 @@ class GemmaService:
             )
         ]
 
-        return self._call_with_retry(
+        brief = self._call_with_retry(
             contents,
             parse_fn=_parse,
             temperature=0.3,
             max_output_tokens=8192,
         )
+
+        chosen_partner_name = partner.get("name", "")
+        if chosen_partner_name:
+            brief_text = " ".join([
+                brief.objective,
+                brief.collaboration_concept,
+                brief.proposed_poc,
+            ])
+            startup_name = startup.company_name
+            other_orgs = re.findall(
+                r"\b([A-Z][a-z]+(?: [A-Z][a-z]+)+)\b", brief_text
+            )
+            for org in other_orgs:
+                if org not in chosen_partner_name and org not in startup_name:
+                    if org not in brief.assumptions:
+                        logger.warning(
+                            "Brief mentions organisation '%s' not in records; adding to assumptions.", org
+                        )
+                        brief.assumptions.append(
+                            f"'{org}' mentioned in brief but not present in the two input records."
+                        )
+
+        return brief

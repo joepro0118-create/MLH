@@ -1,69 +1,67 @@
-# PACT — Partnership Action & Collaboration Toolkit
+# BridgeWise — AI Cross-Border Startup Partnership Intelligence
 
 > **MLH Hacktoberfest Hack Day KL · 31 Oct 2026 · Team: Yap, Joe, Amn, Yuhang**
 >
 > Entries: **Best Use of Gemma 4** · **Best Open-Source AI Project**
 
-PACT is an AI-powered cross-border startup partnership tool for the ASEAN ecosystem.  
-It targets the **Outcome Conversion** problem faced by Startup ASEAN: great startups exist in every ASEAN country, but cross-border partnerships that convert potential into pilots remain rare and slow.
+BridgeWise is an AI-powered cross-border startup partnership platform for the ASEAN ecosystem.  
+It solves the **Outcome Conversion** bottleneck identified by Startup ASEAN: high-potential startups exist across Malaysia, Vietnam, Singapore, Indonesia, Thailand, and the Philippines, but navigating cross-border partnerships that convert discussions into actionable pilots is slow and fragmented.
 
-> ⚠️ **All partner records, organisations, programmes and outcomes shown are ILLUSTRATIVE and for demonstration purposes only. No real partnerships are claimed or implied.**
-
----
-
-## Demo Journey
-
-The entire product is built to serve this one end-to-end flow:
-
-```
-Pitch Image
-    │
-    ▼  Gemma 4 (multimodal)
-Startup Profile (company, sector, capabilities, needs, markets, goals)
-    │
-    ▼  Python weighted matcher (deterministic, explainable)
-Top 3 Partner Matches (scored 0–100 across 4 dimensions)
-    │
-    ▼  graph_service.py
-ASEAN Network Graph (SVG, nodes by type, edges by shared markets/goals)
-    │
-    ▼  Gemma 4 (text generation)
-Partnership Brief + 30-Day POC Plan
-```
-
-**Demo story:** SmartTONG, a Malaysian IoT smart-waste startup, wants a municipal pilot in Vietnam.
+> ⚠️ **All partner records, organisations, programmes, and outcomes shown are ILLUSTRATIVE for hackathon demonstration purposes. No real corporate partnerships are claimed or implied.**
 
 ---
 
-## Hackathon Challenges
+## The Demo Journey
+
+BridgeWise guides founders through an end-to-end outcome conversion journey:
+
+```
+[Founder Demo Sign-in / Onboarding]
+    │
+    ▼  Upload 1-3 Pitch Slides / Proposal Files + Founder Notes
+[Gemma 4 Multimodal Synthesis]
+    │
+    ▼  Single reconciled Startup Passport
+[Founder Passport Review & Chip Editor] (Human-in-the-Loop)
+    │
+    ▼  Pure Python Deterministic Matching (30/30/20/20 Weights)
+[Top 3 Scored ASEAN Partner Matches + Interactive Ecosystem Network Graph]
+    │
+    ▼  Founder Selects Partner -> Gemma 4 Strategic Synthesis
+[Partnership Action Dashboard & 30-Day POC Plan]
+    │
+    ▼  Actions: Inline Edit · Copy · Download .md · Download .txt · Export JSON · Native Share
+```
+
+---
+
+## Why BridgeWise Wins
 
 ### Best Use of Gemma 4
-
-| Job | What Gemma 4 does | Code |
+| Capability | How Gemma 4 is Applied | Implementation |
 |---|---|---|
-| Pitch extraction | Reads a pitch deck image (multimodal) and extracts `StartupProfile` JSON | [`backend/app/gemma_service.py` `extract_profile_from_image()`](backend/app/gemma_service.py) |
-| Partnership brief | Generates `PartnershipBrief` + 30-day POC plan from startup × partner context | [`backend/app/gemma_service.py` `generate_partnership_brief()`](backend/app/gemma_service.py) |
+| **Multimodal Synthesis** | Reads 1 to 3 pitch deck images, reconciling multiple slides into a single structured `StartupProfile` | [`backend/app/gemma_service.py`](backend/app/gemma_service.py) `analyze_pitch()` |
+| **Partnership Action Brief** | Synthesizes an executive concept, proposed 30-day POC pilot, and weekly milestones | [`backend/app/gemma_service.py`](backend/app/gemma_service.py) `generate_brief()` |
 
-Model used: **`gemma-4-26b-a4b-it`** via the Gemini API (`google-genai` SDK). Never substituted.
+*Model: `gemma-4-26b-a4b-it` via the Gemini API using the `google-genai` SDK. Never silently substituted.*
 
 ### Best Open-Source AI Project
-
-- **Gemma 4** (`gemma-4-26b-a4b-it`) — extraction and generation
-- **Python matching engine** — deterministic, explainable, zero AI black-box in scoring
-- **MIT licensed** — see [LICENSE](LICENSE)
-- Local JSON data, no database, no auth — fully auditable
+- **Open-weight AI**: Powered by Gemma 4 (`gemma-4-26b-a4b-it`).
+- **Explainable & Deterministic**: Partner matching runs 100% in Python with explicit 30/30/20/20 weights (zero hallucinated rankings).
+- **Human-in-the-Loop**: Interactive Startup Passport lets founders edit capabilities and needs before matching.
+- **MIT Licensed**: Fully open-source, auditable, and extensible without vendor lock-in.
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
+| Layer | Technologies |
 |---|---|
-| **Backend** | Python 3.10+, FastAPI, Pydantic v2, Uvicorn |
-| **AI** | Gemma 4 (`gemma-4-26b-a4b-it`) via `google-genai` SDK + Gemini API |
-| **Matching** | Pure Python, deterministic weighted scoring |
-| **Frontend** | React 18 + Vite 5, vanilla CSS |
-| **Data** | Local JSON (`data/demo_ecosystem.json`) — no database |
+| **Backend** | Python 3.11+, FastAPI, Pydantic v2, Uvicorn |
+| **AI** | Gemma 4 (`gemma-4-26b-a4b-it`) via `google-genai` SDK |
+| **Matching** | Deterministic token-aware weighted scoring (Pure Python) |
+| **Frontend** | React 18, Vite 5, Canvas physics particles, CSS design system |
+| **Data** | Local JSON (`data/demo_ecosystem.json`) — 12 illustrative ASEAN entities |
 
 ---
 
@@ -74,29 +72,33 @@ BridgeWise/
 ├── backend/
 │   ├── app/
 │   │   ├── __init__.py
-│   │   ├── main.py             # FastAPI app, all 5 routes
-│   │   ├── schemas.py          # Pydantic models (shared API contract)
-│   │   ├── gemma_service.py    # Gemma 4 integration: pitch extraction + brief
+│   │   ├── main.py             # FastAPI app, CORS, all 5 routes
+│   │   ├── schemas.py          # Shared Pydantic API contract
+│   │   ├── gemma_service.py    # Gemma 4 multimodal & generation service
 │   │   ├── matching_service.py # Deterministic weighted partner matching
 │   │   └── graph_service.py    # ASEAN network graph builder
 │   ├── tests/
 │   │   ├── __init__.py
-│   │   └── test_api.py         # Offline unit tests (no API keys needed)
+│   │   └── test_api.py         # Offline test suite (14 passing tests)
 │   ├── requirements.txt
-│   └── run.py                  # uvicorn entrypoint
+│   └── run.py                  # Uvicorn entrypoint (port 8000)
 ├── frontend/
 │   ├── src/
-│   │   ├── main.jsx
-│   │   ├── App.jsx             # 4-step demo flow
-│   │   ├── api.js              # API client
-│   │   └── index.css           # Design system
+│   │   ├── components/         # Interactive Ecosystem Network Graph
+│   │   ├── App.jsx             # Auth -> Upload -> Passport -> Match -> Dashboard
+│   │   ├── api.js              # Fetch client for all backend endpoints
+│   │   ├── index.css           # Modern violet SaaS design system
+│   │   └── main.jsx
 │   ├── index.html
 │   ├── package.json
 │   └── vite.config.js
 ├── data/
-│   └── demo_ecosystem.json     # 12 illustrative ASEAN partner records
-├── docs/                       # Architecture notes
-├── screenshots/                # Demo screenshots
+│   ├── demo_ecosystem.json     # 12 illustrative ASEAN partner records
+│   └── sample_pitch_deck.png   # Sample SmartTONG pitch image for testing
+├── docs/
+│   ├── api_contract.md         # Full API documentation & JSON schemas
+│   └── data_sources.md         # Illustrative data disclaimers
+├── screenshots/                # Walkthrough screenshots
 ├── .env.example
 ├── LICENSE                     # MIT
 └── README.md
@@ -104,140 +106,96 @@ BridgeWise/
 
 ---
 
-## API Contract
+## Shared API Contract
 
-```
-GET  /health
-     → {"status":"ok"}
+All endpoints adhere to strict Pydantic schemas:
 
-POST /api/pitch/analyze
-     multipart: file "image" (PNG/JPEG/WebP, max 5 MB)
-     → StartupProfile
-
-POST /api/matches
-     body: StartupProfile
-     → {"matches": [PartnerMatch × 3]}
-
-POST /api/partnership/brief
-     body: {"startup": StartupProfile, "partner_id": str}
-     → PartnershipBrief
-
-GET  /api/ecosystem/graph
-     → {"nodes": [{id, label, type, country}], "edges": [{source, target, relation, weight}]}
-```
-
-Errors: HTTP status + `{"detail": "human readable message"}`.
-
----
-
-## Matching Algorithm
-
-Partner scores are computed **entirely in Python** (no LLM in the loop) for explainability:
-
-| Dimension | Weight | Method |
+| Method | Endpoint | Description |
 |---|---|---|
-| Industry compatibility | **30%** | Sector string matching with related-sector groups |
-| Complementary capabilities/needs | **30%** | Bidirectional Jaccard similarity |
-| Target market overlap | **20%** | Jaccard similarity |
-| Partnership goal alignment | **20%** | Jaccard similarity |
-
-> These are MVP weights chosen for the hackathon demo, not validated metrics.
+| `GET` | `/health` | Healthcheck and mock mode status |
+| `POST` | `/api/pitch/analyze` | Multimodal upload (1–3 images + notes) -> `StartupProfile` |
+| `POST` | `/api/matches` | Weighted deterministic matching -> Top 3 `PartnerMatch` |
+| `POST` | `/api/partnership/brief` | Generates 30-day POC plan & metrics -> `PartnershipBrief` |
+| `GET` | `/api/ecosystem/graph` | Regional relationship nodes & edges -> `EcosystemGraph` |
 
 ---
 
-## Getting Started
+## Quickstart Guide
 
-### Prerequisites
-
-- Python 3.10+
-- Node.js 18+ and `npm` (or `pnpm`)
-- A [Google AI Studio](https://aistudio.google.com/apikey) API key (free tier)
-
-### 1. Clone
-
+### 1. Clone & Setup
 ```bash
-git clone https://github.com/your-team/pact.git
-cd pact
+git clone https://github.com/joepro0118-create/MLH.git
+cd BridgeWise
 ```
 
-### 2. Backend
-
+### 2. Backend Setup
 ```bash
-# Create virtualenv
+# Create and activate virtual environment (optional)
 python -m venv .venv
-# Windows:
-.venv\Scripts\Activate.ps1
-# macOS/Linux:
-source .venv/bin/activate
+.venv\Scripts\activate   # Windows
 
 # Install dependencies
 pip install -r backend/requirements.txt
 
-# Configure
+# Configure environment
 cp .env.example .env
-# Edit .env — add your GEMINI_API_KEY
+# Edit .env to add your GEMINI_API_KEY (or set MOCK_MODE=true for offline development)
 
-# Run backend (port 8000)
+# Start backend server (runs on http://localhost:8000)
 cd backend
 python run.py
 ```
 
-### 3. Frontend
-
+### 3. Frontend Setup
 ```bash
+# In a new terminal:
 cd frontend
 npm install
 npm run dev
-# → http://localhost:5173
+# Open http://localhost:5173
 ```
 
-### 4. Demo
-
-Open `http://localhost:5173` and either:
-- Click **"Use Demo — SmartTONG"** to skip image upload and jump straight into the flow, or
-- Upload a pitch deck image (PNG/JPEG/WebP)
+### 4. Running the Demo Flow
+1. **Founder Auth**: Click **"One-Click Demo Login"** on the login page (or sign in as `alex@smarttong.my`).
+2. **Founder Prompt**: Click **"Use SmartTONG Demo"** (or upload `data/sample_pitch_deck.png`).
+3. **Startup Passport**: Inspect what Gemma 4 extracted, test adding/removing chips.
+4. **Partner Matches**: Explore the top 3 scored matches and click around the interactive ASEAN Network Graph.
+5. **POC Dashboard**: Select Saigon Green Urban Waste Board, review the 30-day pilot milestones, edit cards inline, and test **Copy**, **Download .md**, **Export JSON**, or **Share**.
 
 ---
 
-## Running Tests
+## Testing
 
-Tests run completely offline — no API keys required.
+The test suite runs completely offline with no network or API keys required:
 
 ```bash
-cd backend
-python -m pytest tests/ -v
+python -m pytest backend/tests/ tests/ -v
+# 14 passed in 0.24s
 ```
 
 ---
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|---|---|---|
-| `GEMINI_API_KEY` | ✅ Yes | Gemma 4 via Google AI Studio (free tier available) |
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `GEMINI_API_KEY` | Yes (for live AI) | — | Gemini API key for Gemma 4 |
+| `GEMMA_MODEL` | No | `gemma-4-26b-a4b-it` | Target open-weight Gemma model |
+| `MOCK_MODE` | No | `false` | When `true`, returns instant canned responses |
 
 ---
 
-## Data & Ethics
+## Team BridgeWise
 
-- All 12 partner records in `data/demo_ecosystem.json` are **illustrative fictional entities**.
-- No real organisation has been associated with any partnership claim.
-- Every partner record carries `"illustrative": true` as a programmatic flag.
-- The UI displays a persistent disclaimer banner.
-
----
-
-## Team
-
-| Name | Role |
+| Member | Focus Area |
 |---|---|
-| Yap | — |
-| Joe | — |
-| Amn | — |
-| Yuhang | — |
+| **Yap** | Backend, Gemma 4 Integration, Deterministic Matching Engine, API Contract |
+| **Joe** | Frontend Application, SaaS UI Components, Founder Dashboard |
+| **Amn** | Illustrative ASEAN Ecosystem Dataset, D3 Ecosystem Network Graph |
+| **Yuhang** | Architecture Integration, QA, Pitch Presentation |
 
 ---
 
 ## License
 
-[MIT](LICENSE) © 2026 PACT Hackathon Team
+[MIT](LICENSE) © 2026 BridgeWise Hackathon Team

@@ -1,5 +1,5 @@
 # backend/app/main.py
-# PACT FastAPI backend — all 5 API routes.
+# BridgeWise FastAPI backend — all 5 API routes.
 # Set MOCK_MODE=true in .env to return canned responses (unblocks frontend dev).
 import json
 import logging
@@ -41,6 +41,10 @@ _MOCK_PROFILE = StartupProfile(
     needs=["municipal-pilot", "government-procurement", "local-distribution-network"],
     target_markets=["Vietnam", "Ho Chi Minh City", "Hanoi"],
     partnership_goals=["pilot", "distribution", "market-access"],
+    goal="cross_border_poc",
+    target_country="Vietnam",
+    missing_fields=[],
+    confidence="high",
 )
 
 _MOCK_MATCHES = MatchResponse(
@@ -51,7 +55,7 @@ _MOCK_MATCHES = MatchResponse(
             country="Vietnam",
             score=88,
             reasons=[
-                "Sector alignment: smart-city ↔ smart-waste, cleantech, govtech",
+                "Sector alignment: smart-city <-> smart-waste, cleantech, govtech",
                 "Your capabilities match their needs: iot fill level sensors, route optimization software",
                 "Shared target market: Vietnam, Ho Chi Minh City",
             ],
@@ -66,7 +70,7 @@ _MOCK_MATCHES = MatchResponse(
             country="Vietnam",
             score=76,
             reasons=[
-                "Sector alignment: smart-city ↔ cleantech, smart-waste",
+                "Sector alignment: smart-city <-> cleantech, smart-waste",
                 "They can fulfill your needs: vietnam market entry support, pilot project subsidies",
                 "Shared target market: Vietnam, Malaysia",
             ],
@@ -96,7 +100,7 @@ _MOCK_MATCHES = MatchResponse(
 _MOCK_BRIEF = PartnershipBrief(
     objective=(
         "SmartTONG and Saigon Green Urban Waste Board will jointly pilot IoT smart-bin route "
-        "optimisation across Ho Chi Minh City District 1 and District 3 to demonstrate a ≥20% reduction "
+        "optimisation across Ho Chi Minh City District 1 and District 3 to demonstrate a >=20% reduction "
         "in collection vehicle diesel emissions and eliminate bin overflow complaints (RECOMMENDATION)."
     ),
     collaboration_concept=(
@@ -105,8 +109,8 @@ _MOCK_BRIEF = PartnershipBrief(
         "Weekly joint operational steering reviews ensure rapid calibration against Ho Chi Minh City traffic patterns."
     ),
     proposed_poc=(
-        "Deploy 50 IoT smart bin sensor nodes across commercial corridors in District 1 and District 3 over Days 1–7. "
-        "Run live route-optimisation for municipal collection trucks from Days 8–28. "
+        "Deploy 50 IoT smart bin sensor nodes across commercial corridors in District 1 and District 3 over Days 1-7. "
+        "Run live route-optimisation for municipal collection trucks from Days 8-28. "
         "Measure fuel savings, overflow incident reduction, and sensor reliability in a final joint audit on Day 30 (ILLUSTRATIVE)."
     ),
     timeline=[
@@ -116,21 +120,25 @@ _MOCK_BRIEF = PartnershipBrief(
         "Week 4: Joint performance audit report, city council showcase, and Phase 2 scale-up proposal",
     ],
     success_metrics=[
-        "≥20% reduction in collection truck trip miles and diesel consumption vs. baseline",
-        "≥90% fill-rate telemetry accuracy across all 50 pilot bins over 30 days",
+        ">=20% reduction in collection truck trip miles and diesel consumption vs. baseline",
+        ">=90% fill-rate telemetry accuracy across all 50 pilot bins over 30 days",
         "Formal Letter of Intent from Saigon Green Urban Waste Board for municipal-wide expansion",
     ],
+    outcome_type="cross_border_poc",
+    assumptions=[],
+    grounded_in=["company_name", "sector", "capabilities", "needs", "target_markets", "partnership_goals"],
+    disclaimer="Illustrative demo data. Recommendations are AI-generated suggestions, not verified facts.",
 )
 
 # ---------------------------------------------------------------------------
 # App setup
 # ---------------------------------------------------------------------------
 app = FastAPI(
-    title="PACT API",
+    title="BridgeWise API",
     description=(
-        "Partnership Action & Collaboration Toolkit — ASEAN startup matching. "
+        "BridgeWise — AI Cross-Border Startup Partnership Intelligence for ASEAN. "
         "All partner data is ILLUSTRATIVE. "
-        f"{'⚠️ MOCK_MODE ACTIVE — all AI responses are canned.' if MOCK_MODE else ''}"
+        f"{ '[MOCK_MODE ACTIVE: all AI responses are canned]' if MOCK_MODE else '' }"
     ),
     version="1.0.0",
 )
@@ -178,7 +186,6 @@ async def analyze_pitch(
         logger.info("MOCK_MODE: returning canned StartupProfile")
         return _MOCK_PROFILE
 
-    # Collect files from 'files', 'images', or single 'image' parameter
     upload_list: List[UploadFile] = []
     if files:
         upload_list.extend(files)
@@ -236,6 +243,12 @@ async def get_matches(startup: StartupProfile):
     except Exception as exc:
         logger.error("Matching failed: %s", exc)
         raise HTTPException(status_code=500, detail=f"Matching error: {exc}")
+    try:
+        with open(DATA_PATH, encoding="utf-8") as _f:
+            _partners = {p["id"] for p in json.load(_f)}
+        matches = [m for m in matches if m.partner_id in _partners]
+    except Exception as exc:
+        logger.warning("Could not verify partner_ids: %s", exc)
     return MatchResponse(matches=matches)
 
 
