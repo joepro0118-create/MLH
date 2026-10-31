@@ -29,7 +29,9 @@ except ImportError:
         GraphNode = None
         StartupProfile = None
 
-DATA_PATH = Path(__file__).parent.parent.parent / "data" / "demo_ecosystem.json"
+from .data_utils import load_partners, get_ecosystem_data_path
+
+DATA_PATH = get_ecosystem_data_path()
 _ECOSYSTEM_CACHE: Optional[List[Dict[str, Any]]] = None
 _ECOSYSTEM_MTIME: Optional[float] = None
 _DEFAULT_GRAPH_CACHE: Any = None
@@ -38,26 +40,17 @@ _DEFAULT_GRAPH_MTIME: Optional[float] = None
 
 def load_ecosystem_data(path: Optional[Union[str, Path]] = None) -> List[Dict[str, Any]]:
     """Load partner records from JSON file with error resilience."""
-    file_path = Path(path).resolve() if path else DATA_PATH
-    if not file_path.exists():
-        # Fallback to current working directory
-        file_path = Path("data/demo_ecosystem.json").resolve()
-    if not file_path.exists():
-        return []
-    global _ECOSYSTEM_CACHE, _ECOSYSTEM_MTIME
     if path is None:
-        try:
-            mtime = file_path.stat().st_mtime
-        except OSError:
-            mtime = None
-        if _ECOSYSTEM_CACHE is not None and mtime == _ECOSYSTEM_MTIME:
-            return _ECOSYSTEM_CACHE
-        with open(file_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            _ECOSYSTEM_CACHE = data if isinstance(data, list) else []
-            _ECOSYSTEM_MTIME = mtime
-            return _ECOSYSTEM_CACHE
+        return load_partners()
+    file_path = Path(path).resolve()
+    if not file_path.exists():
+        return load_partners()
     with open(file_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+        if isinstance(data, list):
+            return data
+        return []
+
         data = json.load(f)
         if isinstance(data, list):
             return data

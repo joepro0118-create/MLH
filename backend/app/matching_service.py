@@ -9,24 +9,14 @@ from pathlib import Path
 from typing import Any, Dict, List, Set
 
 from .schemas import StartupProfile, PartnerMatch
+from .data_utils import load_partners, get_ecosystem_data_path
 
-DATA_PATH = Path(__file__).parent.parent.parent / "data" / "demo_ecosystem.json"
-_PARTNERS_CACHE: List[Dict[str, Any]] | None = None
-_PARTNERS_MTIME: float | None = None
+DATA_PATH = get_ecosystem_data_path()
 
 
 def _load_partners() -> List[Dict[str, Any]]:
-    global _PARTNERS_CACHE, _PARTNERS_MTIME
-    try:
-        mtime = DATA_PATH.stat().st_mtime
-    except OSError:
-        mtime = None
-    if _PARTNERS_CACHE is not None and mtime == _PARTNERS_MTIME:
-        return _PARTNERS_CACHE
-    with open(DATA_PATH, encoding="utf-8") as f:
-        _PARTNERS_CACHE = json.load(f)
-        _PARTNERS_MTIME = mtime
-        return _PARTNERS_CACHE
+    return load_partners()
+
 
 
 

@@ -15,6 +15,7 @@ from fastapi.staticfiles import StaticFiles
 from .gemma_service import GemmaService
 from .graph_service import build_graph
 from .matching_service import get_top_matches, _load_partners
+from .data_utils import get_ecosystem_data_path, load_partners
 from .schemas import (
     BriefRequest,
     EcosystemGraph,
@@ -180,7 +181,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DATA_PATH = Path(__file__).parent.parent.parent / "data" / "demo_ecosystem.json"
+DATA_PATH = get_ecosystem_data_path()
 MAX_FILE_BYTES = 20 * 1024 * 1024  # 20 MB per file
 
 gemma = GemmaService()
