@@ -7,7 +7,7 @@
 ## Team / attendee
 
 - Team name: **Team BridgeWise**
-- Members: **Yap, Joe, Amn, Yuhang**
+- Members: **Yap, Joe, Amn, Manjishtha**
 - GitHub Repository: [https://github.com/joepro0118-create/MLH](https://github.com/joepro0118-create/MLH)
 
 ## Challenge
