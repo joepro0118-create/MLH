@@ -40,22 +40,91 @@ const RELATION_COLORS = {
  * Visualizes ASEAN partner network graph with multi-attribute styling,
  * connection-weighted node sizing, top-3 match illumination, and interactive tooltips.
  *
- * Props:
- *  - nodes: Array of {id, label, type, country, ...}
- *  - edges: Array of {source, target, relation, weight, ...}
- *  - highlightIds: Array of string IDs (top-3 matches from /api/matches)
- *  - onNodeClick: Callback when a node is clicked (node) => void
+ * Supports both direct props:
+ *   <EcosystemGraph nodes={...} edges={...} highlightIds={...} />
+ * and Joe's MatchesStep props:
+ *   <EcosystemGraph startup={...} matches={...} allowOfflineFallback={true} />
  */
-export default function EcosystemGraph({
-  nodes = MOCK_NODES,
-  edges = MOCK_EDGES,
-  highlightIds = MOCK_HIGHLIGHT_IDS,
+export function EcosystemGraph({
+  nodes,
+  edges,
+  highlightIds,
+  startup,
+  matches,
+  allowOfflineFallback = true,
   onNodeClick,
 }) {
-  // Use mock data if props are empty
-  const activeNodesData = nodes && nodes.length > 0 ? nodes : MOCK_NODES;
-  const activeEdgesData = edges && edges.length > 0 ? edges : MOCK_EDGES;
-  const activeHighlights = highlightIds && highlightIds.length > 0 ? highlightIds : MOCK_HIGHLIGHT_IDS;
+  const [fetchedGraph, setFetchedGraph] = useState(null);
+
+  // Attempt to fetch graph from API if nodes/edges are not directly supplied
+  useEffect(() => {
+    if (nodes && edges) return;
+
+    let isMounted = true;
+    const fetchGraph = async () => {
+      try {
+        const apiUrl = (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) || "http://localhost:8000";
+        const res = await fetch(`${apiUrl}/api/ecosystem/graph`);
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data && Array.isArray(data.nodes) && data.nodes.length > 0) {
+            setFetchedGraph(data);
+          }
+        }
+      } catch (err) {
+        if (!allowOfflineFallback) {
+          console.warn("Could not fetch live ecosystem graph:", err);
+        }
+      }
+    };
+    fetchGraph();
+    return () => {
+      isMounted = false;
+    };
+  }, [nodes, edges, allowOfflineFallback]);
+
+  // Determine active nodes, injecting active startup if provided
+  const activeNodesData = useMemo(() => {
+    const base = nodes && nodes.length > 0 ? nodes : (fetchedGraph?.nodes || MOCK_NODES);
+    if (startup && (startup.company_name || startup.label)) {
+      const name = startup.company_name || startup.label;
+      const idx = base.findIndex(
+        (n) => n.is_startup || n.id === "startup-node" || n.label === name
+      );
+      const sNode = {
+        id: "startup-node",
+        label: name,
+        type: "startup",
+        country: startup.country || "Malaysia",
+        city: startup.city || "Kuala Lumpur",
+        is_startup: true,
+        sectors: startup.sector ? [startup.sector] : (startup.sectors || ["smart_waste"]),
+        capabilities: startup.capabilities || [],
+        needs: startup.needs || [],
+      };
+      if (idx >= 0) {
+        const copy = [...base];
+        copy[idx] = { ...copy[idx], ...sNode };
+        return copy;
+      }
+      return [sNode, ...base];
+    }
+    return base;
+  }, [nodes, fetchedGraph, startup]);
+
+  // Determine active edges
+  const activeEdgesData = useMemo(() => {
+    return edges && edges.length > 0 ? edges : (fetchedGraph?.edges || MOCK_EDGES);
+  }, [edges, fetchedGraph]);
+
+  // Determine highlighted top-match IDs
+  const activeHighlights = useMemo(() => {
+    if (highlightIds && highlightIds.length > 0) return highlightIds;
+    if (matches && matches.length > 0) {
+      return matches.map((m) => m.partner_id || m.id).filter(Boolean);
+    }
+    return MOCK_HIGHLIGHT_IDS;
+  }, [highlightIds, matches]);
 
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
@@ -656,3 +725,6 @@ export default function EcosystemGraph({
     </div>
   );
 }
+
+export default EcosystemGraph;
+
