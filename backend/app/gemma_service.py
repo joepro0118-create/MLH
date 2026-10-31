@@ -396,6 +396,11 @@ class GemmaService:
             "(e.g. '1 discovery meeting by Day 7', '>=20% reduction by Day 30').\n"
             "- Do NOT invent partner names other than the one provided.\n"
             "- Output ONLY a valid JSON object — no markdown, no prose, no code fences.\n\n"
+            "CRITICAL TIMELINE FORMAT REQUIREMENTS:\n"
+            "- The 'timeline' field MUST be an array of exactly 4 strings for Week 1, Week 2, Week 3, and Week 4.\n"
+            "- Every single week MUST contain a descriptive phase title, followed by newline characters and 3 to 4 concrete actionable to-do list tasks starting with bullet '•'.\n"
+            "- Example format for each week element in timeline:\n"
+            '  "Week 1 (Days 1–7): Setup & Integration\\n• Finalize bi-lateral agreements and API schema\\n• Deploy and verify telemetry test unit\\n• Establish Slack incident and SLA channel"\n\n'
             f"=== STARTUP PROFILE ===\n{startup_json}\n\n"
             f"=== PARTNER RECORD ===\n{partner_json}\n\n"
             "Return this JSON schema exactly:\n"
@@ -403,7 +408,12 @@ class GemmaService:
             '  "objective": "One sentence shared goal of this partnership",\n'
             '  "collaboration_concept": "2-3 sentences how they work together, grounded in the records",\n'
             '  "proposed_poc": "2-3 sentences specific 30-day proof-of-concept pilot",\n'
-            '  "timeline": ["Week 1: ...", "Week 2: ...", "Week 3: ...", "Week 4: ..."],\n'
+            '  "timeline": [\n'
+            '    "Week 1 (Days 1–7): Governance & Setup\\n• Task 1\\n• Task 2\\n• Task 3",\n'
+            '    "Week 2 (Days 8–14): Integration & Field Testing\\n• Task 1\\n• Task 2\\n• Task 3",\n'
+            '    "Week 3 (Days 15–21): Live Pilot & Real-Time Monitoring\\n• Task 1\\n• Task 2\\n• Task 3",\n'
+            '    "Week 4 (Days 22–30): Evaluation, Audit & Expansion LOI\\n• Task 1\\n• Task 2\\n• Task 3"\n'
+            '  ],\n'
             '  "success_metrics": [\n'
             '    "metric with specific number and deadline, e.g. 1 joint demo by Day 14",\n'
             '    "metric with specific number and deadline",\n'

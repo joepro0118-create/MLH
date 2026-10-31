@@ -1947,3 +1947,177 @@ ul { list-style: none }
   background: #fee2e2 !important;
   border-color: #fca5a5 !important;
 }
+
+/* ─────────────────────────────────────────────────────────────
+   30-DAY IMPLEMENTATION TIMELINE & TO-DO ROADMAP STYLES
+───────────────────────────────────────────────────────────────*/
+.timeline-todo-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  align-items: stretch;
+  margin-top: 0.5rem;
+}
+
+.timeline-todo-col {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--col-accent, #7c3aed);
+  border-radius: 10px;
+  padding: 1rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.timeline-todo-col:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.timeline-col-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.timeline-badge-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.timeline-week-pill {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.timeline-day-range {
+  font-size: 0.725rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.timeline-phase-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.35;
+  margin: 0;
+}
+
+.timeline-task-count {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.timeline-count-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.timeline-todo-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.timeline-todo-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 6px;
+  background: rgba(124, 58, 237, 0.02);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.timeline-todo-item:hover {
+  background: rgba(124, 58, 237, 0.06);
+  border-color: rgba(124, 58, 237, 0.15);
+}
+
+.timeline-todo-item.is-completed {
+  opacity: 0.7;
+}
+
+.timeline-todo-item.is-completed .timeline-todo-text {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.timeline-todo-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 800;
+  flex-shrink: 0;
+  margin-top: 2px;
+  transition: all 0.15s ease;
+}
+
+.timeline-todo-check.is-checked {
+  color: #fff;
+  border-color: transparent;
+}
+
+.timeline-todo-text {
+  font-size: 0.775rem;
+  color: var(--text);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.timeline-col-edit textarea {
+  width: 100%;
+  font-size: 0.775rem;
+  color: var(--text);
+  background: rgba(124, 58, 237, 0.04);
+  border: 1px dashed var(--purple-light);
+  border-radius: 6px;
+  padding: 0.5rem;
+  line-height: 1.4;
+  resize: vertical;
+}
+
+@media (max-width: 900px) {
+  .timeline-todo-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 580px) {
+  .timeline-todo-grid {
+    grid-template-columns: 1fr;
+  }
+}

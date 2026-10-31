@@ -41,6 +41,12 @@ export function exportBriefToWord(profile, partner, brief) {
   const timelineRows = timeline
     .map((item, idx) => {
       const text = typeof item === 'string' ? item : item.task || JSON.stringify(item)
+      const lines = text.split('\n').map((l) => l.trim()).filter(Boolean)
+      const phaseTitle = (lines[0] || `Week ${idx + 1}`).replace(/^Week\s*\d+\s*(\([^)]*\))?\s*[:\-–]?\s*/i, '').trim()
+      const bullets = lines.slice(1).map((l) => l.replace(/^[-*•]\s*/, '').trim()).filter(Boolean)
+      const bodyHtml = bullets.length > 0
+        ? `<div style="font-weight:bold;color:#1e1b4b;margin-bottom:4px;">${escapeHtml(phaseTitle)}</div><ul style="margin:0;padding-left:18px;">${bullets.map((b) => `<li style="margin-bottom:3px;">${escapeHtml(b)}</li>`).join('')}</ul>`
+        : escapeHtml(text)
       return `
         <tr>
           <td style="width:130px;padding:10px 12px;border:1px solid #ddd6fe;background:#f5f3ff;font-weight:bold;color:#5b21b6;vertical-align:top;">
@@ -48,7 +54,7 @@ export function exportBriefToWord(profile, partner, brief) {
             <span style="font-size:9pt;color:#6b7280;font-weight:normal;">Days ${idx * 7 + 1}&ndash;${Math.min(30, (idx + 1) * 7 + (idx === 3 ? 2 : 0))}</span>
           </td>
           <td style="padding:10px 14px;border:1px solid #ddd6fe;color:#1e1b4b;vertical-align:top;">
-            ${escapeHtml(text)}
+            ${bodyHtml}
           </td>
         </tr>`
     })
