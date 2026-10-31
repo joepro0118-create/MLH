@@ -75,7 +75,7 @@ class GemmaService:
         contents,
         *,
         temperature: float = 0.3,
-        max_output_tokens: int = 2048,
+        max_output_tokens: int = 8192,
         use_thinking: bool = False,
     ) -> str:
         """
@@ -86,7 +86,7 @@ class GemmaService:
 
         config_kwargs: dict = {
             "temperature": temperature,
-            "max_output_tokens": max(max_output_tokens, 2048) if use_thinking else max_output_tokens,
+            "max_output_tokens": max(max_output_tokens, 8192),
         }
 
         response = client.models.generate_content(
