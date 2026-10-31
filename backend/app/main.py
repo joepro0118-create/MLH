@@ -41,6 +41,10 @@ _MOCK_PROFILE = StartupProfile(
     needs=["municipal-pilot", "government-procurement", "local-distribution-network"],
     target_markets=["Vietnam", "Ho Chi Minh City", "Hanoi"],
     partnership_goals=["pilot", "distribution", "market-access"],
+    goal="cross_border_poc",
+    target_country="Vietnam",
+    missing_fields=[],
+    confidence="high",
 )
 
 _MOCK_MATCHES = MatchResponse(
@@ -120,6 +124,10 @@ _MOCK_BRIEF = PartnershipBrief(
         ">=90% fill-rate telemetry accuracy across all 50 pilot bins over 30 days",
         "Formal Letter of Intent from Saigon Green Urban Waste Board for municipal-wide expansion",
     ],
+    outcome_type="cross_border_poc",
+    assumptions=[],
+    grounded_in=["company_name", "sector", "capabilities", "needs", "target_markets", "partnership_goals"],
+    disclaimer="Illustrative demo data. Recommendations are AI-generated suggestions, not verified facts.",
 )
 
 # ---------------------------------------------------------------------------
@@ -237,6 +245,13 @@ async def get_matches(startup: StartupProfile):
     except Exception as exc:
         logger.error("Matching failed: %s", exc)
         raise HTTPException(status_code=500, detail=f"Matching error: {exc}")
+    # Verify each returned partner_id exists in the ecosystem dataset
+    try:
+        with open(DATA_PATH, encoding="utf-8") as _f:
+            _partners = {p["id"] for p in json.load(_f)}
+        matches = [m for m in matches if m.partner_id in _partners]
+    except Exception as exc:
+        logger.warning("Could not verify partner_ids: %s", exc)
     return MatchResponse(matches=matches)
 
 

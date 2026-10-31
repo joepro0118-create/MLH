@@ -1,8 +1,8 @@
 # BridgeWise API Contract
 
-**Version:** 1.0.0  
-**Base URL:** `http://localhost:8000`  
-**Frontend origin:** `http://localhost:5173` (CORS allowed)  
+**Version:** 1.0.0
+**Base URL:** `http://localhost:8000`
+**Frontend origin:** `http://localhost:5173` (CORS allowed)
 **Do not change field names without team consensus (Yap, Joe, Amn, Yuhang).**
 
 > All partner data and generated content are **ILLUSTRATIVE**. No real partnerships are claimed.
@@ -25,7 +25,7 @@
 
 Liveness check. Also reports whether `MOCK_MODE` is active.
 
-### Response 200
+### Health — Response 200
 
 ```json
 {
@@ -38,15 +38,19 @@ Liveness check. Also reports whether `MOCK_MODE` is active.
 
 ## `POST /api/pitch/analyze`
 
-Upload a pitch deck image. Gemma 4 extracts the startup profile via multimodal understanding.
+Upload 1–3 pitch deck images. Gemma 4 extracts and merges them into a single Startup Passport.
+Strict fact-grounded extraction: never guesses missing fields.
 
-### Request (`multipart/form-data`)
+### Analyze — Request (`multipart/form-data`)
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
-| `image` | file | Yes | PNG, JPEG, or WebP; max 5 MB |
+| `images` | file[] | Yes (1–3) | PNG, JPEG, or WebP; max 5 MB each |
+| `notes` | text | No | Founder's free-text context |
+| `goal` | text | No | `commercial_partnership` \| `market_expansion` \| `cross_border_poc` |
+| `target_country` | text | No | Preferred ASEAN country |
 
-### Response 200 (`StartupProfile`)
+### Analyze — Response 200 (`StartupProfile`)
 
 ```json
 {
@@ -57,14 +61,19 @@ Upload a pitch deck image. Gemma 4 extracts the startup profile via multimodal u
   "capabilities": ["iot-sensors", "route-optimisation", "real-time-dashboard", "waste-analytics"],
   "needs": ["municipal-pilot", "government-procurement", "local-distribution-network"],
   "target_markets": ["Vietnam", "Ho Chi Minh City", "Hanoi"],
-  "partnership_goals": ["pilot", "distribution", "market-access"]
+  "partnership_goals": ["pilot", "distribution", "market-access"],
+  "goal": "cross_border_poc",
+  "target_country": "Vietnam",
+  "missing_fields": [],
+  "confidence": "high"
 }
 ```
 
-### Errors
+### Analyze — Errors
 
 | Status | Condition |
 | --- | --- |
+| 400 | No files provided or more than 3 files |
 | 413 | Image > 5 MB |
 | 415 | Unsupported MIME type |
 | 502 | Gemma API error or quota exceeded |
@@ -82,7 +91,7 @@ Deterministic weighted matching — **no LLM involved**. Returns top 3 partners.
 - Target market overlap 20%
 - Partnership goal alignment 20%
 
-### Request Body (`application/json` · `StartupProfile`)
+### Matches — Request Body (`application/json` · `StartupProfile`)
 
 ```json
 {
@@ -97,7 +106,7 @@ Deterministic weighted matching — **no LLM involved**. Returns top 3 partners.
 }
 ```
 
-### Response 200
+### Matches — Response 200
 
 ```json
 {
@@ -142,7 +151,7 @@ Deterministic weighted matching — **no LLM involved**. Returns top 3 partners.
 }
 ```
 
-### Errors
+### Matches — Errors
 
 | Status | Condition |
 | --- | --- |
@@ -153,10 +162,10 @@ Deterministic weighted matching — **no LLM involved**. Returns top 3 partners.
 
 ## `POST /api/partnership/brief`
 
-Gemma 4 generates a partnership brief and 30-day POC plan grounded on the supplied profiles.  
+Gemma 4 generates a partnership brief and 30-day POC plan grounded on the supplied profiles.
 All recommendations are labelled `(RECOMMENDATION)`.
 
-### Request Body (`application/json`)
+### Brief — Request Body (`application/json`)
 
 ```json
 {
@@ -174,7 +183,7 @@ All recommendations are labelled `(RECOMMENDATION)`.
 }
 ```
 
-### Response 200 (`PartnershipBrief`)
+### Brief — Response 200 (`PartnershipBrief`)
 
 ```json
 {
@@ -188,14 +197,18 @@ All recommendations are labelled `(RECOMMENDATION)`.
     "Week 4: Impact report, media kit, and joint press release for next-phase funding"
   ],
   "success_metrics": [
-    ">=20% reduction in collection vehicle trips vs. pre-pilot baseline",
+    ">=20% reduction in collection vehicle trips vs. pre-pilot baseline by Day 30",
     ">=85% bin fill-rate prediction accuracy over the 30-day window",
-    "Letter of intent from Ho Chi Minh City waste authority for Phase 2 scale-up"
-  ]
+    "1 Letter of Intent from Ho Chi Minh City waste authority by Day 30"
+  ],
+  "outcome_type": "cross_border_poc",
+  "assumptions": [],
+  "grounded_in": ["company_name", "sector", "capabilities", "needs", "target_markets"],
+  "disclaimer": "Illustrative demo data. Recommendations are AI-generated suggestions, not verified facts."
 }
 ```
 
-### Errors
+### Brief — Errors
 
 | Status | Condition |
 | --- | --- |
@@ -207,10 +220,10 @@ All recommendations are labelled `(RECOMMENDATION)`.
 
 ## `GET /api/ecosystem/graph`
 
-Returns the full ASEAN network graph for visualisation. Built from `demo_ecosystem.json` by `graph_service.py`.  
+Returns the full ASEAN network graph for visualisation. Built from `demo_ecosystem.json` by `graph_service.py`.
 Edges exist between partners that share >=1 target market or >=1 partnership goal.
 
-### Response 200 (`EcosystemGraph`)
+### Graph — Response 200 (`EcosystemGraph`)
 
 ```json
 {
@@ -227,10 +240,10 @@ Edges exist between partners that share >=1 target market or >=1 partnership goa
 }
 ```
 
-**Node types:** `"organisation"` \| `"programme"` \| `"startup"`  
+**Node types:** `"organisation"` \| `"programme"` \| `"startup"`
 **Edge weight:** float 0.1–1.0 (higher = stronger shared context)
 
-### Errors
+### Graph — Errors
 
 | Status | Condition |
 | --- | --- |
@@ -250,7 +263,7 @@ All errors return an HTTP status code and:
 
 ## MOCK_MODE
 
-Set `MOCK_MODE=true` in `.env` to return the SmartTONG -> Vietnam canned responses for all AI-backed endpoints.  
+Set `MOCK_MODE=true` in `.env` to return the SmartTONG -> Vietnam canned responses for all AI-backed endpoints.
 `/api/matches` always runs real Python matching (deterministic, < 5 ms).
 
 ```bash
@@ -264,14 +277,17 @@ GEMINI_API_KEY=           # not needed in mock mode
 | `GET /health` | `{"status":"ok","mock_mode":true}` |
 | `POST /api/pitch/analyze` | Returns SmartTONG profile instantly |
 | `POST /api/matches` | Real matching against `demo_ecosystem.json` |
-| `POST /api/partnership/brief` | Returns canned SmartTONG × GreenCity brief |
+| `POST /api/partnership/brief` | Returns canned SmartTONG x GreenCity brief |
 | `GET /api/ecosystem/graph` | Real graph from `demo_ecosystem.json` |
 
 ---
 
-## Pydantic Schemas (Canonical Reference)
+## Pydantic Schemas v2 (Canonical Reference)
 
 ```python
+from typing import List, Literal, Optional
+from pydantic import BaseModel, Field
+
 class StartupProfile(BaseModel):
     company_name: str
     country: str
@@ -281,12 +297,17 @@ class StartupProfile(BaseModel):
     needs: List[str]
     target_markets: List[str]
     partnership_goals: List[str]
+    # v2 — fact-grounded extraction
+    goal: Optional[str] = None
+    target_country: Optional[str] = None
+    missing_fields: List[str] = []
+    confidence: Literal["high", "medium", "low"] = "medium"
 
 class PartnerMatch(BaseModel):
     partner_id: str
     partner_name: str
     country: str
-    score: int          # 0-100
+    score: int = Field(ge=0, le=100)
     reasons: List[str]
     opportunity: str
 
@@ -298,12 +319,22 @@ class PartnershipBrief(BaseModel):
     collaboration_concept: str
     proposed_poc: str
     timeline: List[str]
-    success_metrics: List[str]
+    success_metrics: List[str]   # each must have a number + deadline
+    # v2 — fact-grounded generation
+    outcome_type: Literal[
+        "commercial_partnership", "market_expansion", "cross_border_poc"
+    ] = "cross_border_poc"
+    assumptions: List[str] = []
+    grounded_in: List[str] = []
+    disclaimer: str = (
+        "Illustrative demo data. "
+        "Recommendations are AI-generated suggestions, not verified facts."
+    )
 
 class GraphNode(BaseModel):
     id: str
     label: str
-    type: str           # "organisation" | "programme" | "startup"
+    type: str    # "organisation" | "programme" | "startup"
     country: str
 
 class GraphEdge(BaseModel):
