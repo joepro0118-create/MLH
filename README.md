@@ -2,7 +2,7 @@
 
 [![Vercel Deployment](https://img.shields.io/badge/Vercel-Live_App-000000?style=for-the-badge&logo=vercel)](https://mlh-vert.vercel.app/)
 [![YouTube Video Demo](https://img.shields.io/badge/YouTube-Video_Demo-FF0000?style=for-the-badge&logo=youtube)](https://www.youtube.com/)
-[![Pitch Deck](https://img.shields.io/badge/Pitch_Deck-Presentation_Slides-4285F4?style=for-the-badge&logo=googleslides)](https://docs.google.com/presentation/)
+[![Pitch Deck](https://img.shields.io/badge/Pitch_Deck-Canva_Presentation-00C4CC?style=for-the-badge&logo=canva)](https://canva.link/v6b0hx0p5yl6w4t)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-BridgeWise_Repo-181717?style=for-the-badge&logo=github)](https://github.com/joepro0118-create/MLH)
 
 > **MLH Hacktoberfest Hack Day KL · 31 October 2026 · Team BridgeWise (Yap En Thong, Joe Vei Xiang Zu, Manjishtha Chakma, Tan Yong Hung)**
@@ -63,11 +63,11 @@ It converts open-ended cross-border networking into concrete, measurable 30-day 
 
 [![Vercel Deployment](https://img.shields.io/badge/Vercel-Live_App-000000?style=for-the-badge&logo=vercel)](https://mlh-vert.vercel.app/)
 [![YouTube Video Demo](https://img.shields.io/badge/YouTube-Video_Demo-FF0000?style=for-the-badge&logo=youtube)](https://www.youtube.com/)
-[![Pitch Deck](https://img.shields.io/badge/Pitch_Deck-Presentation_Slides-4285F4?style=for-the-badge&logo=googleslides)](https://docs.google.com/presentation/)
+[![Pitch Deck](https://img.shields.io/badge/Pitch_Deck-Canva_Presentation-00C4CC?style=for-the-badge&logo=canva)](https://canva.link/v6b0hx0p5yl6w4t)
 
 - 🌐 **Live Web Application (Vercel):** [https://mlh-vert.vercel.app/](https://mlh-vert.vercel.app/)
 - 🎥 **Video Demo Walkthrough:** [YouTube Video Walkthrough](https://www.youtube.com/) *(replace with your link)*
-- 📑 **Pitch Deck Presentation:** [Google Slides / Canva Pitch Deck](https://docs.google.com/presentation/) *(replace with your link)*
+- 📑 **Pitch Deck Presentation (Canva):** [https://canva.link/v6b0hx0p5yl6w4t](https://canva.link/v6b0hx0p5yl6w4t)
 
 ---
 
@@ -86,7 +86,7 @@ It converts open-ended cross-border networking into concrete, measurable 30-day 
 
 - 🌐 **Live Web Application (Vercel):** [https://mlh-vert.vercel.app/](https://mlh-vert.vercel.app/)
 - 🎥 **Video Demo Walkthrough:** [YouTube Video Walkthrough](https://www.youtube.com/) *(replace with your link)*
-- 📑 **Pitch Deck Presentation:** [Google Slides / Canva Pitch Deck](https://docs.google.com/presentation/) *(replace with your link)*
+- 📑 **Pitch Deck Presentation (Canva):** [https://canva.link/v6b0hx0p5yl6w4t](https://canva.link/v6b0hx0p5yl6w4t)
 
 BridgeWise is designed so judges can evaluate the complete end-to-end product either live in production or locally in **under 2 minutes** — either with **live Gemma 4 multimodal inference** (using a free Google AI Studio key) or **completely offline** using `MOCK_MODE=true` and the built-in **One-Click Demo Login** + **SmartTONG Sample Pitch Deck**.
 
