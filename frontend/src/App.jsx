@@ -2,6 +2,7 @@
 // Hero: Glow-pulse upload zone  |  Micro: Shimmer skeletons  |  Delight: Confetti on brief
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { analyzePitch, getMatches, getGraph, getBrief } from './api.js'
+import { EcosystemGraph } from './components/EcosystemGraph.jsx'
 import './index.css'
 
 /* ─────────────────────────────────────────────────────────────
@@ -465,23 +466,13 @@ function GraphStep({ profile, partner, onBrief }) {
       </div>
 
       {/* Network graph */}
-      <div className="graph-card">
-        <div className="graph-card-top">
-          <div className="card-title" style={{ color: '#e2e8f0' }}>🌐 ASEAN Ecosystem Network</div>
-          <div className="graph-legend">
-            {[['programme', 'Programme'], ['organisation', 'Organisation'], ['startup', 'Startup']].map(([t, l]) => (
-              <div key={t} className="legend-pill">
-                <div className="legend-dot" style={{ background: NODE_COLOR[t] }} />
-                {l}
-              </div>
-            ))}
-          </div>
-        </div>
-        {!graph && !graphErr && (
-          <div className="graph-spinner"><div className="spinner-ring" /><span>Loading graph…</span></div>
-        )}
-        {graphErr && <div className="error-toast">⚠️ {graphErr}</div>}
-        {graph && <NetworkGraph nodes={graph.nodes} edges={graph.edges} highlightId={partner.partner_id || partner.id} />}
+      <div className="card" style={{ padding: '0.25rem', overflow: 'hidden' }}>
+        <EcosystemGraph
+          startup={profile}
+          highlightIds={[partner.partner_id || partner.id]}
+          nodes={graph?.nodes}
+          edges={graph?.edges}
+        />
       </div>
 
       {/* Brief generation */}

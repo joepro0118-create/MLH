@@ -1,158 +1,344 @@
 [
   {
-    "id": "p001",
-    "name": "GreenCity Vietnam Initiative",
+    "id": "partner-vn-01",
+    "name": "Saigon Green Urban Waste Board (illustrative)",
+    "country": "Vietnam",
+    "type": "organisation",
+    "sector": "smart_waste",
+    "sectors": ["smart_waste", "cleantech", "govtech", "circular_economy"],
+    "city": "Ho Chi Minh City",
+    "capabilities": [
+      "municipal_waste_concessions",
+      "landfill_management",
+      "regulatory_approvals",
+      "vietnam_local_distribution",
+      "civic_infrastructure"
+    ],
+    "needs": [
+      "iot_fill_level_sensors",
+      "route_optimization_software",
+      "real_time_fleet_tracking",
+      "data_analytics_dashboard"
+    ],
+    "target_markets": ["Vietnam"],
+    "partnership_goals": [
+      "Pilot IoT smart bin sensors across District 1 and District 3 to reduce overflow complaints",
+      "Optimize daily municipal collection truck routes to cut urban diesel emissions by 20%"
+    ],
+    "description": "Government-supervised municipal agency overseeing public solid waste collection, transfer stations, and landfill processing in Ho Chi Minh City.",
+    "contact_email": "partnerships@saigongreenwaste-demo.vn",
+    "website": "https://saigongreenwaste-demo.vn",
+    "illustrative": true
+  },
+  {
+    "id": "partner-vn-02",
+    "name": "VinaFleet EcoLogistics (illustrative)",
+    "country": "Vietnam",
+    "type": "startup",
+    "sector": "smart_waste",
+    "sectors": ["smart_waste", "logistics", "cleantech", "fleet_management"],
+    "city": "Hanoi",
+    "capabilities": [
+      "electric_waste_truck_fleet",
+      "vietnam_local_distribution",
+      "driver_workforce",
+      "field_maintenance",
+      "commercial_collection_contracts"
+    ],
+    "needs": [
+      "iot_fill_level_sensors",
+      "route_optimization_software",
+      "automated_dispatch_apis",
+      "predictive_maintenance_telematics"
+    ],
+    "target_markets": ["Vietnam"],
+    "partnership_goals": [
+      "Equip 120 commercial electric compactors with real-time IoT fill sensors",
+      "Integrate automated dynamic routing into driver mobile tablets for commercial clients"
+    ],
+    "description": "Private commercial waste logistics operator running electric waste collection fleets for industrial parks and shopping malls across northern Vietnam.",
+    "contact_email": "contact@vinafleet-demo.vn",
+    "website": "https://vinafleet-demo.vn",
+    "illustrative": true
+  },
+  {
+    "id": "partner-vn-03",
+    "name": "Mekong Green Horizons Accelerator (illustrative)",
     "country": "Vietnam",
     "type": "programme",
-    "sector": "smart-city",
-    "description": "An illustrative Vietnamese government-backed smart-city programme that provides municipal procurement pathways and pilot infrastructure access across Hanoi and Ho Chi Minh City. Facilitates foreign technology vendors entering Vietnamese municipal contracts.",
-    "capabilities": ["government-procurement", "municipal-pilot-facilitation", "regulatory-navigation", "public-sector-network", "smart-infrastructure-deployment"],
-    "needs": ["iot-solutions", "waste-management-technology", "smart-sensor-hardware", "route-optimisation-software"],
-    "target_markets": ["Vietnam", "Ho Chi Minh City", "Hanoi"],
-    "partnership_goals": ["pilot", "procurement", "technology-transfer", "co-development"],
+    "sector": "cleantech",
+    "sectors": ["cleantech", "smart_waste", "govtech", "cross_border_expansion"],
+    "city": "Ho Chi Minh City",
+    "capabilities": [
+      "vietnam_market_entry_support",
+      "pilot_project_subsidies",
+      "regulatory_fast_track",
+      "investor_network_access",
+      "local_government_liaison"
+    ],
+    "needs": [
+      "proven_cleantech_scaleups",
+      "asean_cross_border_innovators",
+      "measurable_esg_metrics",
+      "smart_city_solutions"
+    ],
+    "target_markets": ["Vietnam", "Malaysia", "Singapore"],
+    "partnership_goals": [
+      "Fast-track Malaysian and Singaporean cleantech scaleups into Vietnamese municipal pilot projects",
+      "Provide matching seed grants for cross-border smart city deployments in Southeast Asia"
+    ],
+    "description": "Bilateral sustainability accelerator funded by regional development partners supporting ASEAN green-tech startups expanding into Vietnam.",
+    "contact_email": "cohort@mekonggreenhorizons-demo.org",
+    "website": "https://mekonggreenhorizons-demo.org",
     "illustrative": true
   },
   {
-    "id": "p002",
-    "name": "CircularASEAN Hub",
-    "country": "Singapore",
-    "type": "organisation",
-    "sector": "sustainability",
-    "description": "An illustrative Singapore-based circular-economy accelerator with a regional ASEAN network and grant funding for cross-border sustainability ventures. Connects hardware and IoT startups with municipal partners and impact investors across Southeast Asia.",
-    "capabilities": ["asean-network", "grant-funding", "investor-access", "market-entry-support", "sustainability-certification"],
-    "needs": ["smart-waste-solutions", "iot-hardware-partners", "municipal-deployment-experience", "pilot-case-studies"],
-    "target_markets": ["Vietnam", "Singapore", "Thailand", "Indonesia", "Malaysia"],
-    "partnership_goals": ["distribution", "co-development", "pilot", "investment"],
-    "illustrative": true
-  },
-  {
-    "id": "p003",
-    "name": "EcoRoute Logistics",
-    "country": "Vietnam",
-    "type": "startup",
-    "sector": "logistics",
-    "description": "An illustrative Vietnamese startup specialising in last-mile waste logistics and collection route optimisation across Ho Chi Minh City neighbourhoods. Operates a fleet management platform integrated with local waste-hauler networks.",
-    "capabilities": ["last-mile-logistics", "fleet-management", "distribution-network", "local-operations", "waste-collection"],
-    "needs": ["iot-sensors", "real-time-data", "route-optimisation-software", "smart-bin-hardware"],
-    "target_markets": ["Vietnam", "Ho Chi Minh City", "Mekong Delta"],
-    "partnership_goals": ["co-development", "pilot", "distribution", "technology-licensing"],
-    "illustrative": true
-  },
-  {
-    "id": "p004",
-    "name": "AgriLink Thailand",
-    "country": "Thailand",
-    "type": "startup",
-    "sector": "agritech",
-    "description": "An illustrative Thai agritech startup offering IoT-based crop monitoring and precision agriculture solutions for smallholder farmers across Northern Thailand. Partners with agri-cooperatives to deploy sensor networks and data analytics platforms.",
-    "capabilities": ["iot-sensors", "data-analytics", "agri-cooperative-network", "precision-agriculture", "mobile-app-development"],
-    "needs": ["funding", "regional-expansion", "distribution-network", "government-partnerships"],
-    "target_markets": ["Thailand", "Myanmar", "Cambodia", "Laos"],
-    "partnership_goals": ["co-development", "distribution", "investment", "pilot"],
-    "illustrative": true
-  },
-  {
-    "id": "p005",
-    "name": "FinBridge Indonesia",
-    "country": "Indonesia",
-    "type": "startup",
-    "sector": "fintech",
-    "description": "An illustrative Indonesian fintech startup providing embedded micro-lending and payment solutions for SMEs in Java and Sumatra. Leverages alternative credit scoring powered by transactional data from partner ecosystems.",
-    "capabilities": ["micro-lending", "payment-processing", "credit-scoring", "api-integration", "sme-network"],
-    "needs": ["data-partnerships", "regional-licensing", "technology-partners", "investor-access"],
-    "target_markets": ["Indonesia", "Philippines", "Malaysia"],
-    "partnership_goals": ["distribution", "co-development", "investment", "pilot"],
-    "illustrative": true
-  },
-  {
-    "id": "p006",
-    "name": "SmartPort Manila",
-    "country": "Philippines",
-    "type": "organisation",
-    "sector": "logistics",
-    "description": "An illustrative Philippine logistics consortium managing smart-port and supply-chain digitalisation projects across Manila Bay. Connects technology vendors with port operators and freight forwarders seeking operational efficiency tools.",
-    "capabilities": ["supply-chain-management", "port-operations", "freight-network", "logistics-digitisation", "government-liaison"],
-    "needs": ["iot-tracking", "data-analytics", "route-optimisation-software", "smart-sensor-hardware"],
-    "target_markets": ["Philippines", "Vietnam", "Indonesia", "Singapore"],
-    "partnership_goals": ["pilot", "procurement", "technology-transfer", "distribution"],
-    "illustrative": true
-  },
-  {
-    "id": "p007",
-    "name": "GovTech Nexus Malaysia",
+    "id": "partner-my-01",
+    "name": "CradleEco Cross-Border Hub (illustrative)",
     "country": "Malaysia",
     "type": "programme",
-    "sector": "govtech",
-    "description": "An illustrative Malaysian public-private programme that co-funds and fast-tracks govtech pilots with local authorities and federal agencies. Provides regulatory sandboxes and procurement frameworks for smart-city and digital-government solutions.",
-    "capabilities": ["regulatory-sandbox", "government-procurement", "co-funding", "pilot-facilitation", "public-sector-network"],
-    "needs": ["smart-city-solutions", "sustainability-tech", "iot-platforms", "data-management-tools"],
-    "target_markets": ["Malaysia", "Brunei", "Singapore"],
-    "partnership_goals": ["pilot", "procurement", "co-development", "technology-transfer"],
+    "sector": "cleantech",
+    "sectors": ["cleantech", "smart_waste", "govtech", "cross_border_expansion"],
+    "city": "Kuala Lumpur",
+    "capabilities": [
+      "export_grant_funding",
+      "asean_regulatory_advisory",
+      "malaysian_pilot_references",
+      "soft_landing_support"
+    ],
+    "needs": [
+      "vietnam_channel_partners",
+      "asean_deployment_track_record",
+      "impact_measurement_frameworks"
+    ],
+    "target_markets": ["Malaysia", "Vietnam", "Indonesia", "Thailand"],
+    "partnership_goals": [
+      "Sponsor Malaysian smart waste scaleups expanding into Greater Mekong smart cities",
+      "Co-finance overseas commercialization pilots with local ASEAN municipal partners"
+    ],
+    "description": "Malaysian public-private technology accelerator assisting homegrown cleantech and GovTech startups expanding into ASEAN target markets.",
+    "contact_email": "growth@cradleeco-demo.my",
+    "website": "https://cradleeco-demo.my",
     "illustrative": true
   },
   {
-    "id": "p008",
-    "name": "SolarGrid Ventures",
+    "id": "partner-sg-01",
+    "name": "LionCity Urban Solutions (illustrative)",
     "country": "Singapore",
-    "type": "organisation",
-    "sector": "sustainability",
-    "description": "An illustrative Singapore-based cleantech venture studio investing in renewable energy and sustainable infrastructure startups across ASEAN. Provides seed funding, mentorship, and regional go-to-market support for climate-tech founders.",
-    "capabilities": ["venture-funding", "cleantech-expertise", "asean-market-access", "mentorship", "sustainability-network"],
-    "needs": ["innovative-cleantech-startups", "sustainable-hardware", "impact-measurable-solutions"],
-    "target_markets": ["Singapore", "Indonesia", "Vietnam", "Thailand"],
-    "partnership_goals": ["investment", "co-development", "distribution", "pilot"],
+    "type": "startup",
+    "sector": "govtech",
+    "sectors": ["govtech", "smart_waste", "iot_sensors", "smart_cities"],
+    "city": "Singapore",
+    "capabilities": [
+      "smart_city_master_systems",
+      "enterprise_cloud_dashboards",
+      "asean_enterprise_sales_reach",
+      "iso_compliance_certifications"
+    ],
+    "needs": [
+      "edge_iot_sensors",
+      "route_optimization_software",
+      "local_waste_operators_vietnam"
+    ],
+    "target_markets": ["Singapore", "Vietnam", "Malaysia", "Thailand"],
+    "partnership_goals": [
+      "Bundle turnkey smart waste management telemetry into regional smart city government bids in Vietnam and Thailand",
+      "Integrate partner sensor APIs into unified urban dashboard"
+    ],
+    "description": "Regional smart city platform developer integrating IoT sensor telematics into government command centers across ASEAN.",
+    "contact_email": "regional-sales@lioncityurban-demo.sg",
+    "website": "https://lioncityurban-demo.sg",
     "illustrative": true
   },
   {
-    "id": "p009",
-    "name": "UrbanFlow Jakarta",
+    "id": "partner-th-01",
+    "name": "Siam Sensortech Robotics (illustrative)",
+    "country": "Thailand",
+    "type": "startup",
+    "sector": "iot_sensors",
+    "sectors": ["iot_sensors", "smart_waste", "hardware_manufacturing"],
+    "city": "Bangkok",
+    "capabilities": [
+      "rugged_ultrasonic_sensor_manufacturing",
+      "ip68_hardware_enclosures",
+      "cellular_nb_iot_modules",
+      "low_cost_hardware_assembly"
+    ],
+    "needs": [
+      "cloud_analytics_platform",
+      "dynamic_routing_engine",
+      "asean_software_distributors",
+      "field_deployment_partners"
+    ],
+    "target_markets": ["Thailand", "Vietnam", "Malaysia", "Indonesia"],
+    "partnership_goals": [
+      "OEM bundle ultrasonic bin sensors with partner route optimization SaaS for Southeast Asian smart city tenders"
+    ],
+    "description": "Hardware engineering firm manufacturing ruggedized NB-IoT and LoRaWAN fill-level telemetry devices for industrial bins.",
+    "contact_email": "sales@siamsensortech-demo.co.th",
+    "website": "https://siamsensortech-demo.co.th",
+    "illustrative": true
+  },
+  {
+    "id": "partner-my-02",
+    "name": "Klang Valley Recycler Alliance (illustrative)",
+    "country": "Malaysia",
+    "type": "organisation",
+    "sector": "smart_waste",
+    "sectors": ["circular_economy", "smart_waste", "cleantech"],
+    "city": "Petaling Jaya",
+    "capabilities": [
+      "e_waste_processing",
+      "material_recovery_facilities",
+      "local_malaysian_logistics"
+    ],
+    "needs": [
+      "ai_waste_sorting_robotics",
+      "b2b_scrap_traceability",
+      "carbon_credit_accounting"
+    ],
+    "target_markets": ["Malaysia"],
+    "partnership_goals": [
+      "Deploy smart weighing scales and traceable sorting in Selangor recovery centers"
+    ],
+    "description": "Consortium of scrap recyclers and MRF operators in Greater Kuala Lumpur modernizing commercial industrial recycling.",
+    "contact_email": "admin@klangrecyclers-demo.my",
+    "website": "https://klangrecyclers-demo.my",
+    "illustrative": true
+  },
+  {
+    "id": "partner-id-01",
+    "name": "Nusantara FastHaul Logistics (illustrative)",
     "country": "Indonesia",
     "type": "startup",
-    "sector": "smart-city",
-    "description": "An illustrative Indonesian smart-city startup developing real-time traffic and urban mobility analytics for Jakarta metropolitan area. Integrates city sensor feeds and satellite imagery to provide actionable congestion insights to municipal planners.",
-    "capabilities": ["urban-analytics", "real-time-dashboard", "data-visualisation", "smart-infrastructure", "government-engagement"],
-    "needs": ["municipal-pilot", "iot-sensors", "data-partnerships", "regional-expansion-support"],
-    "target_markets": ["Indonesia", "Vietnam", "Philippines", "Malaysia"],
-    "partnership_goals": ["pilot", "co-development", "distribution", "investment"],
-    "illustrative": true
-  },
-  {
-    "id": "p010",
-    "name": "AquaTech Mekong",
-    "country": "Vietnam",
-    "type": "startup",
-    "sector": "sustainability",
-    "description": "An illustrative Vietnamese startup deploying IoT water-quality monitoring systems along Mekong Delta waterways for aquaculture and municipal water management. Partners with provincial authorities and fish-farming cooperatives.",
-    "capabilities": ["iot-sensors", "water-quality-monitoring", "aquaculture-network", "provincial-government-relations", "environmental-data"],
-    "needs": ["funding", "hardware-partnerships", "regional-scaling", "smart-city-integration"],
-    "target_markets": ["Vietnam", "Cambodia", "Laos", "Thailand"],
-    "partnership_goals": ["co-development", "pilot", "investment", "distribution"],
-    "illustrative": true
-  },
-  {
-    "id": "p011",
-    "name": "LogiChain Connect",
-    "country": "Thailand",
-    "type": "organisation",
     "sector": "logistics",
-    "description": "An illustrative Thai logistics industry association facilitating supply-chain digitalisation and cross-border trade corridors in the Greater Mekong Sub-region. Connects technology providers with established freight and haulage operators.",
-    "capabilities": ["cross-border-logistics", "supply-chain-network", "industry-partnerships", "trade-facilitation", "fleet-management"],
-    "needs": ["route-optimisation-software", "iot-tracking", "last-mile-solutions", "data-analytics"],
-    "target_markets": ["Thailand", "Vietnam", "Myanmar", "Laos", "Cambodia"],
-    "partnership_goals": ["pilot", "distribution", "technology-transfer", "co-development"],
+    "sectors": ["logistics", "e_commerce", "supply_chain"],
+    "city": "Jakarta",
+    "capabilities": [
+      "nationwide_2_wheeler_fleet",
+      "last_mile_delivery_warehousing",
+      "indonesian_regulatory_compliance"
+    ],
+    "needs": [
+      "urban_parcel_routing",
+      "driver_incentive_algorithms",
+      "cold_chain_iot_monitoring"
+    ],
+    "target_markets": ["Indonesia"],
+    "partnership_goals": [
+      "Optimize parcel delivery dispatch in congested Jabodetabek metropolitan area"
+    ],
+    "description": "Indonesian on-demand express courier and warehousing network catering to e-commerce and retail merchants.",
+    "contact_email": "dispatch@nusantarahaul-demo.co.id",
+    "website": "https://nusantarahaul-demo.co.id",
     "illustrative": true
   },
   {
-    "id": "p012",
-    "name": "HealthBridge Philippines",
+    "id": "partner-id-02",
+    "name": "JavaAgro BioNutrients (illustrative)",
+    "country": "Indonesia",
+    "type": "startup",
+    "sector": "agritech",
+    "sectors": ["agritech", "cleantech", "circular_economy"],
+    "city": "Surabaya",
+    "capabilities": [
+      "black_soldier_fly_processing",
+      "organic_composting_facilities",
+      "rural_fertilizer_distribution"
+    ],
+    "needs": [
+      "organic_food_waste_feedstock",
+      "moisture_iot_sensors",
+      "farm_management_software"
+    ],
+    "target_markets": ["Indonesia", "Malaysia"],
+    "partnership_goals": [
+      "Source municipal market vegetable trimmings and restaurant food waste for insect protein conversion"
+    ],
+    "description": "Agritech enterprise utilizing insect bioconversion to process agricultural byproduct into organic fertilizer and animal feed.",
+    "contact_email": "ops@javaagro-demo.co.id",
+    "website": "https://javaagro-demo.co.id",
+    "illustrative": true
+  },
+  {
+    "id": "partner-ph-01",
+    "name": "Barangay EcoPay Fintech (illustrative)",
+    "country": "Philippines",
+    "type": "startup",
+    "sector": "fintech",
+    "sectors": ["fintech", "cleantech", "circular_economy"],
+    "city": "Manila",
+    "capabilities": [
+      "mobile_wallet_payments",
+      "neighborhood_micro_agent_network",
+      "unbanked_financial_onboarding"
+    ],
+    "needs": [
+      "reverse_vending_machine_hardware",
+      "plastic_scrap_offtakers",
+      "fraud_detection_apis"
+    ],
+    "target_markets": ["Philippines"],
+    "partnership_goals": [
+      "Incentivize household plastic bottle recovery through instant digital wallet micro-credits"
+    ],
+    "description": "Community-based fintech app empowering low-income barangay households to trade recyclable plastic bottles for digital utility tokens.",
+    "contact_email": "support@ecopay-demo.ph",
+    "website": "https://ecopay-demo.ph",
+    "illustrative": true
+  },
+  {
+    "id": "partner-ph-02",
+    "name": "Luzon CivicGov Digital Labs (illustrative)",
     "country": "Philippines",
     "type": "startup",
     "sector": "govtech",
-    "description": "An illustrative Philippine healthtech startup digitising local government health records and community health worker workflows across Luzon and Visayas. Integrates with PhilHealth systems and barangay health centres.",
-    "capabilities": ["health-records-digitisation", "local-government-integration", "mobile-health-apps", "community-health-network", "data-management"],
-    "needs": ["funding", "regional-expansion", "technology-partners", "government-procurement"],
-    "target_markets": ["Philippines", "Indonesia", "Malaysia", "Vietnam"],
-    "partnership_goals": ["investment", "distribution", "pilot", "co-development"],
+    "sectors": ["govtech", "civic_tech"],
+    "city": "Quezon City",
+    "capabilities": [
+      "citizen_incident_reporting_apps",
+      "lgu_permit_processing",
+      "sms_broadcast_alerts"
+    ],
+    "needs": [
+      "gis_mapping_integrations",
+      "cloud_hosting_credits",
+      "multilingual_nlp_chatbots"
+    ],
+    "target_markets": ["Philippines"],
+    "partnership_goals": [
+      "Expand citizen pothole and street flooding reporting across local government units (LGUs)"
+    ],
+    "description": "Civic technology studio building citizen reporting portals and automated permit issuance systems for Philippine municipalities.",
+    "contact_email": "hello@luzoncivic-demo.ph",
+    "website": "https://luzoncivic-demo.ph",
+    "illustrative": true
+  },
+  {
+    "id": "partner-sg-02",
+    "name": "Equator Climate Exchange (illustrative)",
+    "country": "Singapore",
+    "type": "startup",
+    "sector": "fintech",
+    "sectors": ["fintech", "cleantech", "carbon_markets"],
+    "city": "Singapore",
+    "capabilities": [
+      "carbon_credit_tokenization",
+      "esg_audit_verifications",
+      "institutional_trading_liquidity"
+    ],
+    "needs": [
+      "verified_methane_avoidance_data",
+      "landfill_telemetry_streams",
+      "iot_oracle_integrations"
+    ],
+    "target_markets": ["Singapore", "Global"],
+    "partnership_goals": [
+      "Tokenize verifiable greenhouse gas emissions reductions from municipal waste methane capture projects"
+    ],
+    "description": "Digital green asset exchange providing institutional buyers with audited, blockchain-verified regional voluntary carbon credits.",
+    "contact_email": "markets@equatorcarbon-demo.sg",
+    "website": "https://equatorcarbon-demo.sg",
     "illustrative": true
   }
 ]
