@@ -137,7 +137,7 @@ export default function BriefStep({
             </h2>
 
             <div className="flex flex-wrap items-center gap-2 text-sm text-[#64748b] pt-0.5">
-              <span className="font-bold text-[#2563eb]">
+              <span className="font-bold text-[#7c3aed]">
                 {startup?.company_name} ({startup?.country})
               </span>
               <span className="text-[#64748b]">×</span>
@@ -159,14 +159,14 @@ export default function BriefStep({
               onClick={handleCopyMarkdown}
               className="inline-flex items-center gap-2 rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-4 py-2.5 text-xs font-semibold text-[#1e293b] hover:bg-slate-200/70 transition cursor-pointer"
             >
-              <Copy className="h-4 w-4 text-[#2563eb]" />
+              <Copy className="h-4 w-4 text-[#7c3aed]" />
               Copy Brief
             </button>
 
             <button
               type="button"
               onClick={handleDownloadMarkdown}
-              className="inline-flex items-center gap-2 rounded-lg bg-[#2563eb] px-4 py-2.5 text-xs font-semibold text-white hover:bg-blue-700 transition cursor-pointer shadow-xs"
+              className="inline-flex items-center gap-2 rounded-lg bg-[#7c3aed] px-4 py-2.5 text-xs font-semibold text-white hover:bg-violet-700 transition cursor-pointer shadow-xs"
             >
               <Download className="h-4 w-4" />
               Download as Markdown
@@ -179,11 +179,11 @@ export default function BriefStep({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Objective */}
         <div className="rounded-xl border border-[#e2e8f0] bg-white p-5 shadow-xs space-y-2.5">
-          <div className="flex items-center gap-2 text-[#2563eb]">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#eff6ff] border border-blue-200">
+          <div className="flex items-center gap-2 text-[#7c3aed]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#f5f3ff] border border-violet-200">
               <Target className="h-4 w-4" />
             </div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-[#2563eb]">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#7c3aed]">
               Partnership Objective
             </h3>
           </div>
@@ -226,7 +226,7 @@ export default function BriefStep({
       {/* 30-Day Execution Timeline (Week 1 - 4) */}
       <div className="rounded-xl border border-[#e2e8f0] bg-white p-6 shadow-xs space-y-4">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#eff6ff] border border-blue-200 text-[#2563eb]">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#f5f3ff] border border-violet-200 text-[#7c3aed]">
             <CalendarRange className="h-5 w-5" />
           </div>
           <div>
@@ -243,19 +243,21 @@ export default function BriefStep({
           {(brief.timeline || []).map((stepText, idx) => (
             <div
               key={idx}
-              className="flex flex-col justify-between rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-4 hover:border-[#2563eb] transition"
+              className={`flex flex-col justify-between rounded-lg p-4 text-white shadow-sm ${
+                idx === 0 ? 'bg-violet-600' : 'bg-blue-500'
+              }`}
             >
-              <div className="space-y-2">
-                <div className="inline-flex items-center gap-2 rounded-md bg-[#2563eb] px-2.5 py-0.5 text-xs font-bold text-white">
+              <div className="space-y-1.5">
+                <div className="text-sm font-bold">
                   Week {idx + 1}
                 </div>
-                <p className="text-xs sm:text-sm text-[#1e293b] leading-relaxed">
+                <p className="text-xs sm:text-sm leading-relaxed text-white/90">
                   {stepText}
                 </p>
               </div>
-              <div className="mt-4 pt-2 border-t border-[#e2e8f0] flex items-center justify-between text-[11px] text-[#64748b]">
+              <div className="mt-4 pt-2 border-t border-white/25 flex items-center justify-between text-[11px] text-white/80">
                 <span>Days {idx * 7 + 1}–{(idx + 1) * 7}</span>
-                <span className="text-[#2563eb] font-semibold">Milestone #{idx + 1}</span>
+                <span className="font-semibold">Milestone #{idx + 1}</span>
               </div>
             </div>
           ))}
@@ -292,7 +294,7 @@ export default function BriefStep({
         {/* Navigation / Try Another Partner Card */}
         <div className="lg:col-span-4 flex flex-col justify-between rounded-xl border border-[#e2e8f0] bg-white p-6 shadow-xs space-y-4">
           <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#2563eb]">
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#7c3aed]">
               <Globe2 className="h-4 w-4" />
               Next Actions
             </div>

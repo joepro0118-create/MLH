@@ -76,7 +76,7 @@ export default function UploadStep({
       <div className="rounded-xl border border-[#e2e8f0] bg-white p-6 shadow-xs">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-[#eff6ff] border border-blue-200 px-3 py-0.5 text-xs font-semibold text-[#2563eb]">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-[#f5f3ff] border border-violet-200 px-3 py-0.5 text-xs font-semibold text-[#7c3aed]">
               <Cpu className="h-3.5 w-3.5" />
               Step 1 of 4 · Multimodal Vision Extraction (`gemma-4-26b-a4b-it`)
             </div>
@@ -85,7 +85,7 @@ export default function UploadStep({
             </h2>
             <p className="text-sm text-[#64748b] max-w-2xl">
               Upload a pitch deck slide or one-pager image. Gemma 4 extracts a structured{' '}
-              <span className="font-semibold text-[#2563eb]">ASEAN Startup Passport</span>{' '}
+              <span className="font-semibold text-[#7c3aed]">ASEAN Startup Passport</span>{' '}
               to power deterministic cross-border partner matching.
             </p>
           </div>
@@ -94,7 +94,7 @@ export default function UploadStep({
             type="button"
             onClick={handleUseDemoPitch}
             disabled={isAnalyzing || loadingDemoSlide}
-            className="shrink-0 inline-flex items-center justify-center gap-2 rounded-lg border border-blue-200 bg-[#eff6ff] px-4 py-2.5 text-xs sm:text-sm font-semibold text-[#2563eb] hover:bg-blue-100 transition cursor-pointer disabled:opacity-50"
+            className="shrink-0 inline-flex items-center justify-center gap-2 rounded-lg border border-violet-200 bg-[#f5f3ff] px-4 py-2.5 text-xs sm:text-sm font-semibold text-[#7c3aed] hover:bg-violet-100 transition cursor-pointer disabled:opacity-50"
           >
             <Wand2 className="h-4 w-4" />
             {loadingDemoSlide ? 'Loading Demo Slide...' : 'Use Demo Pitch (SmartTONG MY → VN)'}
@@ -117,8 +117,8 @@ export default function UploadStep({
                 onClick={() => fileInputRef.current?.click()}
                 className={`group flex flex-col items-center justify-center rounded-xl border-[2.5px] border-dashed p-10 text-center transition-all cursor-pointer min-h-[300px] ${
                   isDragging
-                    ? 'border-[#2563eb] bg-[#eff6ff]'
-                    : 'border-[#e2e8f0] bg-[#f8fafc] hover:border-[#2563eb] hover:bg-[#eff6ff]'
+                    ? 'border-[#7c3aed] bg-[#f5f3ff]'
+                    : 'border-[#e2e8f0] bg-[#f8fafc] hover:border-[#7c3aed] hover:bg-[#f5f3ff]'
                 }`}
               >
                 <input
@@ -129,7 +129,7 @@ export default function UploadStep({
                   className="hidden"
                 />
 
-                <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-blue-100 text-[#2563eb] group-hover:scale-105 transition-transform">
+                <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-violet-100 text-[#7c3aed] group-hover:scale-105 transition-transform">
                   <UploadCloud className="h-7 w-7" />
                 </div>
 
@@ -142,7 +142,7 @@ export default function UploadStep({
 
                 <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
                   <span className="inline-flex items-center gap-1.5 rounded-lg border border-[#e2e8f0] bg-white px-3.5 py-2 text-xs font-semibold text-[#1e293b] shadow-2xs">
-                    <FileImage className="h-4 w-4 text-[#2563eb]" />
+                    <FileImage className="h-4 w-4 text-[#7c3aed]" />
                     Browse Image
                   </span>
                   <button
@@ -151,7 +151,7 @@ export default function UploadStep({
                       e.stopPropagation();
                       handleUseDemoPitch();
                     }}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-[#eff6ff] px-3.5 py-2 text-xs font-semibold text-[#2563eb] hover:bg-blue-100 transition cursor-pointer"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-violet-200 bg-[#f5f3ff] px-3.5 py-2 text-xs font-semibold text-[#7c3aed] hover:bg-violet-100 transition cursor-pointer"
                   >
                     <Wand2 className="h-4 w-4" />
                     Use Demo Pitch — SmartTONG (Malaysia → Vietnam)
@@ -210,7 +210,7 @@ export default function UploadStep({
 
                   {isAnalyzing && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/90 backdrop-blur-xs p-6 text-center">
-                      <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[#eff6ff] border border-blue-200 text-[#2563eb]">
+                      <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[#f5f3ff] border border-violet-200 text-[#7c3aed]">
                         <Sparkles className="h-6 w-6 animate-spin" />
                       </div>
                       <h4 className="text-base font-bold text-[#1e293b]">
@@ -218,7 +218,7 @@ export default function UploadStep({
                       </h4>
                       <p className="mt-1 text-xs text-[#64748b] max-w-md">
                         Extracting company profile, capabilities, partnership needs, and target ASEAN expansion markets via{' '}
-                        <code className="font-mono-code text-[#2563eb]">POST /api/pitch/analyze</code>
+                        <code className="font-mono-code text-[#7c3aed]">POST /api/pitch/analyze</code>
                       </p>
                       <div className="mt-4 w-full max-w-xs space-y-2">
                         <div className="h-2 w-full rounded-full animate-shimmer" />
@@ -236,13 +236,13 @@ export default function UploadStep({
         <div className="lg:col-span-4 space-y-4">
           <div className="rounded-xl border border-[#e2e8f0] bg-white p-5 shadow-xs space-y-4">
             <h3 className="text-base font-bold text-[#1e293b] flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-[#2563eb]" />
+              <Sparkles className="h-4 w-4 text-[#7c3aed]" />
               Gemma 4 Extraction Pipeline
             </h3>
 
             <ul className="space-y-2.5 text-xs text-[#64748b]">
               <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#eff6ff] text-[10px] font-bold text-[#2563eb]">
+                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#f5f3ff] text-[10px] font-bold text-[#7c3aed]">
                   1
                 </span>
                 <span>
@@ -251,16 +251,16 @@ export default function UploadStep({
                 </span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#eff6ff] text-[10px] font-bold text-[#2563eb]">
+                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#f5f3ff] text-[10px] font-bold text-[#7c3aed]">
                   2
                 </span>
                 <span>
                   Validates output strictly against Pydantic{' '}
-                  <code className="font-mono-code text-[#2563eb]">StartupProfile</code> schema.
+                  <code className="font-mono-code text-[#7c3aed]">StartupProfile</code> schema.
                 </span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#eff6ff] text-[10px] font-bold text-[#2563eb]">
+                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#f5f3ff] text-[10px] font-bold text-[#7c3aed]">
                   3
                 </span>
                 <span>
@@ -273,7 +273,7 @@ export default function UploadStep({
               type="button"
               onClick={onAnalyze}
               disabled={!imageFile || isAnalyzing}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[#2563eb] px-5 py-3 text-sm font-semibold text-white shadow-xs hover:bg-blue-700 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[#7c3aed] px-5 py-3 text-sm font-semibold text-white shadow-xs hover:bg-violet-700 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {isAnalyzing ? (
                 <>

@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Check,
+  UploadCloud,
+  IdCard,
+  Award,
+  FileCheck2,
   Sparkles,
   AlertCircle,
   CheckCircle2,
   X,
-  Server,
+  Star,
   Globe2,
+  PanelLeft,
+  RotateCcw,
+  Check,
 } from 'lucide-react';
 import UploadStep from './components/UploadStep';
 import PassportStep from './components/PassportStep';
@@ -20,88 +26,73 @@ import {
   generatePartnershipBrief,
 } from './services/api';
 
+// The 4-step demo journey. Titles/subtitles also drive the page header.
 const STEPS = [
-  { id: 1, title: 'Upload' },
-  { id: 2, title: 'Passport' },
-  { id: 3, title: 'Matches' },
-  { id: 4, title: 'Brief' },
+  { id: 1, nav: 'Pitch Upload', title: 'Pitch Upload', subtitle: 'Upload a pitch slide and let Gemma 4 read it', icon: UploadCloud },
+  { id: 2, nav: 'Startup Passport', title: 'Startup Passport', subtitle: 'Review and edit what Gemma 4 extracted', icon: IdCard },
+  { id: 3, nav: 'Partner Matches', title: 'Partner Matches', subtitle: 'Top 3 ASEAN partners ranked by explainable weights', icon: Award },
+  { id: 4, nav: 'Partnership Brief', title: 'Partnership Brief', subtitle: 'Gemma 4 brief and 30-day POC plan', icon: FileCheck2 },
+];
+
+// Country dots shown in the sidebar (illustrative ecosystem coverage).
+const MARKETS = [
+  { name: 'Vietnam', color: '#16a34a' },
+  { name: 'Malaysia', color: '#2563eb' },
+  { name: 'Singapore', color: '#ef4444' },
+  { name: 'Thailand', color: '#8b5cf6' },
+  { name: 'Indonesia', color: '#f59e0b' },
 ];
 
 export default function App() {
   const [currentStep, setCurrentStep] = useState(1);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  // Step 1 state
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  // Step 2 state
   const [startupProfile, setStartupProfile] = useState(null);
   const [isMatching, setIsMatching] = useState(false);
 
-  // Step 3 state
   const [matches, setMatches] = useState([]);
   const [generatingPartnerId, setGeneratingPartnerId] = useState(null);
 
-  // Step 4 state
   const [selectedPartner, setSelectedPartner] = useState(null);
   const [partnershipBrief, setPartnershipBrief] = useState(null);
 
-  // Backend & Fallback state
   const [backendOnline, setBackendOnline] = useState(null);
   const [allowOfflineFallback, setAllowOfflineFallback] = useState(true);
 
-  // Toasts
   const [toasts, setToasts] = useState([]);
 
   const addToast = (message, type = 'info') => {
     const id = Date.now() + Math.random();
     setToasts((prev) => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4500);
+    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4500);
   };
 
   useEffect(() => {
     let mounted = true;
-    checkBackendHealth().then((res) => {
-      if (mounted) setBackendOnline(res.online);
-    });
+    checkBackendHealth().then((res) => mounted && setBackendOnline(res.online));
     return () => {
       mounted = false;
     };
   }, []);
 
-  // Handlers
-  const handleSelectImage = (file, previewUrl) => {
-    setImageFile(file);
-    setImagePreview(previewUrl);
-  };
-
-  const handleClearImage = () => {
-    setImageFile(null);
-    setImagePreview(null);
+  // Shared toast + status handling for every API result
+  const reportSource = (source, okMsg, fallbackMsg) => {
+    const live = source !== 'mock-fallback';
+    setBackendOnline(live);
+    addToast(live ? okMsg : fallbackMsg, live ? 'success' : 'info');
   };
 
   const handleAnalyzePitch = async () => {
-    if (!imageFile) {
-      addToast('Please select or load a demo pitch image first.', 'error');
-      return;
-    }
+    if (!imageFile) return addToast('Please select or load a demo pitch image first.', 'error');
     setIsAnalyzing(true);
     try {
       const res = await analyzePitchImage(imageFile, { allowOfflineFallback });
       setStartupProfile(res.data);
-      if (res.source === 'mock-fallback') {
-        setBackendOnline(false);
-        addToast(
-          'Backend :8000 unreachable — extracted profile using local illustrative demo fallback.',
-          'info'
-        );
-      } else {
-        setBackendOnline(true);
-        addToast('Startup Passport extracted with Gemma 4!', 'success');
-      }
+      reportSource(res.source, 'Startup Passport extracted with Gemma 4!', 'Backend unreachable — using illustrative demo profile.');
       setCurrentStep(2);
     } catch (err) {
       addToast(err.message || 'Failed to analyze pitch image.', 'error');
@@ -116,16 +107,7 @@ export default function App() {
     try {
       const res = await findPartnerMatches(startupProfile, { allowOfflineFallback });
       setMatches(res.data);
-      if (res.source === 'mock-fallback') {
-        setBackendOnline(false);
-        addToast(
-          'Ranked top 3 illustrative ASEAN partners (offline demo fallback).',
-          'info'
-        );
-      } else {
-        setBackendOnline(true);
-        addToast('Ranked top 3 ASEAN partners!', 'success');
-      }
+      reportSource(res.source, 'Ranked top 3 ASEAN partners!', 'Ranked illustrative partners (offline fallback).');
       setCurrentStep(3);
     } catch (err) {
       addToast(err.message || 'Failed to find partner matches.', 'error');
@@ -138,24 +120,10 @@ export default function App() {
     if (!startupProfile || !partnerMatch) return;
     setGeneratingPartnerId(partnerMatch.partner_id);
     try {
-      const res = await generatePartnershipBrief(
-        startupProfile,
-        partnerMatch.partner_id,
-        partnerMatch,
-        { allowOfflineFallback }
-      );
+      const res = await generatePartnershipBrief(startupProfile, partnerMatch.partner_id, partnerMatch, { allowOfflineFallback });
       setSelectedPartner(partnerMatch);
       setPartnershipBrief(res.data);
-      if (res.source === 'mock-fallback') {
-        setBackendOnline(false);
-        addToast(
-          'Generated illustrative 30-day POC brief (offline demo fallback).',
-          'info'
-        );
-      } else {
-        setBackendOnline(true);
-        addToast('Partnership Brief & 30-Day POC Plan ready!', 'success');
-      }
+      reportSource(res.source, 'Partnership brief & 30-day POC ready!', 'Generated illustrative brief (offline fallback).');
       setCurrentStep(4);
     } catch (err) {
       addToast(err.message || 'Failed to generate partnership brief.', 'error');
@@ -170,44 +138,38 @@ export default function App() {
     setSelectedPartner(null);
   };
 
-  const canNavigateToStep = (stepId) => {
-    if (stepId === 1) return true;
-    if (stepId === 2) return Boolean(startupProfile);
-    if (stepId === 3) return Boolean(startupProfile && matches.length > 0);
-    if (stepId === 4) return Boolean(partnershipBrief);
-    return false;
-  };
+  const canNavigateToStep = (id) =>
+    id === 1 ||
+    (id === 2 && Boolean(startupProfile)) ||
+    (id === 3 && Boolean(startupProfile && matches.length)) ||
+    (id === 4 && Boolean(partnershipBrief));
+
+  const step = STEPS[currentStep - 1];
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-[#f8fafc] text-[#1e293b]">
-      {/* Toast Notification Stack */}
-      <div
-        aria-live="polite"
-        className="fixed bottom-5 right-5 z-50 flex flex-col gap-2.5 max-w-md w-full px-4 sm:px-0 pointer-events-none"
-      >
+    <div className="min-h-screen flex bg-[#f9fafb] text-[#111827]">
+      {/* Toasts */}
+      <div aria-live="polite" className="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none">
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`pointer-events-auto flex items-start justify-between gap-3 rounded-xl border px-4 py-3 shadow-lg transition-all ${
-              t.type === 'error'
-                ? 'border-red-300 bg-red-50 text-red-900'
-                : t.type === 'success'
-                ? 'border-green-300 bg-green-50 text-green-900'
-                : 'border-blue-200 bg-white text-slate-800'
+            className={`pointer-events-auto flex items-start justify-between gap-3 rounded-xl border bg-white px-4 py-3 text-sm shadow-lg ${
+              t.type === 'error' ? 'border-red-200' : t.type === 'success' ? 'border-green-200' : 'border-violet-200'
             }`}
           >
-            <div className="flex items-start gap-2.5 text-xs sm:text-sm font-medium">
+            <div className="flex items-start gap-2.5 font-medium text-gray-800">
               {t.type === 'error' ? (
-                <AlertCircle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
+                <AlertCircle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
               ) : (
-                <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0 mt-0.5" />
+                <CheckCircle2 className={`h-4 w-4 shrink-0 mt-0.5 ${t.type === 'success' ? 'text-green-500' : 'text-violet-500'}`} />
               )}
               <span>{t.message}</span>
             </div>
             <button
               type="button"
-              onClick={() => setToasts((prev) => prev.filter((item) => item.id !== t.id))}
-              className="text-slate-400 hover:text-slate-700 cursor-pointer"
+              aria-label="Dismiss"
+              onClick={() => setToasts((prev) => prev.filter((i) => i.id !== t.id))}
+              className="text-gray-400 hover:text-gray-700 cursor-pointer"
             >
               <X className="h-4 w-4" />
             </button>
@@ -215,103 +177,169 @@ export default function App() {
         ))}
       </div>
 
-      <div>
-        {/* Sticky Top Navbar (Yap Style) */}
-        <header className="sticky top-0 z-30 bg-white border-b border-[#e2e8f0] shadow-xs">
-          <div className="mx-auto max-w-[1100px] px-6 min-h-[60px] py-2 flex flex-wrap items-center justify-between gap-4">
-            {/* Left: Logo & Subtitle */}
-            <div className="flex items-center gap-4">
-              <span className="text-[1.4rem] font-extrabold text-[#2563eb] tracking-[-0.5px]">
-                PACT
-              </span>
-              <span className="hidden sm:inline-block text-[0.8rem] text-[#64748b] border-l-2 border-[#e2e8f0] pl-4">
-                Partnership Action & Collaboration Toolkit · ASEAN
-              </span>
+      {/* ── Sidebar ── */}
+      {sidebarOpen && (
+        <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-gray-200 bg-white sticky top-0 h-screen">
+          <div className="flex items-center gap-2 px-5 h-14 border-b border-gray-100">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-blue-500 text-white text-sm font-extrabold">
+              P
             </div>
+            <span className="text-base font-bold tracking-tight">PACT</span>
+          </div>
 
-            {/* Right: Connected Circular Step Indicator (Yap Style) */}
-            <nav aria-label="Progress" className="flex items-center">
-              {STEPS.map((step, i) => {
-                const isDone = step.id < currentStep;
-                const isActive = step.id === currentStep;
-                const isClickable = canNavigateToStep(step.id);
-
-                return (
-                  <div key={step.id} className="flex items-center">
-                    <button
-                      type="button"
-                      disabled={!isClickable}
-                      onClick={() => isClickable && setCurrentStep(step.id)}
-                      className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full transition-all ${
-                        isActive
-                          ? 'bg-[#eff6ff] text-[#2563eb] font-semibold'
-                          : isDone
-                          ? 'text-[#16a34a] font-medium hover:bg-green-50 cursor-pointer'
-                          : 'text-[#64748b] opacity-60 cursor-not-allowed'
-                      }`}
-                    >
-                      <span
-                        className={`w-5 h-5 rounded-full flex items-center justify-center text-[0.65rem] font-bold shrink-0 ${
-                          isActive
-                            ? 'bg-[#2563eb] text-white'
-                            : isDone
-                            ? 'bg-[#16a34a] text-white'
-                            : 'bg-[#e2e8f0] text-[#64748b]'
+          <nav className="flex-1 overflow-y-auto px-3 py-5 space-y-6 text-sm">
+            <div>
+              <p className="px-2 mb-2 text-xs font-medium text-gray-500">Navigation</p>
+              <ul className="space-y-0.5">
+                {STEPS.map((s) => {
+                  const Icon = s.icon;
+                  const active = s.id === currentStep;
+                  const done = s.id < currentStep && canNavigateToStep(s.id);
+                  const enabled = canNavigateToStep(s.id);
+                  return (
+                    <li key={s.id}>
+                      <button
+                        type="button"
+                        disabled={!enabled}
+                        onClick={() => setCurrentStep(s.id)}
+                        className={`w-full flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition ${
+                          active
+                            ? 'bg-violet-50 text-violet-700 font-semibold'
+                            : enabled
+                            ? 'text-gray-700 hover:bg-gray-100 cursor-pointer'
+                            : 'text-gray-400 cursor-not-allowed'
                         }`}
                       >
-                        {isDone ? '✓' : step.id}
-                      </span>
-                      <span>{step.title}</span>
-                    </button>
-                    {i < STEPS.length - 1 && (
-                      <div className="w-4 sm:w-5 h-[2px] bg-[#e2e8f0]" />
-                    )}
-                  </div>
-                );
-              })}
-            </nav>
+                        <Icon className="h-4 w-4 shrink-0" />
+                        <span className="flex-1">{s.nav}</span>
+                        {done && <Check className="h-3.5 w-3.5 text-green-500" />}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+
+            <div>
+              <p className="px-2 mb-2 flex items-center gap-1.5 text-xs font-medium text-gray-500">
+                <Star className="h-3.5 w-3.5" /> Demo story
+              </p>
+              <div className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-gray-700">
+                <span className="h-2 w-2 rounded-full bg-orange-400" />
+                <span className="flex-1">SmartTONG MY → VN</span>
+                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+              </div>
+            </div>
+
+            <div>
+              <p className="px-2 mb-2 flex items-center gap-1.5 text-xs font-medium text-gray-500">
+                <Globe2 className="h-3.5 w-3.5" /> ASEAN markets
+              </p>
+              <ul className="space-y-0.5">
+                {MARKETS.map((m) => (
+                  <li key={m.name} className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-gray-700">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: m.color }} />
+                    {m.name}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </nav>
+
+          <div className="m-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-[11px] leading-relaxed text-amber-800">
+            All partner records and outcomes are <strong>illustrative demo data</strong>.
+          </div>
+        </aside>
+      )}
+
+      {/* ── Main column ── */}
+      <div className="flex-1 min-w-0 flex flex-col">
+        {/* Top bar */}
+        <header className="sticky top-0 z-30 h-14 flex items-center justify-between gap-3 border-b border-gray-200 bg-white/90 backdrop-blur px-4 sm:px-6">
+          <button
+            type="button"
+            aria-label="Toggle sidebar"
+            onClick={() => setSidebarOpen((v) => !v)}
+            className="hidden md:flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 cursor-pointer"
+          >
+            <PanelLeft className="h-4 w-4" />
+          </button>
+          <span className="md:hidden text-base font-bold">PACT</span>
+
+          <div className="flex items-center gap-2 sm:gap-3 text-xs">
+            <span
+              title={API_BASE_URL}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 font-medium text-gray-700"
+            >
+              <span className={`h-2 w-2 rounded-full ${backendOnline ? 'bg-green-500' : 'bg-amber-400'}`} />
+              {backendOnline ? 'API connected' : 'Mock fallback'}
+            </span>
+            <label className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 font-medium text-gray-700 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={allowOfflineFallback}
+                onChange={(e) => setAllowOfflineFallback(e.target.checked)}
+                className="accent-violet-600 cursor-pointer"
+              />
+              Offline fallback
+            </label>
+            <div className="flex items-center gap-2 pl-1">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-100 text-violet-700 text-xs font-bold">KL</div>
+              <span className="hidden lg:inline text-sm font-medium text-gray-800">Team PACT</span>
+            </div>
           </div>
         </header>
 
-        {/* Main Content Container (Yap 1100px layout) */}
-        <main className="mx-auto max-w-[1100px] px-6 py-8">
-          {/* Illustrative Banner + API Status Bar */}
-          <div className="mb-6 rounded-lg border border-[#fcd34d] bg-[#fffbeb] px-4 py-2.5 text-[0.82rem] text-[#92400e] flex flex-wrap items-center justify-between gap-3">
+        {/* Mobile step pills (sidebar hidden on small screens) */}
+        <div className="md:hidden flex gap-1.5 overflow-x-auto border-b border-gray-200 bg-white px-4 py-2">
+          {STEPS.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              disabled={!canNavigateToStep(s.id)}
+              onClick={() => setCurrentStep(s.id)}
+              className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${
+                s.id === currentStep ? 'bg-violet-600 text-white' : 'bg-gray-100 text-gray-600 disabled:opacity-50'
+              }`}
+            >
+              {s.id}. {s.nav}
+            </button>
+          ))}
+        </div>
+
+        <main className="flex-1 px-4 sm:px-8 py-7 max-w-[1280px] w-full mx-auto">
+          {/* Page header */}
+          <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <strong>Illustrative Demo Data:</strong> All partner organisations, scores, and outcomes are synthetic for the MLH Hacktoberfest Hack Day KL demonstration.
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{step.title}</h1>
+              <p className="mt-0.5 text-sm text-gray-500">
+                Step {step.id} of 4 · {step.subtitle}
+              </p>
             </div>
-
-            <div className="flex flex-wrap items-center gap-3 text-xs">
-              <span className="inline-flex items-center gap-1.5 rounded-md bg-white/90 border border-amber-300 px-2.5 py-0.5 text-slate-700">
-                <Server className="h-3 w-3 text-[#2563eb]" />
-                <code className="font-mono-code text-[11px]">{API_BASE_URL}</code>
-                <span
-                  className={`inline-flex items-center gap-1 font-semibold ${
-                    backendOnline ? 'text-[#16a34a]' : 'text-[#d97706]'
-                  }`}
-                >
-                  • {backendOnline ? 'API Connected' : 'Mock Fallback'}
-                </span>
-              </span>
-
-              <label className="inline-flex items-center gap-1.5 text-amber-900 font-medium cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={allowOfflineFallback}
-                  onChange={(e) => setAllowOfflineFallback(e.target.checked)}
-                  className="accent-[#2563eb] rounded cursor-pointer"
-                />
-                <span>Offline Fallback</span>
-              </label>
-            </div>
+            {currentStep > 1 && (
+              <button
+                type="button"
+                onClick={handleRestart}
+                className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-violet-700 transition cursor-pointer"
+              >
+                <RotateCcw className="h-4 w-4" />
+                New analysis
+              </button>
+            )}
           </div>
 
           {currentStep === 1 && (
             <UploadStep
               imageFile={imageFile}
               imagePreview={imagePreview}
-              onSelectImage={handleSelectImage}
-              onClearImage={handleClearImage}
+              onSelectImage={(file, url) => {
+                setImageFile(file);
+                setImagePreview(url);
+              }}
+              onClearImage={() => {
+                setImageFile(null);
+                setImagePreview(null);
+              }}
               onAnalyze={handleAnalyzePitch}
               isAnalyzing={isAnalyzing}
               onErrorToast={(msg) => addToast(msg, 'error')}
@@ -350,23 +378,15 @@ export default function App() {
             />
           )}
         </main>
-      </div>
 
-      {/* Required Footer */}
-      <footer className="border-t border-[#e2e8f0] bg-white py-5 mt-12">
-        <div className="mx-auto max-w-[1100px] px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#64748b]">
-          <div className="flex items-center gap-2 font-semibold text-[#1e293b]">
-            <Sparkles className="h-4 w-4 text-[#2563eb]" />
-            <span>Powered by Gemma 4 (open-weight) - Open source, MIT</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Globe2 className="h-3.5 w-3.5 text-[#2563eb]" />
-            <span>
-              PACT · All partner records & outcomes are illustrative demo data
-            </span>
-          </div>
-        </div>
-      </footer>
+        <footer className="border-t border-gray-200 bg-white px-6 py-4 text-xs text-gray-500 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <span className="flex items-center gap-1.5 font-medium text-gray-800">
+            <Sparkles className="h-4 w-4 text-violet-600" />
+            Powered by Gemma 4 (open-weight) - Open source, MIT
+          </span>
+          <span>PACT · Illustrative demo data · MLH Hacktoberfest Hack Day KL</span>
+        </footer>
+      </div>
     </div>
   );
 }

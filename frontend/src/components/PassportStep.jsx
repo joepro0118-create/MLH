@@ -59,13 +59,13 @@ function ChipListEditor({ title, subtitle, items = [], colorClass, onAdd, onRemo
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           placeholder={`Add to ${title.toLowerCase()}...`}
-          className="flex-1 rounded-lg border border-[#e2e8f0] bg-white px-3 py-1.5 text-xs text-[#1e293b] placeholder-[#64748b] focus:border-[#2563eb] focus:outline-none"
+          className="flex-1 rounded-lg border border-[#e2e8f0] bg-white px-3 py-1.5 text-xs text-[#1e293b] placeholder-[#64748b] focus:border-[#7c3aed] focus:outline-none"
         />
         <button
           type="submit"
           className="inline-flex items-center gap-1 rounded-lg border border-[#e2e8f0] bg-white px-3 py-1.5 text-xs font-semibold text-[#1e293b] hover:bg-slate-100 transition cursor-pointer"
         >
-          <Plus className="h-3.5 w-3.5 text-[#2563eb]" />
+          <Plus className="h-3.5 w-3.5 text-[#7c3aed]" />
           Add
         </button>
       </form>
@@ -135,27 +135,27 @@ export default function PassportStep({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
-              <Building2 className="h-3.5 w-3.5 text-[#2563eb]" />
+              <Building2 className="h-3.5 w-3.5 text-[#7c3aed]" />
               Company Name
             </label>
             <input
               type="text"
               value={profile.company_name || ''}
               onChange={(e) => updateField('company_name', e.target.value)}
-              className="w-full rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-3.5 py-2 text-sm font-semibold text-[#1e293b] focus:border-[#2563eb] focus:bg-white focus:outline-none"
+              className="w-full rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-3.5 py-2 text-sm font-semibold text-[#1e293b] focus:border-[#7c3aed] focus:bg-white focus:outline-none"
             />
           </div>
 
           <div>
             <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
-              <Globe className="h-3.5 w-3.5 text-[#2563eb]" />
+              <Globe className="h-3.5 w-3.5 text-[#7c3aed]" />
               Home Country (ASEAN)
             </label>
             <input
               type="text"
               value={profile.country || ''}
               onChange={(e) => updateField('country', e.target.value)}
-              className="w-full rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-3.5 py-2 text-sm font-semibold text-[#1e293b] focus:border-[#2563eb] focus:bg-white focus:outline-none"
+              className="w-full rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-3.5 py-2 text-sm font-semibold text-[#1e293b] focus:border-[#7c3aed] focus:bg-white focus:outline-none"
             />
           </div>
 
@@ -168,7 +168,7 @@ export default function PassportStep({
               type="text"
               value={profile.sector || ''}
               onChange={(e) => updateField('sector', e.target.value)}
-              className="w-full rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-3.5 py-2 text-sm font-semibold text-[#1e293b] focus:border-[#2563eb] focus:bg-white focus:outline-none"
+              className="w-full rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-3.5 py-2 text-sm font-semibold text-[#1e293b] focus:border-[#7c3aed] focus:bg-white focus:outline-none"
             />
           </div>
         </div>
@@ -176,14 +176,14 @@ export default function PassportStep({
         {/* Solution Summary */}
         <div>
           <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
-            <FileText className="h-3.5 w-3.5 text-[#2563eb]" />
+            <FileText className="h-3.5 w-3.5 text-[#7c3aed]" />
             Solution Summary
           </label>
           <textarea
             rows={2}
             value={profile.solution || ''}
             onChange={(e) => updateField('solution', e.target.value)}
-            className="w-full rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-3.5 py-2 text-sm text-[#1e293b] leading-relaxed focus:border-[#2563eb] focus:bg-white focus:outline-none"
+            className="w-full rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-3.5 py-2 text-sm text-[#1e293b] leading-relaxed focus:border-[#7c3aed] focus:bg-white focus:outline-none"
           />
         </div>
 
@@ -193,7 +193,7 @@ export default function PassportStep({
             title="Core Capabilities"
             subtitle="What your startup brings to a cross-border partner (30% weight)"
             items={profile.capabilities}
-            colorClass="border-blue-200 bg-[#dbeafe] text-[#1d4ed8]"
+            colorClass="border-violet-200 bg-[#dbeafe] text-[#1d4ed8]"
             onAdd={(val) => addChip('capabilities', val)}
             onRemove={(idx) => removeChip('capabilities', idx)}
           />
@@ -237,7 +237,7 @@ export default function PassportStep({
             type="button"
             onClick={onFindPartners}
             disabled={isMatching || !profile.company_name}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#2563eb] px-6 py-3 text-sm font-semibold text-white shadow-xs hover:bg-blue-700 transition cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#7c3aed] px-6 py-3 text-sm font-semibold text-white shadow-xs hover:bg-violet-700 transition cursor-pointer disabled:opacity-50"
           >
             {isMatching ? (
               <>
