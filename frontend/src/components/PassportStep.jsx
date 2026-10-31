@@ -9,7 +9,6 @@ import {
   Search,
   ArrowLeft,
   CheckCircle2,
-  Sparkles,
 } from 'lucide-react';
 
 function ChipListEditor({ title, subtitle, items = [], colorClass, onAdd, onRemove }) {
@@ -24,31 +23,31 @@ function ChipListEditor({ title, subtitle, items = [], colorClass, onAdd, onRemo
   };
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-950/65 p-4 space-y-3">
+    <div className="rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-4 space-y-3">
       <div>
-        <h4 className="text-sm font-bold text-white">{title}</h4>
-        <p className="text-xs text-slate-400">{subtitle}</p>
+        <h4 className="text-sm font-bold text-[#1e293b]">{title}</h4>
+        <p className="text-xs text-[#64748b]">{subtitle}</p>
       </div>
 
-      <div className="flex flex-wrap gap-2 min-h-[34px]">
+      <div className="flex flex-wrap gap-2 min-h-[32px]">
         {items.map((item, idx) => (
           <span
             key={idx}
-            className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium ${colorClass}`}
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-0.5 text-xs font-medium ${colorClass}`}
           >
             <span>{item}</span>
             <button
               type="button"
               onClick={() => onRemove(idx)}
               aria-label={`Remove ${item}`}
-              className="rounded-full p-0.5 hover:bg-black/30 transition cursor-pointer"
+              className="rounded-full p-0.5 hover:bg-black/10 transition cursor-pointer"
             >
               <X className="h-3 w-3" />
             </button>
           </span>
         ))}
         {items.length === 0 && (
-          <span className="text-xs italic text-slate-500">
+          <span className="text-xs italic text-[#64748b]">
             No items added yet. Add one below.
           </span>
         )}
@@ -60,13 +59,13 @@ function ChipListEditor({ title, subtitle, items = [], colorClass, onAdd, onRemo
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           placeholder={`Add to ${title.toLowerCase()}...`}
-          className="flex-1 rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
+          className="flex-1 rounded-lg border border-[#e2e8f0] bg-white px-3 py-1.5 text-xs text-[#1e293b] placeholder-[#64748b] focus:border-[#2563eb] focus:outline-none"
         />
         <button
           type="submit"
-          className="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition cursor-pointer"
+          className="inline-flex items-center gap-1 rounded-lg border border-[#e2e8f0] bg-white px-3 py-1.5 text-xs font-semibold text-[#1e293b] hover:bg-slate-100 transition cursor-pointer"
         >
-          <Plus className="h-3.5 w-3.5" />
+          <Plus className="h-3.5 w-3.5 text-[#2563eb]" />
           Add
         </button>
       </form>
@@ -103,17 +102,17 @@ export default function PassportStep({
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="rounded-2xl border border-emerald-500/25 bg-gradient-to-r from-emerald-950/60 via-slate-900/90 to-slate-900 p-6 shadow-lg">
+      <div className="rounded-xl border border-[#e2e8f0] bg-white p-6 shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-green-50 border border-green-200 px-3 py-0.5 text-xs font-semibold text-[#16a34a]">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              Step 2 of 4 • Verified Startup Passport (Pydantic Schema)
+              Step 2 of 4 · Verified Startup Passport (Pydantic Schema)
             </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
-              Review & Customize Your Startup Passport
+            <h2 className="text-xl sm:text-2xl font-bold text-[#1e293b]">
+              2. Review & Customize Your Startup Passport
             </h2>
-            <p className="text-sm text-slate-300 max-w-2xl">
+            <p className="text-sm text-[#64748b] max-w-2xl">
               Gemma 4 extracted the structured profile below. Edit any field or add/remove tags before running the deterministic ASEAN partner matching engine.
             </p>
           </div>
@@ -122,79 +121,79 @@ export default function PassportStep({
             type="button"
             onClick={onBack}
             disabled={isMatching}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-2.5 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition cursor-pointer"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-4 py-2 text-xs font-semibold text-[#1e293b] hover:bg-slate-200/70 transition cursor-pointer"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Pitch Upload
+            Back to Upload
           </button>
         </div>
       </div>
 
       {/* Main Editable Passport Card */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/85 p-6 shadow-xl space-y-6">
+      <div className="rounded-xl border border-[#e2e8f0] bg-white p-6 shadow-xs space-y-6">
         {/* Core Identity Fields */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-              <Building2 className="h-3.5 w-3.5 text-emerald-400" />
+            <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
+              <Building2 className="h-3.5 w-3.5 text-[#2563eb]" />
               Company Name
             </label>
             <input
               type="text"
               value={profile.company_name || ''}
               onChange={(e) => updateField('company_name', e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2.5 text-sm font-semibold text-white focus:border-emerald-500 focus:outline-none"
+              className="w-full rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-3.5 py-2 text-sm font-semibold text-[#1e293b] focus:border-[#2563eb] focus:bg-white focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-              <Globe className="h-3.5 w-3.5 text-cyan-400" />
+            <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
+              <Globe className="h-3.5 w-3.5 text-[#2563eb]" />
               Home Country (ASEAN)
             </label>
             <input
               type="text"
               value={profile.country || ''}
               onChange={(e) => updateField('country', e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2.5 text-sm font-semibold text-white focus:border-emerald-500 focus:outline-none"
+              className="w-full rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-3.5 py-2 text-sm font-semibold text-[#1e293b] focus:border-[#2563eb] focus:bg-white focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-              <Layers className="h-3.5 w-3.5 text-amber-400" />
+            <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
+              <Layers className="h-3.5 w-3.5 text-[#7c3aed]" />
               Industry Sector
             </label>
             <input
               type="text"
               value={profile.sector || ''}
               onChange={(e) => updateField('sector', e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2.5 text-sm font-semibold text-white focus:border-emerald-500 focus:outline-none"
+              className="w-full rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-3.5 py-2 text-sm font-semibold text-[#1e293b] focus:border-[#2563eb] focus:bg-white focus:outline-none"
             />
           </div>
         </div>
 
         {/* Solution Summary */}
         <div>
-          <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-            <FileText className="h-3.5 w-3.5 text-emerald-400" />
+          <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
+            <FileText className="h-3.5 w-3.5 text-[#2563eb]" />
             Solution Summary
           </label>
           <textarea
             rows={2}
             value={profile.solution || ''}
             onChange={(e) => updateField('solution', e.target.value)}
-            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2.5 text-sm text-slate-100 leading-relaxed focus:border-emerald-500 focus:outline-none"
+            className="w-full rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-3.5 py-2 text-sm text-[#1e293b] leading-relaxed focus:border-[#2563eb] focus:bg-white focus:outline-none"
           />
         </div>
 
-        {/* 4 Chip Editors */}
+        {/* 4 Chip Editors (Yap Tag Colors) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <ChipListEditor
             title="Core Capabilities"
             subtitle="What your startup brings to a cross-border partner (30% weight)"
             items={profile.capabilities}
-            colorClass="border-emerald-500/40 bg-emerald-500/15 text-emerald-200"
+            colorClass="border-blue-200 bg-[#dbeafe] text-[#1d4ed8]"
             onAdd={(val) => addChip('capabilities', val)}
             onRemove={(idx) => removeChip('capabilities', idx)}
           />
@@ -203,7 +202,7 @@ export default function PassportStep({
             title="Partnership Needs"
             subtitle="What local support, permits, or infrastructure you need (30% weight)"
             items={profile.needs}
-            colorClass="border-amber-500/40 bg-amber-500/15 text-amber-200"
+            colorClass="border-amber-200 bg-[#fef3c7] text-[#92400e]"
             onAdd={(val) => addChip('needs', val)}
             onRemove={(idx) => removeChip('needs', idx)}
           />
@@ -212,7 +211,7 @@ export default function PassportStep({
             title="Target ASEAN Markets"
             subtitle="Priority expansion countries for pilot deployment (20% weight)"
             items={profile.target_markets}
-            colorClass="border-cyan-500/40 bg-cyan-500/15 text-cyan-200"
+            colorClass="border-green-200 bg-[#dcfce7] text-[#15803d]"
             onAdd={(val) => addChip('target_markets', val)}
             onRemove={(idx) => removeChip('target_markets', idx)}
           />
@@ -221,34 +220,34 @@ export default function PassportStep({
             title="Partnership Goals"
             subtitle="Concrete 30-day POC & outcome conversion goals (20% weight)"
             items={profile.partnership_goals}
-            colorClass="border-purple-500/40 bg-purple-500/15 text-purple-200"
+            colorClass="border-purple-200 bg-[#ede9fe] text-[#6d28d9]"
             onAdd={(val) => addChip('partnership_goals', val)}
             onRemove={(idx) => removeChip('partnership_goals', idx)}
           />
         </div>
 
         {/* Footer Action Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-slate-800 pt-5">
-          <div className="text-xs text-slate-400">
-            <span className="font-semibold text-slate-200">Matching Formula (Deterministic Python):</span>{' '}
-            Industry 30% + Capabilities/Needs 30% + Target Market 20% + Objectives 20%
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-[#e2e8f0] pt-5">
+          <div className="text-xs text-[#64748b]">
+            <span className="font-semibold text-[#1e293b]">Matching Weights (Deterministic Python):</span>{' '}
+            Industry 30% · Capabilities/Needs 30% · Target Market 20% · Objectives 20%
           </div>
 
           <button
             type="button"
             onClick={onFindPartners}
             disabled={isMatching || !profile.company_name}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-emerald-500/20 hover:from-emerald-400 hover:to-teal-400 transition cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#2563eb] px-6 py-3 text-sm font-semibold text-white shadow-xs hover:bg-blue-700 transition cursor-pointer disabled:opacity-50"
           >
             {isMatching ? (
               <>
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-950 border-t-transparent" />
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                 Ranking ASEAN Partners...
               </>
             ) : (
               <>
                 <Search className="h-4 w-4" />
-                Find Partners (Top 3 Matches)
+                Find Partners (Top 3 Matches) →
               </>
             )}
           </button>

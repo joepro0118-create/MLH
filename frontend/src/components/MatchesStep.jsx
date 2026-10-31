@@ -14,28 +14,28 @@ import {
 import EcosystemGraph from './EcosystemGraph';
 
 function ScoreRing({ score = 0 }) {
-  const radius = 28;
+  const radius = 26;
   const circumference = 2 * Math.PI * radius;
   const clamped = Math.max(0, Math.min(100, Number(score) || 0));
   const offset = circumference - (clamped / 100) * circumference;
 
   const strokeColor =
-    clamped >= 88 ? '#10b981' : clamped >= 75 ? '#38bdf8' : '#f59e0b';
+    clamped >= 70 ? '#16a34a' : clamped >= 40 ? '#d97706' : '#dc2626';
 
   return (
-    <div className="relative flex h-18 w-18 shrink-0 items-center justify-center">
-      <svg className="h-18 w-18 -rotate-90 transform" viewBox="0 0 68 68">
+    <div className="relative flex h-16 w-16 shrink-0 items-center justify-center">
+      <svg className="h-16 w-16 -rotate-90 transform" viewBox="0 0 64 64">
         <circle
-          cx="34"
-          cy="34"
+          cx="32"
+          cy="32"
           r={radius}
-          stroke="rgba(51, 65, 85, 0.6)"
+          stroke="#e2e8f0"
           strokeWidth="6"
           fill="transparent"
         />
         <circle
-          cx="34"
-          cy="34"
+          cx="32"
+          cy="32"
           r={radius}
           stroke={strokeColor}
           strokeWidth="6"
@@ -46,11 +46,11 @@ function ScoreRing({ score = 0 }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-base font-extrabold text-white leading-none">
+        <span className="text-sm font-extrabold text-[#1e293b] leading-none">
           {clamped}%
         </span>
-        <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-400 mt-0.5">
-          Match
+        <span className="text-[9px] font-semibold uppercase tracking-wider text-[#64748b] mt-0.5">
+          Score
         </span>
       </div>
     </div>
@@ -65,31 +65,32 @@ export default function MatchesStep({
   onBack,
   allowOfflineFallback,
 }) {
-  const [activeTab, setActiveTab] = useState('cards'); // 'cards' | 'graph' | 'split'
+  const [activeTab, setActiveTab] = useState('cards');
 
   return (
     <div className="space-y-6">
-      {/* Top Header & Illustrative Demo Notice */}
-      <div className="rounded-2xl border border-emerald-500/25 bg-gradient-to-r from-emerald-950/60 via-slate-900/90 to-cyan-950/50 p-6 shadow-lg space-y-4">
+      {/* Top Header Card */}
+      <div className="rounded-xl border border-[#e2e8f0] bg-white p-6 shadow-xs space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#eff6ff] border border-blue-200 px-3 py-0.5 text-xs font-semibold text-[#2563eb]">
                 <Award className="h-3.5 w-3.5" />
-                Step 3 of 4 • Deterministic Weighted Partner Matching
+                Step 3 of 4 · Deterministic Weighted Partner Matching
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/50 bg-amber-500/15 px-3 py-1 text-xs font-bold text-amber-300 shadow-sm">
-                <ShieldAlert className="h-3.5 w-3.5" />
+              <span className="inline-flex items-center gap-1 rounded-full border border-[#fcd34d] bg-[#fffbeb] px-3 py-0.5 text-xs font-bold text-[#92400e]">
+                <ShieldAlert className="h-3.5 w-3.5 text-[#d97706]" />
                 Illustrative Demo Data
               </span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
-              Top 3 Cross-Border Partner Matches for{' '}
-              <span className="text-emerald-400">{startup?.company_name}</span>
+
+            <h2 className="text-xl sm:text-2xl font-bold text-[#1e293b]">
+              3. Top 3 Partner Matches for{' '}
+              <span className="text-[#2563eb]">{startup?.company_name}</span>
             </h2>
-            <p className="text-sm text-slate-300 max-w-3xl">
+            <p className="text-sm text-[#64748b] max-w-3xl">
               Ranked deterministically in Python against ASEAN ecosystem records. Select a partner to generate an actionable{' '}
-              <strong className="text-white">Gemma 4 Partnership Brief & 30-Day POC Plan</strong>.
+              <strong className="text-[#1e293b]">Gemma 4 Partnership Brief & 30-Day POC Plan</strong>.
             </p>
           </div>
 
@@ -97,7 +98,7 @@ export default function MatchesStep({
             type="button"
             onClick={onBack}
             disabled={Boolean(generatingPartnerId)}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-2.5 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-4 py-2 text-xs font-semibold text-[#1e293b] hover:bg-slate-200/70 transition cursor-pointer disabled:opacity-50"
           >
             <ArrowLeft className="h-4 w-4" />
             Edit Passport
@@ -105,37 +106,37 @@ export default function MatchesStep({
         </div>
 
         {/* Deterministic Weights Pill Bar & View Switcher */}
-        <div className="flex flex-wrap items-center justify-between gap-4 border-t border-slate-800/80 pt-4">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[#e2e8f0] pt-4">
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="font-semibold text-slate-400">MVP Scoring Weights:</span>
-            <span className="rounded-lg border border-slate-700 bg-slate-900/90 px-2.5 py-1 text-emerald-300 font-medium">
-              Industry Compatibility 30%
+            <span className="font-semibold text-[#64748b]">Scoring Weights:</span>
+            <span className="rounded-full bg-[#dbeafe] px-2.5 py-0.5 text-[#1d4ed8] font-medium">
+              Industry 30%
             </span>
-            <span className="rounded-lg border border-slate-700 bg-slate-900/90 px-2.5 py-1 text-amber-300 font-medium">
-              Complementary Capabilities/Needs 30%
+            <span className="rounded-full bg-[#fef3c7] px-2.5 py-0.5 text-[#92400e] font-medium">
+              Capabilities/Needs 30%
             </span>
-            <span className="rounded-lg border border-slate-700 bg-slate-900/90 px-2.5 py-1 text-cyan-300 font-medium">
+            <span className="rounded-full bg-[#dcfce7] px-2.5 py-0.5 text-[#15803d] font-medium">
               Target Market 20%
             </span>
-            <span className="rounded-lg border border-slate-700 bg-slate-900/90 px-2.5 py-1 text-purple-300 font-medium">
-              Partnership Objective 20%
+            <span className="rounded-full bg-[#ede9fe] px-2.5 py-0.5 text-[#6d28d9] font-medium">
+              Objective 20%
             </span>
           </div>
 
           {/* Segmented View Control */}
           <div
             role="tablist"
-            className="inline-flex rounded-xl border border-slate-800 bg-slate-950 p-1"
+            className="inline-flex rounded-lg border border-[#e2e8f0] bg-[#f8fafc] p-1"
           >
             <button
               type="button"
               role="tab"
               aria-selected={activeTab === 'cards'}
               onClick={() => setActiveTab('cards')}
-              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
                 activeTab === 'cards'
-                  ? 'bg-emerald-500 text-slate-950 shadow'
-                  : 'text-slate-300 hover:text-white'
+                  ? 'bg-[#2563eb] text-white shadow-2xs'
+                  : 'text-[#64748b] hover:text-[#1e293b]'
               }`}
             >
               <LayoutGrid className="h-3.5 w-3.5" />
@@ -146,10 +147,10 @@ export default function MatchesStep({
               role="tab"
               aria-selected={activeTab === 'graph'}
               onClick={() => setActiveTab('graph')}
-              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
                 activeTab === 'graph'
-                  ? 'bg-cyan-400 text-slate-950 shadow'
-                  : 'text-slate-300 hover:text-white'
+                  ? 'bg-[#2563eb] text-white shadow-2xs'
+                  : 'text-[#64748b] hover:text-[#1e293b]'
               }`}
             >
               <Network className="h-3.5 w-3.5" />
@@ -161,33 +162,33 @@ export default function MatchesStep({
 
       {/* Gemma 4 Brief Generation Overlay Skeleton when a partner is clicked */}
       {generatingPartnerId && (
-        <div className="rounded-2xl border border-emerald-500/40 bg-slate-900/95 p-6 shadow-2xl space-y-4">
+        <div className="rounded-xl border border-blue-200 bg-[#eff6ff] p-5 shadow-xs space-y-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/20 border border-emerald-400 text-emerald-300">
-              <Sparkles className="h-6 w-6 animate-spin" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white border border-blue-200 text-[#2563eb]">
+              <Sparkles className="h-5 w-5 animate-spin" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">
+              <h3 className="text-sm sm:text-base font-bold text-[#1e293b]">
                 Gemma 4 is Drafting Your Cross-Border Partnership Brief & 30-Day POC Plan...
               </h3>
-              <p className="text-xs text-slate-300">
-                Synthesizing alignment between <strong className="text-emerald-300">{startup?.company_name}</strong> and partner ID{' '}
-                <code className="font-mono-code text-cyan-300">{generatingPartnerId}</code> via{' '}
-                <code className="font-mono-code text-emerald-300">POST /api/partnership/brief</code>
+              <p className="text-xs text-[#64748b]">
+                Synthesizing alignment between <strong className="text-[#1e293b]">{startup?.company_name}</strong> and partner ID{' '}
+                <code className="font-mono-code text-[#2563eb]">{generatingPartnerId}</code> via{' '}
+                <code className="font-mono-code text-[#2563eb]">POST /api/partnership/brief</code>
               </p>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
-            <div className="h-16 rounded-xl animate-shimmer" />
-            <div className="h-16 rounded-xl animate-shimmer" />
-            <div className="h-16 rounded-xl animate-shimmer" />
+            <div className="h-12 rounded-lg animate-shimmer" />
+            <div className="h-12 rounded-lg animate-shimmer" />
+            <div className="h-12 rounded-lg animate-shimmer" />
           </div>
         </div>
       )}
 
       {/* Partner Match Cards View */}
       {activeTab === 'cards' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {matches.map((match, idx) => {
             const isGeneratingThis = generatingPartnerId === match.partner_id;
             const isTopMatch = idx === 0;
@@ -195,39 +196,39 @@ export default function MatchesStep({
             return (
               <div
                 key={match.partner_id || idx}
-                className={`flex flex-col justify-between rounded-2xl border p-6 shadow-xl transition-all ${
+                className={`flex flex-col justify-between rounded-xl border bg-white p-5 shadow-xs transition-all hover:shadow-md ${
                   isTopMatch
-                    ? 'border-emerald-500/50 bg-gradient-to-b from-slate-900 via-slate-900 to-emerald-950/25 ring-1 ring-emerald-500/30'
-                    : 'border-slate-800 bg-slate-900/85 hover:border-slate-700'
+                    ? 'border-[#2563eb] ring-1 ring-[#2563eb]/20'
+                    : 'border-[#e2e8f0]'
                 }`}
               >
                 <div className="space-y-4">
                   {/* Card Top Bar */}
                   <div className="flex items-start justify-between gap-3">
-                    <div className="space-y-1.5">
+                    <div className="space-y-1">
                       <div className="flex flex-wrap items-center gap-1.5">
                         <span
-                          className={`rounded-md px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wider ${
+                          className={`rounded-md px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider ${
                             isTopMatch
-                              ? 'bg-emerald-500 text-slate-950'
-                              : 'bg-slate-800 text-slate-300'
+                              ? 'bg-[#2563eb] text-white'
+                              : 'bg-[#f1f5f9] text-[#64748b]'
                           }`}
                         >
-                          #{idx + 1} {isTopMatch ? 'Best Fit' : 'Match'}
+                          #{idx + 1} {isTopMatch ? 'Top Match' : 'Match'}
                         </span>
-                        <span className="inline-flex items-center gap-1 rounded-md border border-cyan-500/30 bg-cyan-500/10 px-2 py-0.5 text-[11px] font-semibold text-cyan-300">
+                        <span className="inline-flex items-center gap-1 rounded-md bg-[#eff6ff] px-2 py-0.5 text-[11px] font-semibold text-[#2563eb]">
                           <Globe2 className="h-3 w-3" />
                           {match.country}
                         </span>
-                        <span className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-300">
+                        <span className="rounded-md border border-[#fcd34d] bg-[#fffbeb] px-2 py-0.5 text-[10px] font-semibold text-[#92400e]">
                           Illustrative
                         </span>
                       </div>
 
-                      <h3 className="text-lg font-extrabold text-white leading-snug">
+                      <h3 className="text-base font-bold text-[#1e293b] leading-snug pt-0.5">
                         {match.partner_name}
                       </h3>
-                      <p className="text-[11px] font-mono-code text-slate-400">
+                      <p className="text-[11px] font-mono-code text-[#64748b]">
                         ID: {match.partner_id}
                       </p>
                     </div>
@@ -237,30 +238,30 @@ export default function MatchesStep({
 
                   {/* Linear Score Bar */}
                   <div className="space-y-1">
-                    <div className="flex justify-between text-[11px] text-slate-400">
+                    <div className="flex justify-between text-[11px] text-[#64748b]">
                       <span>Compatibility Score</span>
-                      <span className="font-bold text-slate-200">{match.score} / 100</span>
+                      <span className="font-bold text-[#1e293b]">{match.score} / 100</span>
                     </div>
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-[#e2e8f0]">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-400 transition-all duration-500"
+                        className="h-full rounded-full bg-[#16a34a] transition-all duration-500"
                         style={{ width: `${Math.min(100, Math.max(0, match.score))}%` }}
                       />
                     </div>
                   </div>
 
                   {/* Match Reasons */}
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                      Why This Partner Matches
+                  <div className="space-y-1.5">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#64748b]">
+                      Why They Match
                     </h4>
-                    <ul className="space-y-2">
+                    <ul className="space-y-1.5">
                       {(match.reasons || []).map((reason, rIdx) => (
                         <li
                           key={rIdx}
-                          className="flex items-start gap-2 text-xs text-slate-200 leading-relaxed"
+                          className="flex items-start gap-2 text-xs text-[#1e293b] leading-relaxed"
                         >
-                          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                          <CheckCircle2 className="h-3.5 w-3.5 text-[#16a34a] shrink-0 mt-0.5" />
                           <span>{reason}</span>
                         </li>
                       ))}
@@ -268,38 +269,38 @@ export default function MatchesStep({
                   </div>
 
                   {/* Opportunity Callout */}
-                  <div className="rounded-xl border border-emerald-500/25 bg-emerald-950/30 p-3.5 space-y-1">
-                    <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-emerald-300">
+                  <div className="rounded-lg border-l-3 border-l-[#2563eb] bg-[#eff6ff] p-3 space-y-1">
+                    <div className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[#1d4ed8]">
                       <Zap className="h-3.5 w-3.5" />
-                      Concrete Pilot Opportunity
+                      Pilot Opportunity
                     </div>
-                    <p className="text-xs text-slate-200 leading-relaxed">
+                    <p className="text-xs text-[#1d4ed8] leading-relaxed">
                       {match.opportunity}
                     </p>
                   </div>
                 </div>
 
                 {/* Action Button */}
-                <div className="mt-6 pt-4 border-t border-slate-800/80">
+                <div className="mt-5 pt-4 border-t border-[#e2e8f0]">
                   <button
                     type="button"
                     onClick={() => onSelectPartnerForBrief(match)}
                     disabled={Boolean(generatingPartnerId)}
-                    className={`w-full inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-xs font-bold transition cursor-pointer disabled:opacity-50 ${
+                    className={`w-full inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs font-semibold transition cursor-pointer disabled:opacity-50 ${
                       isTopMatch
-                        ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-lg shadow-emerald-500/20 hover:from-emerald-400 hover:to-teal-400'
-                        : 'border border-emerald-500/40 bg-emerald-500/15 text-emerald-200 hover:bg-emerald-500/25'
+                        ? 'bg-[#2563eb] text-white hover:bg-blue-700 shadow-2xs'
+                        : 'border border-[#2563eb] bg-white text-[#2563eb] hover:bg-[#eff6ff]'
                     }`}
                   >
                     {isGeneratingThis ? (
                       <>
                         <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                        Generating Brief with Gemma 4...
+                        Generating Brief...
                       </>
                     ) : (
                       <>
                         <FileText className="h-4 w-4" />
-                        Generate Partnership Brief
+                        Generate Partnership Brief →
                       </>
                     )}
                   </button>

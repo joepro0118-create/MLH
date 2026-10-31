@@ -1,21 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { Network, Globe2, Sparkles, RefreshCw, Info } from 'lucide-react';
+import { Network, Globe2, RefreshCw, Info } from 'lucide-react';
 import { getEcosystemGraph } from '../services/api';
 
 const TYPE_STYLES = {
   startup: {
-    bg: '#10b981',
-    ring: 'rgba(16, 185, 129, 0.35)',
+    bg: '#16a34a',
+    ring: 'rgba(22, 163, 74, 0.2)',
     label: 'Startup',
   },
   programme: {
-    bg: '#38bdf8',
-    ring: 'rgba(56, 189, 248, 0.35)',
+    bg: '#2563eb',
+    ring: 'rgba(37, 99, 235, 0.2)',
     label: 'Programme / Sandbox',
   },
   organisation: {
-    bg: '#f59e0b',
-    ring: 'rgba(245, 158, 11, 0.35)',
+    bg: '#7c3aed',
+    ring: 'rgba(124, 58, 237, 0.2)',
     label: 'Organisation / Operator',
   },
 };
@@ -43,7 +43,6 @@ export function EcosystemGraph({ startup, matches, allowOfflineFallback = true }
     loadGraph();
   }, [allowOfflineFallback]);
 
-  // Compute radial node coordinates around the central startup node
   const width = 820;
   const height = 430;
   const centerX = width / 2;
@@ -77,35 +76,34 @@ export function EcosystemGraph({ startup, matches, allowOfflineFallback = true }
   }, [positionedNodes]);
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-xl backdrop-blur-md">
+    <div className="rounded-xl border border-[#e2e8f0] bg-white p-6 shadow-xs">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#e2e8f0] pb-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#eff6ff] text-[#2563eb] border border-blue-200">
             <Network className="h-5 w-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-lg font-bold text-white">
+              <h3 className="text-base font-bold text-[#1e293b]">
                 ASEAN Cross-Border Ecosystem Graph
               </h3>
-              <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-300">
+              <span className="rounded-full border border-[#fcd34d] bg-[#fffbeb] px-2.5 py-0.5 text-xs font-semibold text-[#92400e]">
                 Illustrative Demo Data
               </span>
             </div>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#64748b]">
               Interactive regional node map via{' '}
-              <code className="font-mono-code text-cyan-300">GET /api/ecosystem/graph</code>{' '}
-              (Component slot: <code className="font-mono-code text-emerald-300">src/components/EcosystemGraph.jsx</code>)
+              <code className="font-mono-code text-[#2563eb]">GET /api/ecosystem/graph</code>
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           {/* Legend */}
-          <div className="hidden sm:flex items-center gap-4 text-xs text-slate-300 bg-slate-950/70 px-3.5 py-1.5 rounded-lg border border-slate-800">
+          <div className="hidden sm:flex items-center gap-4 text-xs text-[#64748b] bg-[#f8fafc] px-3.5 py-1.5 rounded-lg border border-[#e2e8f0]">
             {Object.entries(TYPE_STYLES).map(([key, style]) => (
-              <span key={key} className="flex items-center gap-1.5">
+              <span key={key} className="flex items-center gap-1.5 font-medium text-[#1e293b]">
                 <span
                   className="h-2.5 w-2.5 rounded-full"
                   style={{ backgroundColor: style.bg }}
@@ -118,9 +116,9 @@ export function EcosystemGraph({ startup, matches, allowOfflineFallback = true }
           <button
             onClick={loadGraph}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800/80 px-3 py-1.5 text-xs font-medium text-slate-200 hover:bg-slate-700 transition cursor-pointer"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-3 py-1.5 text-xs font-semibold text-[#1e293b] hover:bg-slate-200/70 transition cursor-pointer"
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin text-emerald-400' : ''}`} />
+            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin text-[#2563eb]' : ''}`} />
             Refresh
           </button>
         </div>
@@ -128,32 +126,24 @@ export function EcosystemGraph({ startup, matches, allowOfflineFallback = true }
 
       {/* Canvas / SVG Network */}
       {loading ? (
-        <div className="my-6 flex h-80 flex-col items-center justify-center rounded-xl border border-slate-800/60 bg-slate-950/50 gap-3">
-          <div className="h-10 w-10 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
-          <p className="text-sm text-slate-400">Loading ASEAN ecosystem nodes...</p>
+        <div className="my-6 flex h-80 flex-col items-center justify-center rounded-xl border border-[#e2e8f0] bg-[#f8fafc] gap-3">
+          <div className="h-9 w-9 animate-spin rounded-full border-3 border-[#e2e8f0] border-t-[#2563eb]" />
+          <p className="text-sm text-[#64748b]">Loading ASEAN ecosystem nodes...</p>
         </div>
       ) : (
         <div className="mt-5 grid grid-cols-1 lg:grid-cols-4 gap-5">
-          <div className="lg:col-span-3 relative overflow-hidden rounded-xl border border-slate-800 bg-slate-950/90">
+          <div className="lg:col-span-3 relative overflow-hidden rounded-xl border border-[#e2e8f0] bg-[#f8fafc]">
             <svg
               viewBox={`0 0 ${width} ${height}`}
               className="w-full h-[380px] select-none"
             >
-              <defs>
-                <radialGradient id="hubGlow" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stopColor="rgba(16, 185, 129, 0.22)" />
-                  <stop offset="100%" stopColor="rgba(16, 185, 129, 0)" />
-                </radialGradient>
-              </defs>
-
               {/* Center radar rings */}
-              <circle cx={centerX} cy={centerY} r={190} fill="url(#hubGlow)" />
               <circle
                 cx={centerX}
                 cy={centerY}
                 r={130}
                 fill="none"
-                stroke="rgba(51, 65, 85, 0.35)"
+                stroke="#cbd5e1"
                 strokeDasharray="4 6"
               />
               <circle
@@ -161,7 +151,7 @@ export function EcosystemGraph({ startup, matches, allowOfflineFallback = true }
                 cy={centerY}
                 r={240}
                 fill="none"
-                stroke="rgba(51, 65, 85, 0.25)"
+                stroke="#e2e8f0"
                 strokeDasharray="4 6"
               />
 
@@ -181,9 +171,8 @@ export function EcosystemGraph({ startup, matches, allowOfflineFallback = true }
                       y1={s.y}
                       x2={t.x}
                       y2={t.y}
-                      stroke={isStrong ? '#10b981' : '#475569'}
+                      stroke={isStrong ? '#2563eb' : '#94a3b8'}
                       strokeWidth={isStrong ? 2.5 : 1.5}
-                      strokeOpacity={isStrong ? 0.8 : 0.55}
                       strokeDasharray={isStrong ? undefined : '5 4'}
                     />
                     {edge.relation && (
@@ -194,14 +183,14 @@ export function EcosystemGraph({ startup, matches, allowOfflineFallback = true }
                           width={116}
                           height={20}
                           rx={6}
-                          fill="#0f172a"
-                          stroke={isStrong ? 'rgba(16,185,129,0.5)' : '#334155'}
+                          fill="#ffffff"
+                          stroke={isStrong ? '#93c5fd' : '#cbd5e1'}
                           strokeWidth={1}
                         />
                         <text
                           textAnchor="middle"
                           dy="4"
-                          fill={isStrong ? '#6ee7b7' : '#94a3b8'}
+                          fill={isStrong ? '#1d4ed8' : '#64748b'}
                           fontSize="10"
                           fontWeight="600"
                         >
@@ -228,7 +217,7 @@ export function EcosystemGraph({ startup, matches, allowOfflineFallback = true }
                     <circle
                       r={node.isCenter ? 32 : 24}
                       fill={style.ring}
-                      stroke={isSelected ? '#ffffff' : style.bg}
+                      stroke={isSelected ? '#1e293b' : style.bg}
                       strokeWidth={isSelected ? 2.5 : 1.5}
                     />
                     <circle
@@ -238,7 +227,7 @@ export function EcosystemGraph({ startup, matches, allowOfflineFallback = true }
                     <text
                       textAnchor="middle"
                       dy="4"
-                      fill="#020617"
+                      fill="#ffffff"
                       fontSize="10"
                       fontWeight="800"
                     >
@@ -253,13 +242,13 @@ export function EcosystemGraph({ startup, matches, allowOfflineFallback = true }
                         width={176}
                         height={22}
                         rx={6}
-                        fill="rgba(2, 6, 23, 0.88)"
-                        stroke="rgba(51, 65, 85, 0.8)"
+                        fill="#ffffff"
+                        stroke="#cbd5e1"
                       />
                       <text
                         textAnchor="middle"
                         dy="4"
-                        fill="#f8fafc"
+                        fill="#1e293b"
                         fontSize="11"
                         fontWeight="600"
                       >
@@ -273,9 +262,9 @@ export function EcosystemGraph({ startup, matches, allowOfflineFallback = true }
           </div>
 
           {/* Side Inspector Panel */}
-          <div className="flex flex-col justify-between rounded-xl border border-slate-800 bg-slate-950/70 p-4">
+          <div className="flex flex-col justify-between rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-4">
             <div>
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-400 mb-3">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#2563eb] mb-3">
                 <Globe2 className="h-4 w-4" />
                 Node Inspector
               </div>
@@ -283,43 +272,43 @@ export function EcosystemGraph({ startup, matches, allowOfflineFallback = true }
               {selectedNode ? (
                 <div className="space-y-3">
                   <div>
-                    <span className="inline-block rounded-md bg-slate-800 px-2 py-0.5 text-[11px] font-medium text-cyan-300 uppercase">
-                      {selectedNode.type} • {selectedNode.country}
+                    <span className="inline-block rounded-md bg-[#eff6ff] border border-blue-200 px-2 py-0.5 text-[11px] font-semibold text-[#2563eb] uppercase">
+                      {selectedNode.type} · {selectedNode.country}
                     </span>
-                    <h4 className="mt-1.5 text-base font-bold text-white">
+                    <h4 className="mt-1.5 text-sm font-bold text-[#1e293b]">
                       {selectedNode.label}
                     </h4>
-                    <p className="text-xs text-slate-400 font-mono-code mt-0.5">
+                    <p className="text-xs text-[#64748b] font-mono-code mt-0.5">
                       ID: {selectedNode.id}
                     </p>
                   </div>
-                  <div className="rounded-lg border border-slate-800 bg-slate-900/70 p-3 text-xs text-slate-300 leading-relaxed">
+                  <div className="rounded-lg border border-[#e2e8f0] bg-white p-3 text-xs text-[#64748b] leading-relaxed">
                     Connected in the illustrative ASEAN cross-border outcome conversion network. Click any node on the canvas to inspect its regional links.
                   </div>
                 </div>
               ) : (
-                <p className="text-xs text-slate-400 leading-relaxed">
+                <p className="text-xs text-[#64748b] leading-relaxed">
                   Click any node in the ASEAN network graph to inspect its country role, entity type, and cross-border partnership links.
                 </p>
               )}
 
               {startup && (
-                <div className="mt-4 border-t border-slate-800/80 pt-3">
-                  <div className="text-[11px] font-semibold uppercase text-slate-400">
+                <div className="mt-4 border-t border-[#e2e8f0] pt-3">
+                  <div className="text-[11px] font-semibold uppercase text-[#64748b]">
                     Active Hub Startup
                   </div>
-                  <div className="mt-1 text-sm font-semibold text-emerald-300">
+                  <div className="mt-1 text-sm font-bold text-[#2563eb]">
                     {startup.company_name}
                   </div>
-                  <div className="text-xs text-slate-400">
+                  <div className="text-xs text-[#64748b]">
                     {startup.country} → {startup.target_markets?.join(', ')}
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="mt-4 rounded-lg border border-slate-800/90 bg-slate-900/60 p-2.5 text-[11px] text-slate-400 flex items-start gap-2">
-              <Info className="h-4 w-4 text-cyan-400 shrink-0 mt-0.5" />
+            <div className="mt-4 rounded-lg border border-[#e2e8f0] bg-white p-2.5 text-[11px] text-[#64748b] flex items-start gap-2">
+              <Info className="h-4 w-4 text-[#2563eb] shrink-0 mt-0.5" />
               <span>
                 Source: {sourceMode === 'backend' ? 'Live FastAPI /api/ecosystem/graph' : 'Illustrative Fallback Graph'} ({graph.nodes?.length || 0} nodes, {graph.edges?.length || 0} edges)
               </span>

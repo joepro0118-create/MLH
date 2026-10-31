@@ -118,34 +118,34 @@ export default function BriefStep({
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="rounded-2xl border border-emerald-500/35 bg-gradient-to-r from-emerald-950/70 via-slate-900/95 to-cyan-950/60 p-6 shadow-xl">
+      <div className="rounded-xl border border-[#e2e8f0] bg-white p-6 shadow-xs">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-300">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 border border-green-200 px-3 py-0.5 text-xs font-semibold text-[#16a34a]">
                 <FileCheck2 className="h-3.5 w-3.5" />
-                Step 4 of 4 • Actionable Outcome Conversion Plan
+                Step 4 of 4 · Actionable Outcome Conversion Plan
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/50 bg-amber-500/15 px-3 py-1 text-xs font-bold text-amber-300">
-                <ShieldAlert className="h-3.5 w-3.5" />
+              <span className="inline-flex items-center gap-1 rounded-full border border-[#fcd34d] bg-[#fffbeb] px-3 py-0.5 text-xs font-bold text-[#92400e]">
+                <ShieldAlert className="h-3.5 w-3.5 text-[#d97706]" />
                 Illustrative Demo Outcome
               </span>
             </div>
 
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
-              Cross-Border Partnership Brief & 30-Day POC Plan
+            <h2 className="text-xl sm:text-2xl font-bold text-[#1e293b]">
+              4. Cross-Border Partnership Brief & 30-Day POC Plan
             </h2>
 
-            <div className="flex flex-wrap items-center gap-2 text-sm text-slate-300 pt-1">
-              <span className="font-bold text-emerald-300">
+            <div className="flex flex-wrap items-center gap-2 text-sm text-[#64748b] pt-0.5">
+              <span className="font-bold text-[#2563eb]">
                 {startup?.company_name} ({startup?.country})
               </span>
-              <span className="text-slate-500">×</span>
-              <span className="font-bold text-cyan-300">
+              <span className="text-[#64748b]">×</span>
+              <span className="font-bold text-[#7c3aed]">
                 {partner?.partner_name} ({partner?.country})
               </span>
               {partner?.score && (
-                <span className="rounded-md bg-emerald-500/20 border border-emerald-500/40 px-2 py-0.5 text-xs font-bold text-emerald-300">
+                <span className="rounded-full bg-[#dcfce7] px-2.5 py-0.5 text-xs font-bold text-[#15803d]">
                   {partner.score}% Compatibility
                 </span>
               )}
@@ -157,16 +157,16 @@ export default function BriefStep({
             <button
               type="button"
               onClick={handleCopyMarkdown}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-xs font-bold text-white hover:bg-slate-700 transition cursor-pointer shadow"
+              className="inline-flex items-center gap-2 rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-4 py-2.5 text-xs font-semibold text-[#1e293b] hover:bg-slate-200/70 transition cursor-pointer"
             >
-              <Copy className="h-4 w-4 text-emerald-400" />
+              <Copy className="h-4 w-4 text-[#2563eb]" />
               Copy Brief
             </button>
 
             <button
               type="button"
               onClick={handleDownloadMarkdown}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2.5 text-xs font-bold text-slate-950 hover:from-emerald-400 hover:to-teal-400 transition cursor-pointer shadow-lg shadow-emerald-500/20"
+              className="inline-flex items-center gap-2 rounded-lg bg-[#2563eb] px-4 py-2.5 text-xs font-semibold text-white hover:bg-blue-700 transition cursor-pointer shadow-xs"
             >
               <Download className="h-4 w-4" />
               Download as Markdown
@@ -176,62 +176,66 @@ export default function BriefStep({
       </div>
 
       {/* Main Brief Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Objective */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/85 p-6 shadow-xl space-y-3">
-          <div className="flex items-center gap-2.5 text-emerald-400">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/15 border border-emerald-500/30">
-              <Target className="h-5 w-5" />
+        <div className="rounded-xl border border-[#e2e8f0] bg-white p-5 shadow-xs space-y-2.5">
+          <div className="flex items-center gap-2 text-[#2563eb]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#eff6ff] border border-blue-200">
+              <Target className="h-4 w-4" />
             </div>
-            <h3 className="text-base font-bold text-white">Partnership Objective</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#2563eb]">
+              Partnership Objective
+            </h3>
           </div>
-          <p className="text-sm text-slate-200 leading-relaxed">
+          <p className="text-sm text-[#1e293b] leading-relaxed">
             {brief.objective}
           </p>
         </div>
 
         {/* Collaboration Concept */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/85 p-6 shadow-xl space-y-3">
-          <div className="flex items-center gap-2.5 text-cyan-400">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500/15 border border-cyan-500/30">
-              <Handshake className="h-5 w-5" />
+        <div className="rounded-xl border border-[#e2e8f0] bg-white p-5 shadow-xs space-y-2.5">
+          <div className="flex items-center gap-2 text-[#7c3aed]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#ede9fe] border border-purple-200">
+              <Handshake className="h-4 w-4" />
             </div>
-            <h3 className="text-base font-bold text-white">Collaboration Concept</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#7c3aed]">
+              Collaboration Concept
+            </h3>
           </div>
-          <p className="text-sm text-slate-200 leading-relaxed">
+          <p className="text-sm text-[#1e293b] leading-relaxed">
             {brief.collaboration_concept}
           </p>
         </div>
 
         {/* Proposed POC */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/85 p-6 shadow-xl space-y-3">
-          <div className="flex items-center gap-2.5 text-amber-400">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/15 border border-amber-500/30">
-              <FlaskConical className="h-5 w-5" />
+        <div className="rounded-xl border border-[#e2e8f0] bg-white p-5 shadow-xs space-y-2.5">
+          <div className="flex items-center gap-2 text-[#16a34a]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50 border border-green-200">
+              <FlaskConical className="h-4 w-4" />
             </div>
-            <h3 className="text-base font-bold text-white">Proposed 30-Day POC</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#16a34a]">
+              Proposed 30-Day POC
+            </h3>
           </div>
-          <p className="text-sm text-slate-200 leading-relaxed">
+          <p className="text-sm text-[#1e293b] leading-relaxed">
             {brief.proposed_poc}
           </p>
         </div>
       </div>
 
       {/* 30-Day Execution Timeline (Week 1 - 4) */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/85 p-6 shadow-xl space-y-4">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300">
-              <CalendarRange className="h-5 w-5" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-white">
-                30-Day POC Execution Roadmap (Week 1 – Week 4)
-              </h3>
-              <p className="text-xs text-slate-400">
-                Structured sprint milestones designed to convert initial introductions into measurable pilot outcomes
-              </p>
-            </div>
+      <div className="rounded-xl border border-[#e2e8f0] bg-white p-6 shadow-xs space-y-4">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#eff6ff] border border-blue-200 text-[#2563eb]">
+            <CalendarRange className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-[#1e293b]">
+              30-Day POC Execution Roadmap (Week 1 – Week 4)
+            </h3>
+            <p className="text-xs text-[#64748b]">
+              Structured weekly milestones designed to convert introductions into measurable pilot outcomes
+            </p>
           </div>
         </div>
 
@@ -239,19 +243,19 @@ export default function BriefStep({
           {(brief.timeline || []).map((stepText, idx) => (
             <div
               key={idx}
-              className="relative flex flex-col justify-between rounded-xl border border-slate-800 bg-slate-950/80 p-4 hover:border-emerald-500/40 transition"
+              className="flex flex-col justify-between rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-4 hover:border-[#2563eb] transition"
             >
-              <div className="space-y-2.5">
-                <div className="inline-flex items-center gap-2 rounded-lg bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 text-xs font-extrabold text-emerald-300">
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-2 rounded-md bg-[#2563eb] px-2.5 py-0.5 text-xs font-bold text-white">
                   Week {idx + 1}
                 </div>
-                <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                <p className="text-xs sm:text-sm text-[#1e293b] leading-relaxed">
                   {stepText}
                 </p>
               </div>
-              <div className="mt-4 pt-2 border-t border-slate-800/70 flex items-center justify-between text-[11px] text-slate-500">
+              <div className="mt-4 pt-2 border-t border-[#e2e8f0] flex items-center justify-between text-[11px] text-[#64748b]">
                 <span>Days {idx * 7 + 1}–{(idx + 1) * 7}</span>
-                <span className="text-emerald-400 font-semibold">Milestone #{idx + 1}</span>
+                <span className="text-[#2563eb] font-semibold">Milestone #{idx + 1}</span>
               </div>
             </div>
           ))}
@@ -259,11 +263,11 @@ export default function BriefStep({
       </div>
 
       {/* Success Metrics & Bottom Navigation */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-        <div className="lg:col-span-8 rounded-2xl border border-slate-800 bg-slate-900/85 p-6 shadow-xl space-y-4">
-          <div className="flex items-center gap-2.5">
-            <CheckCircle2 className="h-5 w-5 text-emerald-400" />
-            <h3 className="text-lg font-bold text-white">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+        <div className="lg:col-span-8 rounded-xl border border-[#e2e8f0] bg-white p-6 shadow-xs space-y-4">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 text-[#16a34a]" />
+            <h3 className="text-base font-bold text-[#1e293b]">
               Target Pilot Success Metrics & KPIs
             </h3>
           </div>
@@ -272,12 +276,12 @@ export default function BriefStep({
             {(brief.success_metrics || []).map((metric, idx) => (
               <div
                 key={idx}
-                className="flex items-start gap-2.5 rounded-xl border border-slate-800 bg-slate-950/70 p-3.5"
+                className="flex items-start gap-2.5 rounded-lg border border-[#e2e8f0] bg-[#f8fafc] p-3.5"
               >
-                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-xs font-bold text-emerald-300">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#dcfce7] text-xs font-bold text-[#16a34a]">
                   ✓
                 </span>
-                <span className="text-xs sm:text-sm text-slate-200 leading-snug">
+                <span className="text-xs sm:text-sm text-[#1e293b] leading-snug">
                   {metric}
                 </span>
               </div>
@@ -286,17 +290,17 @@ export default function BriefStep({
         </div>
 
         {/* Navigation / Try Another Partner Card */}
-        <div className="lg:col-span-4 flex flex-col justify-between rounded-2xl border border-slate-800 bg-slate-900/85 p-6 shadow-xl space-y-4">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-cyan-400">
+        <div className="lg:col-span-4 flex flex-col justify-between rounded-xl border border-[#e2e8f0] bg-white p-6 shadow-xs space-y-4">
+          <div className="space-y-1.5">
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#2563eb]">
               <Globe2 className="h-4 w-4" />
               Next Actions
             </div>
-            <h4 className="text-base font-bold text-white">
+            <h4 className="text-base font-bold text-[#1e293b]">
               Compare Another ASEAN Partner or Export Brief
             </h4>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              You can return to Step 3 to generate a tailored brief for another top partner match, or download this brief as Markdown for your team repository.
+            <p className="text-xs text-[#64748b] leading-relaxed">
+              Return to Step 3 to generate a tailored brief for another top partner match, or download this brief as Markdown.
             </p>
           </div>
 
@@ -304,16 +308,16 @@ export default function BriefStep({
             <button
               type="button"
               onClick={onBackToMatches}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-xs font-bold text-slate-200 hover:bg-slate-700 transition cursor-pointer"
+              className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-[#e2e8f0] bg-[#f8fafc] px-4 py-2.5 text-xs font-semibold text-[#1e293b] hover:bg-slate-200/70 transition cursor-pointer"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Top 3 Matches
+              ← Back to Matches
             </button>
 
             <button
               type="button"
               onClick={onRestart}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-950 px-4 py-2.5 text-xs font-semibold text-slate-400 hover:text-white hover:border-slate-700 transition cursor-pointer"
+              className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-[#e2e8f0] bg-white px-4 py-2.5 text-xs font-semibold text-[#64748b] hover:text-[#1e293b] hover:bg-[#f8fafc] transition cursor-pointer"
             >
               <RotateCcw className="h-3.5 w-3.5" />
               Start New Pitch Analysis
