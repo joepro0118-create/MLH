@@ -1,16 +1,26 @@
-// frontend/src/App.jsx — PACT v2: AI Cross-Border Partnership Toolkit
+// frontend/src/App.jsx — PACT v2.1
+// Flow: Auth (Demo Login/Signup) → Founder Upload → Passport → Matches → Brief Dashboard
 // UICheatSheet Rule of 3:
-//   Hero    → Border-beam upload zone with glow pulse
-//   Micro   → Shimmer skeletons + Spotlight cards + Expandable/editable dash cards
-//   Delight → Confetti + Export/Copy/Download/Share action toolbar
+//   Hero    → Border-beam auth card + glow upload zone
+//   Micro   → Shimmer skeletons + Spotlight cards + Expandable dash cards
+//   Delight → Confetti + Export/Copy/Download/Share toolbar + toast system
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { analyzePitch, getMatches, getGraph, getBrief } from './api.js'
 import { EcosystemGraph } from './components/EcosystemGraph.jsx'
 import './index.css'
 
 /* ─────────────────────────────────────────────────────────────
-   DEMO DATA (SmartTONG — Malaysia → Vietnam municipal pilot)
+   DEMO DATA — SmartTONG (Malaysia → Vietnam municipal pilot)
 ───────────────────────────────────────────────────────────────*/
+const DEMO_FOUNDER = {
+  name: 'Alex Tan',
+  company: 'SmartTONG',
+  email: 'alex@smarttong.my',
+  country: 'Malaysia',
+  role: 'Co-founder & CEO',
+  avatar: 'AT',
+}
+
 const DEMO_PROFILE = {
   company_name: 'SmartTONG',
   country: 'Malaysia',
@@ -22,9 +32,10 @@ const DEMO_PROFILE = {
   partnership_goals: ['30-Day Municipal POC Pilot', 'Local Distribution Partner', 'Tri-Party LOI Framework'],
 }
 
+const DEMO_CREDENTIALS = { email: 'alex@smarttong.my', password: 'demo1234' }
+
 /* ─────────────────────────────────────────────────────────────
    TOAST NOTIFICATION SYSTEM
-   Light, non-blocking, auto-dismisses in 3s
 ───────────────────────────────────────────────────────────────*/
 function useToast() {
   const [toasts, setToasts] = useState([])
@@ -35,7 +46,6 @@ function useToast() {
   }, [])
   return { toasts, show }
 }
-
 function ToastContainer({ toasts }) {
   if (!toasts.length) return null
   return (
@@ -48,49 +58,37 @@ function ToastContainer({ toasts }) {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   CANVAS CONFETTI — Milestone Delight
+   CANVAS CONFETTI
 ───────────────────────────────────────────────────────────────*/
 function useConfetti() {
   useEffect(() => {
     const canvas = document.createElement('canvas')
-    canvas.style.cssText =
-      'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999'
+    canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999'
     document.body.appendChild(canvas)
     const ctx = canvas.getContext('2d')
-    canvas.width = window.innerWidth
-    canvas.height = window.innerHeight
-
-    const COLORS = ['#7c3aed', '#a78bfa', '#c4b5fd', '#fbbf24', '#10b981', '#38bdf8', '#f472b6', '#ffffff']
-    const particles = Array.from({ length: 150 }, () => ({
-      x: Math.random() * canvas.width,
-      y: -30 - Math.random() * 80,
-      w: Math.random() * 10 + 4,
-      h: Math.random() * 5 + 2,
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight
+    const COLORS = ['#7c3aed','#a78bfa','#c4b5fd','#fbbf24','#10b981','#38bdf8','#f472b6','#ffffff']
+    const particles = Array.from({ length: 160 }, () => ({
+      x: Math.random() * canvas.width, y: -30 - Math.random() * 80,
+      w: Math.random() * 10 + 4, h: Math.random() * 5 + 2,
       color: COLORS[Math.floor(Math.random() * COLORS.length)],
-      vy: Math.random() * 3.5 + 1.5,
-      vx: (Math.random() - 0.5) * 4,
-      rot: Math.random() * 360,
-      rotV: (Math.random() - 0.5) * 10,
-      alpha: 1,
+      vy: Math.random() * 3.5 + 1.5, vx: (Math.random() - 0.5) * 4,
+      rot: Math.random() * 360, rotV: (Math.random() - 0.5) * 10, alpha: 1,
     }))
-
     let frame, tick = 0
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       particles.forEach((p) => {
         p.y += p.vy; p.x += p.vx; p.rot += p.rotV; p.vy += 0.055
         if (tick > 100) p.alpha = Math.max(0, p.alpha - 0.012)
-        ctx.save()
-        ctx.globalAlpha = p.alpha
+        ctx.save(); ctx.globalAlpha = p.alpha
         ctx.translate(p.x + p.w / 2, p.y + p.h / 2)
         ctx.rotate((p.rot * Math.PI) / 180)
-        ctx.fillStyle = p.color
-        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h)
+        ctx.fillStyle = p.color; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h)
         ctx.restore()
       })
       tick++
-      if (tick < 240) frame = requestAnimationFrame(draw)
-      else canvas.remove()
+      if (tick < 240) frame = requestAnimationFrame(draw); else canvas.remove()
     }
     draw()
     return () => { cancelAnimationFrame(frame); canvas.parentNode && canvas.remove() }
@@ -98,7 +96,7 @@ function useConfetti() {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   SCORE RING — Animated SVG Circle
+   SCORE RING
 ───────────────────────────────────────────────────────────────*/
 function ScoreRing({ score, size = 68 }) {
   const r = size * 0.38, cx = size / 2, cy = size / 2
@@ -108,15 +106,10 @@ function ScoreRing({ score, size = 68 }) {
   return (
     <svg width={size} height={size} style={{ flexShrink: 0 }}>
       <circle cx={cx} cy={cy} r={r} fill="none" stroke="#ede9fe" strokeWidth="5" />
-      <circle
-        cx={cx} cy={cy} r={r} fill="none"
-        stroke={color} strokeWidth="5"
-        strokeDasharray={circ}
-        strokeDashoffset={offset}
-        strokeLinecap="round"
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth="5"
+        strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
         transform={`rotate(-90 ${cx} ${cy})`}
-        style={{ transition: 'stroke-dashoffset 1s ease-out' }}
-      />
+        style={{ transition: 'stroke-dashoffset 1s ease-out' }} />
       <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central"
         fontSize={size * 0.22} fontWeight="800" fill={color}>{score}</text>
     </svg>
@@ -124,7 +117,7 @@ function ScoreRing({ score, size = 68 }) {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   SPOTLIGHT CARD — Radial Cursor Glow (UICheatSheet #7)
+   SPOTLIGHT CARD
 ───────────────────────────────────────────────────────────────*/
 function SpotlightCard({ children, className = '' }) {
   const ref = useRef(null)
@@ -134,37 +127,40 @@ function SpotlightCard({ children, className = '' }) {
     ref.current.style.setProperty('--mx', `${e.clientX - rect.left}px`)
     ref.current.style.setProperty('--my', `${e.clientY - rect.top}px`)
   }
+  return <div ref={ref} onMouseMove={onMove} className={`spotlight-card ${className}`}>{children}</div>
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FOUNDER AVATAR
+───────────────────────────────────────────────────────────────*/
+function FounderAvatar({ founder, size = 36 }) {
   return (
-    <div ref={ref} onMouseMove={onMove} className={`spotlight-card ${className}`}>
-      {children}
+    <div className="founder-avatar" style={{ width: size, height: size, fontSize: size * 0.38 }}>
+      {founder.avatar || founder.name?.slice(0, 2).toUpperCase()}
     </div>
   )
 }
 
 /* ─────────────────────────────────────────────────────────────
-   STEP INDICATOR
+   STEP INDICATOR (steps 1-4, shown after auth)
 ───────────────────────────────────────────────────────────────*/
 const STEPS = [
-  { label: 'Upload Files', icon: '📁' },
-  { label: 'Startup Passport', icon: '🛂' },
-  { label: 'Partner Matches', icon: '🤝' },
-  { label: 'POC Dashboard', icon: '📋' },
+  { label: 'Upload', icon: '📁' },
+  { label: 'Passport', icon: '🛂' },
+  { label: 'Matches', icon: '🤝' },
+  { label: 'Dashboard', icon: '📊' },
 ]
-
 function StepIndicator({ current, onNavigate }) {
   return (
     <div className="steps">
       {STEPS.map((s, i) => {
         const n = i + 1
-        const done = n < current
-        const active = n === current
+        const done = n < current, active = n === current
         return (
           <div key={s.label} className="step-item-wrap">
-            <div
-              className={`step-item ${done ? 'done' : ''} ${active ? 'active' : ''}`}
+            <div className={`step-item ${done ? 'done' : ''} ${active ? 'active' : ''}`}
               onClick={() => done && onNavigate && onNavigate(n)}
-              style={done ? { cursor: 'pointer' } : {}}
-            >
+              style={done ? { cursor: 'pointer' } : {}}>
               <div className="step-dot">{done ? '✓' : active ? s.icon : n}</div>
               <span className="step-label">{s.label}</span>
             </div>
@@ -176,10 +172,225 @@ function StepIndicator({ current, onNavigate }) {
   )
 }
 
-/* ─────────────────────────────────────────────────────────────
-   STEP 1: UPLOAD (1 to 3 files, note, goal, country)
-───────────────────────────────────────────────────────────────*/
-function UploadStep({ onComplete }) {
+/* ═══════════════════════════════════════════════════════════════
+   AUTH SCREEN — Demo Login / Sign Up
+   No real backend. Demo credentials pre-filled.
+   Stores founder context in React state only.
+═══════════════════════════════════════════════════════════════ */
+function AuthScreen({ onAuth }) {
+  const [mode, setMode] = useState('login') // 'login' | 'signup'
+  const [form, setForm] = useState({ name: '', company: '', email: '', password: '', country: 'Malaysia', role: 'Co-founder & CEO' })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
+
+  const handleDemoLogin = () => {
+    setLoading(true)
+    setTimeout(() => {
+      setLoading(false)
+      onAuth(DEMO_FOUNDER)
+    }, 900)
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    setError(null)
+    if (mode === 'login') {
+      if (!form.email || !form.password) { setError('Please enter your email and password.'); return }
+      // Demo auth check
+      if (form.email !== DEMO_CREDENTIALS.email || form.password !== DEMO_CREDENTIALS.password) {
+        setError('Invalid credentials. Use alex@smarttong.my / demo1234, or click Demo Login.')
+        return
+      }
+      setLoading(true)
+      setTimeout(() => {
+        setLoading(false)
+        onAuth({ ...DEMO_FOUNDER, email: form.email })
+      }, 700)
+    } else {
+      if (!form.name || !form.email || !form.company) { setError('Please fill in all required fields.'); return }
+      setLoading(true)
+      setTimeout(() => {
+        setLoading(false)
+        onAuth({
+          name: form.name,
+          company: form.company,
+          email: form.email,
+          country: form.country,
+          role: form.role,
+          avatar: form.name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase(),
+        })
+      }, 900)
+    }
+  }
+
+  return (
+    <div className="auth-page">
+      {/* Left panel — Brand */}
+      <div className="auth-left">
+        <div className="auth-left-content">
+          <div className="auth-brand-logo">PACT</div>
+          <div className="auth-brand-tagline">Partnership Action &amp; Collaboration Toolkit</div>
+          <div className="auth-brand-desc">
+            AI-powered cross-border startup partnerships for ASEAN.<br />
+            Upload your pitch. Gemma 4 finds your match. You execute.
+          </div>
+
+          {/* Social proof / stats */}
+          <div className="auth-stats">
+            <div className="auth-stat">
+              <span className="auth-stat-num">30</span>
+              <span className="auth-stat-label">Days to POC</span>
+            </div>
+            <div className="auth-stat">
+              <span className="auth-stat-num">12+</span>
+              <span className="auth-stat-label">ASEAN Hubs</span>
+            </div>
+            <div className="auth-stat">
+              <span className="auth-stat-num">Gemma 4</span>
+              <span className="auth-stat-label">Vision AI</span>
+            </div>
+          </div>
+
+          {/* Testimonial / pitch */}
+          <div className="auth-quote">
+            <div className="auth-quote-text">
+              "From pitch deck to a signed 30-day POC outline — in under 4 minutes."
+            </div>
+            <div className="auth-quote-author">— PACT Demo · MLH Hacktoberfest KL 2026</div>
+          </div>
+
+          {/* Badges */}
+          <div className="auth-badges">
+            <span className="auth-badge">🤖 Gemma 4 Multimodal</span>
+            <span className="auth-badge">🌏 ASEAN Ecosystem</span>
+            <span className="auth-badge">⚡ Open Source · MIT</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Right panel — Auth form */}
+      <div className="auth-right">
+        <div className="auth-card">
+          {/* Header */}
+          <div className="auth-card-header">
+            <div className="auth-card-logo">PACT</div>
+            <div className="auth-card-title">
+              {mode === 'login' ? 'Welcome back, Founder' : 'Create your Founder account'}
+            </div>
+            <div className="auth-card-sub">
+              {mode === 'login'
+                ? 'Sign in to continue your partnership journey'
+                : 'Join PACT and find your first ASEAN cross-border match'}
+            </div>
+          </div>
+
+          {/* Demo quick login */}
+          <div className="auth-demo-strip">
+            <span className="auth-demo-label">🚀 Hackathon Demo</span>
+            <button className="btn-demo-auth" onClick={handleDemoLogin} disabled={loading}>
+              {loading ? 'Signing in…' : 'One-Click Demo Login'}
+            </button>
+          </div>
+
+          <div className="auth-divider"><span>or continue with email</span></div>
+
+          {/* Form */}
+          <form className="auth-form" onSubmit={handleSubmit}>
+            {mode === 'signup' && (
+              <>
+                <div className="auth-form-row">
+                  <div className="form-group">
+                    <label className="form-label">Full Name *</label>
+                    <input className="form-input" type="text" placeholder="Alex Tan"
+                      value={form.name} onChange={set('name')} autoFocus />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Company / Startup *</label>
+                    <input className="form-input" type="text" placeholder="SmartTONG Sdn Bhd"
+                      value={form.company} onChange={set('company')} />
+                  </div>
+                </div>
+                <div className="auth-form-row">
+                  <div className="form-group">
+                    <label className="form-label">Role</label>
+                    <select className="form-select" value={form.role} onChange={set('role')}>
+                      <option>Co-founder &amp; CEO</option>
+                      <option>Co-founder &amp; CTO</option>
+                      <option>Business Development</option>
+                      <option>Partnerships Lead</option>
+                      <option>Investor / VC</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Home Country</label>
+                    <select className="form-select" value={form.country} onChange={set('country')}>
+                      {['Malaysia','Singapore','Indonesia','Vietnam','Thailand','Philippines','Other ASEAN'].map((c) =>
+                        <option key={c}>{c}</option>)}
+                    </select>
+                  </div>
+                </div>
+              </>
+            )}
+
+            <div className="form-group">
+              <label className="form-label">Email Address *</label>
+              <input className="form-input" type="email"
+                placeholder={mode === 'login' ? 'alex@smarttong.my' : 'you@startup.com'}
+                value={form.email} onChange={set('email')} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Password *</label>
+              <input className="form-input" type="password"
+                placeholder={mode === 'login' ? 'demo1234' : 'Create a password'}
+                value={form.password} onChange={set('password')} />
+            </div>
+
+            {mode === 'login' && (
+              <div className="auth-hint">
+                Demo credentials: <code>alex@smarttong.my</code> / <code>demo1234</code>
+              </div>
+            )}
+
+            {error && <div className="error-toast" style={{ fontSize: '0.8rem' }}>⚠️ {error}</div>}
+
+            <button className="btn btn-primary btn-auth-submit" type="submit" disabled={loading}>
+              {loading ? (
+                <><span className="auth-spinner" /> {mode === 'login' ? 'Signing in…' : 'Creating account…'}</>
+              ) : (
+                mode === 'login' ? '→ Sign In to PACT' : '→ Create Account & Continue'
+              )}
+            </button>
+          </form>
+
+          {/* Toggle mode */}
+          <div className="auth-toggle">
+            {mode === 'login' ? (
+              <>Don't have an account?{' '}
+                <button className="auth-toggle-btn" onClick={() => { setMode('signup'); setError(null) }}>Sign up free</button>
+              </>
+            ) : (
+              <>Already have an account?{' '}
+                <button className="auth-toggle-btn" onClick={() => { setMode('login'); setError(null) }}>Sign in</button>
+              </>
+            )}
+          </div>
+
+          <div className="auth-footer-note">
+            🔒 Demo only — no data stored. Open source, MIT Licence.
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   STEP 1 — FOUNDER UPLOAD PROMPT PAGE
+   Personalized with founder context. Upload 1-3 files.
+═══════════════════════════════════════════════════════════════ */
+function UploadStep({ founder, onComplete }) {
   const [files, setFiles] = useState([])
   const [goal, setGoal] = useState('cross-border POC')
   const [targetCountry, setTargetCountry] = useState('Vietnam')
@@ -194,88 +405,108 @@ function UploadStep({ onComplete }) {
     const valid = Array.from(newFiles).filter((f) =>
       ['image/png', 'image/jpeg', 'image/webp'].includes(f.type)
     )
-    if (valid.length === 0) {
-      setError('Please upload PNG, JPEG, or WebP images.')
-      return
-    }
+    if (!valid.length) { setError('Please upload PNG, JPEG, or WebP images.'); return }
     setFiles((prev) => {
       const combined = [...prev, ...valid].slice(0, 3)
-      if (prev.length + valid.length > 3) setError('Maximum 3 files allowed. Kept the first 3.')
+      if (prev.length + valid.length > 3) setError('Maximum 3 files. Kept the first 3.')
       return combined
     })
   }
-
   const removeFile = (idx) => setFiles((prev) => prev.filter((_, i) => i !== idx))
 
   const handleAnalyze = async () => {
-    if (files.length === 0) { setError('Please upload at least 1 pitch deck or brochure image.'); return }
+    if (!files.length) { setError('Please upload at least 1 pitch deck or brochure image.'); return }
     setError(null); setLoading(true)
     try {
       const profile = await analyzePitch(files, { notes, goal, target_country: targetCountry })
       onComplete(profile)
-    } catch (e) {
-      setError(e.message)
-    } finally {
-      setLoading(false)
-    }
+    } catch (e) { setError(e.message) }
+    finally { setLoading(false) }
   }
 
-  if (loading) {
-    return (
-      <div className="gemma-loading">
-        <div className="gemma-spinner">
-          <div className="g-ring" />
-          <div className="g-ring r2" />
-          <div className="g-ring r3" />
-        </div>
-        <div className="gemma-loading-title">Gemma 4 is synthesizing your documents…</div>
-        <div className="gemma-loading-sub">
-          Reading {files.length} document{files.length > 1 ? 's' : ''} &amp; reconciling into a single Startup Passport
-        </div>
-      </div>
-    )
-  }
+  if (loading) return (
+    <div className="gemma-loading">
+      <div className="gemma-spinner"><div className="g-ring" /><div className="g-ring r2" /><div className="g-ring r3" /></div>
+      <div className="gemma-loading-title">Gemma 4 is synthesizing your documents…</div>
+      <div className="gemma-loading-sub">Reading {files.length} file{files.length > 1 ? 's' : ''} &amp; building your Startup Passport</div>
+    </div>
+  )
 
   return (
-    <div className="upload-wrap">
-      {/* Upload Zone */}
-      <div
-        className={`upload-zone ${dragging ? 'drag-over' : ''}`}
-        onClick={() => inputRef.current?.click()}
-        onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={(e) => { e.preventDefault(); setDragging(false); addFiles(e.dataTransfer.files) }}
-      >
-        <div className="upload-icon-bg">📑</div>
-        <div className="upload-label">
-          {files.length > 0 ? `Selected ${files.length} of 3 file(s)` : 'Upload Pitch Deck, Brochure, or Proposal'}
+    <div className="upload-page">
+      {/* Personalized founder welcome bar */}
+      <div className="founder-welcome-bar">
+        <div className="fwb-left">
+          <FounderAvatar founder={founder} size={44} />
+          <div>
+            <div className="fwb-greeting">Good to see you, <strong>{founder.name.split(' ')[0]}</strong> 👋</div>
+            <div className="fwb-company">{founder.company} &bull; {founder.country} &bull; {founder.role}</div>
+          </div>
         </div>
-        <div className="upload-hint">Upload 1 to 3 images (PNG, JPG, WEBP, up to 5 MB each)</div>
-        <div className="upload-browse-pill">Click or drag &amp; drop files</div>
-        <input
-          ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp"
-          multiple className="upload-input"
-          onChange={(e) => addFiles(e.target.files)}
-        />
+        <div className="fwb-cta-label">Ready to find your ASEAN cross-border partner?</div>
       </div>
 
-      {/* Uploaded File Badges */}
-      {files.length > 0 && (
-        <div className="uploaded-files-list">
-          {files.map((f, i) => (
-            <div key={i} className="file-chip">
-              <span className="file-name">📄 {f.name}</span>
-              <span className="file-size">({(f.size / 1024).toFixed(0)} KB)</span>
-              <button type="button" className="btn-chip-remove"
-                onClick={(e) => { e.stopPropagation(); removeFile(i) }} title="Remove">✕</button>
-            </div>
-          ))}
-        </div>
-      )}
+      {/* Section title */}
+      <div className="upload-section-header">
+        <div className="ush-step-pill">Step 1 of 4</div>
+        <h2 className="ush-title">Upload Your Pitch Materials</h2>
+        <p className="ush-sub">
+          Upload 1–3 files (pitch deck slides, brochures, flyers). Gemma 4 reads them all together
+          and builds a single unified Startup Passport for matching.
+        </p>
+      </div>
 
-      {/* Founder Intent */}
-      <div className="founder-options-card">
-        <div className="founder-options-grid">
+      {/* Two-column layout: upload zone + options */}
+      <div className="upload-two-col">
+        {/* Left: Drop zone */}
+        <div className="upload-zone-wrap">
+          <div
+            className={`upload-zone ${dragging ? 'drag-over' : ''}`}
+            onClick={() => inputRef.current?.click()}
+            onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={(e) => { e.preventDefault(); setDragging(false); addFiles(e.dataTransfer.files) }}
+          >
+            <div className="upload-icon-bg">📑</div>
+            <div className="upload-label">
+              {files.length > 0 ? `${files.length} of 3 file${files.length > 1 ? 's' : ''} selected` : 'Drop your pitch materials here'}
+            </div>
+            <div className="upload-hint">PNG, JPG, WEBP · Up to 5 MB each · Up to 3 files</div>
+            <div className="upload-browse-pill">Click or drag &amp; drop</div>
+            <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp"
+              multiple className="upload-input" onChange={(e) => addFiles(e.target.files)} />
+          </div>
+
+          {/* File list */}
+          {files.length > 0 && (
+            <div className="uploaded-files-list" style={{ marginTop: '0.85rem' }}>
+              {files.map((f, i) => (
+                <div key={i} className="file-chip">
+                  <span className="file-name">📄 {f.name}</span>
+                  <span className="file-size">({(f.size / 1024).toFixed(0)} KB)</span>
+                  <button className="btn-chip-remove" type="button"
+                    onClick={(e) => { e.stopPropagation(); removeFile(i) }}>✕</button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* File count indicator */}
+          <div className="file-count-bar">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className={`file-count-dot ${i < files.length ? 'filled' : ''}`} />
+            ))}
+            <span className="file-count-label">{files.length}/3 files uploaded</span>
+          </div>
+        </div>
+
+        {/* Right: Founder context options */}
+        <div className="upload-options-panel">
+          <div className="uop-header">
+            <span className="uop-icon">🎯</span>
+            <span className="uop-title">Partnership Context</span>
+          </div>
+
           <div className="form-group">
             <label className="form-label">Primary Partnership Objective</label>
             <select className="form-select" value={goal} onChange={(e) => setGoal(e.target.value)}>
@@ -284,6 +515,7 @@ function UploadStep({ onComplete }) {
               <option value="commercial partnership">Commercial Partnership &amp; Co-development</option>
             </select>
           </div>
+
           <div className="form-group">
             <label className="form-label">Target ASEAN Expansion Market</label>
             <select className="form-select" value={targetCountry} onChange={(e) => setTargetCountry(e.target.value)}>
@@ -296,82 +528,102 @@ function UploadStep({ onComplete }) {
               <option value="ASEAN">Any ASEAN Nation</option>
             </select>
           </div>
-        </div>
-        <div className="form-group" style={{ marginTop: '0.85rem' }}>
-          <label className="form-label">Founder Note or Specific Requirements (Optional)</label>
-          <textarea
-            className="form-textarea" rows="2"
-            placeholder="e.g. We have proven IoT sensors in Malaysia and want to test route optimization for 50 municipal bins in District 1, Ho Chi Minh City."
-            value={notes} onChange={(e) => setNotes(e.target.value)}
-          />
+
+          <div className="form-group">
+            <label className="form-label">Founder Note <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
+            <textarea className="form-textarea" rows="3"
+              placeholder={`Hi, I'm ${founder.name.split(' ')[0]} from ${founder.company}. We want to test our IoT route optimization for 50 municipal bins in District 1, Ho Chi Minh City...`}
+              value={notes} onChange={(e) => setNotes(e.target.value)} />
+          </div>
+
+          {/* Gemma info box */}
+          <div className="gemma-info-box">
+            <div className="gib-icon">✦</div>
+            <div>
+              <div className="gib-title">Powered by Gemma 4 Vision</div>
+              <div className="gib-desc">Gemma reads all your files together and extracts a unified Startup Passport — then our deterministic engine ranks the best ASEAN partners.</div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* CTA Buttons */}
+      {error && <div className="error-toast">⚠️ {error}</div>}
+
+      {/* CTA row */}
       <div className="upload-cta-row">
         <button className="btn btn-primary btn-large" onClick={handleAnalyze} disabled={files.length === 0}>
           <span>🤖</span>
-          <span>Analyze &amp; Build Startup Passport</span>
+          <span>Analyze with Gemma 4 &amp; Build Passport</span>
         </button>
         <span className="or-pill">OR</span>
         <button className="btn btn-demo" onClick={() => onComplete(DEMO_PROFILE)}>
           <span>🚀</span>
-          <span>Use Demo: SmartTONG (Malaysia → Vietnam)</span>
+          <span>Use SmartTONG Demo</span>
         </button>
       </div>
-
-      {error && <div className="error-toast">⚠️ {error}</div>}
     </div>
   )
 }
 
-/* ─────────────────────────────────────────────────────────────
-   STEP 2: STARTUP PASSPORT (Review & Human-in-the-Loop Edit)
-───────────────────────────────────────────────────────────────*/
-function PassportStep({ profile, onSave, onBack }) {
+/* ═══════════════════════════════════════════════════════════════
+   STEP 2 — STARTUP PASSPORT (Review & Edit)
+═══════════════════════════════════════════════════════════════ */
+function PassportStep({ profile, founder, onSave, onBack }) {
   const [data, setData] = useState({ ...profile })
-  const [newCap, setNewCap] = useState('')
-  const [newNeed, setNewNeed] = useState('')
-  const [newMarket, setNewMarket] = useState('')
-  const [newGoal, setNewGoal] = useState('')
+  const states = {
+    newCap: useState(''), newNeed: useState(''), newMarket: useState(''), newGoal: useState('')
+  }
 
   const handleRemoveChip = (field, idx) =>
     setData((prev) => ({ ...prev, [field]: prev[field].filter((_, i) => i !== idx) }))
 
   const handleAddChip = (field, val, setter) => {
-    if (!val || !val.trim()) return
+    if (!val?.trim()) return
     setData((prev) => ({ ...prev, [field]: [...(prev[field] || []), val.trim()] }))
     setter('')
   }
 
+  const CHIP_GROUPS = [
+    { field: 'capabilities',      label: 'Core Capabilities',   cls: 'chip-blue',   key: 'newCap',    ph: '+ Add capability…' },
+    { field: 'needs',             label: 'Operational Needs',   cls: 'chip-purple', key: 'newNeed',   ph: '+ Add need…' },
+    { field: 'target_markets',    label: 'Target Markets',      cls: 'chip-teal',   key: 'newMarket', ph: '+ Add market…' },
+    { field: 'partnership_goals', label: 'Partnership Goals',   cls: 'chip-orange', key: 'newGoal',   ph: '+ Add goal…' },
+  ]
+
   return (
     <div className="step-content">
+      {/* Founder context bar */}
+      <div className="founder-context-bar">
+        <FounderAvatar founder={founder} size={32} />
+        <span className="fcb-name">{founder.name}</span>
+        <span className="fcb-dot">·</span>
+        <span className="fcb-company">{founder.company}</span>
+        <span className="fcb-sep" />
+        <span className="fcb-step">Step 2 of 4 — Review &amp; refine your Startup Passport</span>
+      </div>
+
       <div className="passport-card">
         <div className="passport-header">
           <div className="passport-badge-icon">🛂</div>
           <div>
             <div className="passport-title">Startup Passport</div>
-            <div className="passport-sub">Review and refine what Gemma extracted. You have full control before finding partners.</div>
+            <div className="passport-sub">Gemma 4 extracted this from your materials. Review, correct, and add context before partner matching.</div>
           </div>
-          <div className="passport-ai-tag">Synthesized via Gemma 4</div>
+          <div className="passport-ai-tag">✦ Synthesized via Gemma 4</div>
         </div>
 
         <div className="passport-fields-grid">
-          <div className="form-group">
-            <label className="form-label">Company Name</label>
-            <input type="text" className="form-input" value={data.company_name}
-              onChange={(e) => setData({ ...data, company_name: e.target.value })} />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Home Country</label>
-            <input type="text" className="form-input" value={data.country}
-              onChange={(e) => setData({ ...data, country: e.target.value })} />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Sector</label>
-            <input type="text" className="form-input" value={data.sector}
-              onChange={(e) => setData({ ...data, sector: e.target.value })} />
-          </div>
+          {[
+            { label: 'Company Name', key: 'company_name' },
+            { label: 'Home Country',  key: 'country' },
+            { label: 'Sector',        key: 'sector' },
+          ].map(({ label, key }) => (
+            <div key={key} className="form-group">
+              <label className="form-label">{label}</label>
+              <input type="text" className="form-input" value={data[key]}
+                onChange={(e) => setData({ ...data, [key]: e.target.value })} />
+            </div>
+          ))}
           <div className="form-group" style={{ gridColumn: '1 / -1' }}>
             <label className="form-label">Core Solution Statement</label>
             <textarea className="form-textarea" rows="2" value={data.solution}
@@ -380,36 +632,34 @@ function PassportStep({ profile, onSave, onBack }) {
         </div>
 
         <div className="passport-chips-section">
-          {[
-            { field: 'capabilities', label: 'Core Capabilities (What you bring)', cls: 'chip-blue', val: newCap, setter: setNewCap, ph: '+ Add capability...' },
-            { field: 'needs', label: 'Operational Needs (What you seek)', cls: 'chip-purple', val: newNeed, setter: setNewNeed, ph: '+ Add partner need...' },
-            { field: 'target_markets', label: 'Target Markets', cls: 'chip-teal', val: newMarket, setter: setNewMarket, ph: '+ Add target market...' },
-            { field: 'partnership_goals', label: 'Partnership Goals', cls: 'chip-orange', val: newGoal, setter: setNewGoal, ph: '+ Add goal...' },
-          ].map(({ field, label, cls, val, setter, ph }) => (
-            <div key={field} className="chip-editor-group">
-              <label className="chip-group-label">{label}</label>
-              <div className="chip-list">
-                {(data[field] || []).map((c, i) => (
-                  <span key={i} className={`chip ${cls}`}>
-                    {c}
-                    <button type="button" onClick={() => handleRemoveChip(field, i)}>✕</button>
-                  </span>
-                ))}
+          {CHIP_GROUPS.map(({ field, label, cls, key, ph }) => {
+            const [val, setter] = states[key]
+            return (
+              <div key={field} className="chip-editor-group">
+                <label className="chip-group-label">{label}</label>
+                <div className="chip-list">
+                  {(data[field] || []).map((c, i) => (
+                    <span key={i} className={`chip ${cls}`}>
+                      {c}
+                      <button type="button" onClick={() => handleRemoveChip(field, i)}>✕</button>
+                    </span>
+                  ))}
+                </div>
+                <div className="chip-add-row">
+                  <input type="text" placeholder={ph} value={val}
+                    onChange={(e) => setter(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddChip(field, val, setter)} />
+                  <button type="button" onClick={() => handleAddChip(field, val, setter)}>Add</button>
+                </div>
               </div>
-              <div className="chip-add-row">
-                <input type="text" placeholder={ph} value={val} onChange={(e) => setter(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAddChip(field, val, setter)} />
-                <button type="button" onClick={() => handleAddChip(field, val, setter)}>Add</button>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
 
         <div className="passport-footer">
-          <button className="btn btn-ghost" onClick={onBack}>← Upload Different Files</button>
+          <button className="btn btn-ghost" onClick={onBack}>← Re-upload Files</button>
           <button className="btn btn-primary btn-large" onClick={() => onSave(data)}>
-            <span>🤝</span>
-            <span>Confirm Passport &amp; Find Top Partners →</span>
+            <span>🤝</span><span>Confirm &amp; Find Top Partners →</span>
           </button>
         </div>
       </div>
@@ -417,15 +667,15 @@ function PassportStep({ profile, onSave, onBack }) {
   )
 }
 
-/* ─────────────────────────────────────────────────────────────
-   STEP 3: MATCHES & NETWORK GRAPH
-───────────────────────────────────────────────────────────────*/
+/* ═══════════════════════════════════════════════════════════════
+   STEP 3 — PARTNER MATCHES & ECOSYSTEM GRAPH
+═══════════════════════════════════════════════════════════════ */
 const RANK_ACCENT = ['#7c3aed', '#0d9488', '#ea580c']
 const RANK_LABEL  = ['#1 Best Match', '#2 Strong Match', '#3 Good Match']
 
-function MatchesStep({ profile, onSelectPartner, onEditPassport }) {
-  const [matches, setMatches] = useState(null)
-  const [error, setError] = useState(null)
+function MatchesStep({ profile, founder, onSelectPartner, onEditPassport }) {
+  const [matches, setMatches]     = useState(null)
+  const [error, setError]         = useState(null)
   const [graphData, setGraphData] = useState(null)
 
   useEffect(() => {
@@ -435,11 +685,21 @@ function MatchesStep({ profile, onSelectPartner, onEditPassport }) {
 
   return (
     <div className="step-content">
+      {/* Founder context bar */}
+      <div className="founder-context-bar">
+        <FounderAvatar founder={founder} size={32} />
+        <span className="fcb-name">{founder.name}</span>
+        <span className="fcb-dot">·</span>
+        <span className="fcb-company">{founder.company}</span>
+        <span className="fcb-sep" />
+        <span className="fcb-step">Step 3 of 4 — Your top ASEAN partner matches</span>
+      </div>
+
       <div className="profile-mini-bar">
         <div>
           <span className="mini-company">{profile.company_name}</span>
           <span className="mini-sub">
-            📍 {profile.country} &bull; Sector: {profile.sector} &bull; Target: {profile.target_markets.slice(0, 2).join(', ')}
+            📍 {profile.country} &bull; {profile.sector} &bull; Target: {profile.target_markets.slice(0, 2).join(', ')}
           </span>
         </div>
         <button className="btn btn-ghost btn-sm" onClick={onEditPassport}>✏️ Edit Passport</button>
@@ -448,7 +708,7 @@ function MatchesStep({ profile, onSelectPartner, onEditPassport }) {
       <div className="matches-header">
         <div>
           <div className="section-title">Top 3 ASEAN Partner Recommendations</div>
-          <div className="section-sub">Ranked via deterministic 30/30/20/20 weighted matching. Choose which partner to generate a 30-day POC plan for.</div>
+          <div className="section-sub">Deterministic 30/30/20/20 weighted scoring — industry, capabilities, markets, goals. Choose a partner to generate your 30-day POC plan.</div>
         </div>
       </div>
 
@@ -472,11 +732,9 @@ function MatchesStep({ profile, onSelectPartner, onEditPassport }) {
                 </div>
                 <div className="match-reasons">
                   <div className="match-section-label">Why It Fits</div>
-                  <ul>
-                    {(m.reasons || []).map((r, idx) => (
-                      <li key={idx}><span className="reason-star">✦</span>{r}</li>
-                    ))}
-                  </ul>
+                  <ul>{(m.reasons || []).map((r, idx) =>
+                    <li key={idx}><span className="reason-star">✦</span>{r}</li>
+                  )}</ul>
                 </div>
                 {m.opportunity && <div className="match-opportunity">{m.opportunity}</div>}
                 <button className="btn btn-primary btn-full" onClick={() => onSelectPartner(m)}>
@@ -490,7 +748,7 @@ function MatchesStep({ profile, onSelectPartner, onEditPassport }) {
         <div className="matches-grid">
           {[0, 1, 2].map((i) => (
             <div key={i} className="skeleton-card">
-              <div className="skeleton" style={{ height: 32, marginBottom: '1rem' }} />
+              <div className="skeleton" style={{ height: 32 }} />
               <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <div className="skeleton" style={{ height: 16, width: '70%' }} />
                 <div className="skeleton" style={{ height: 12, width: '40%' }} />
@@ -507,20 +765,18 @@ function MatchesStep({ profile, onSelectPartner, onEditPassport }) {
 
       <div className="card" style={{ padding: '0.25rem', overflow: 'hidden', marginTop: '0.5rem' }}>
         <EcosystemGraph
-          startup={profile}
-          matches={matches || []}
-          nodes={graphData?.nodes}
-          edges={graphData?.edges}
-          onNodeClick={(n) => console.log('Clicked node:', n)}
+          startup={profile} matches={matches || []}
+          nodes={graphData?.nodes} edges={graphData?.edges}
+          onNodeClick={(n) => console.log('Node:', n)}
         />
       </div>
     </div>
   )
 }
 
-/* ─────────────────────────────────────────────────────────────
-   DASH CARD — Collapsible + Editable card for Step 4
-───────────────────────────────────────────────────────────────*/
+/* ═══════════════════════════════════════════════════════════════
+   COLLAPSIBLE DASH CARD
+═══════════════════════════════════════════════════════════════ */
 function DashCard({ icon, title, children, className = '', defaultOpen = true, editMode = false, onEdit, onDone }) {
   const [open, setOpen] = useState(defaultOpen)
   return (
@@ -531,43 +787,32 @@ function DashCard({ icon, title, children, className = '', defaultOpen = true, e
           <span className="dch-title">{title}</span>
         </div>
         <div className="dch-right" onClick={(e) => e.stopPropagation()}>
-          {onEdit && !editMode && (
-            <button className="dch-edit-btn" onClick={onEdit}>✏️ Edit</button>
-          )}
-          {editMode && (
-            <button className="dch-edit-btn active" onClick={onDone}>✓ Done</button>
-          )}
+          {onEdit && !editMode && <button className="dch-edit-btn" onClick={onEdit}>✏️ Edit</button>}
+          {editMode && <button className="dch-edit-btn active" onClick={onDone}>✓ Done</button>}
           <button className="dch-collapse-btn" onClick={(e) => { e.stopPropagation(); setOpen((v) => !v) }}>
             {open ? '▲' : '▼'}
           </button>
         </div>
       </div>
-      <div className={`dash-card-body ${open ? '' : 'collapsed'}`}>
-        {children}
-      </div>
+      <div className={`dash-card-body ${open ? '' : 'collapsed'}`}>{children}</div>
     </div>
   )
 }
 
-/* ─────────────────────────────────────────────────────────────
-   STEP 4: BRIEF DASHBOARD — Redesigned
-   Export / Copy / Download / Share / Edit cards / Resize layout
-───────────────────────────────────────────────────────────────*/
+/* ═══════════════════════════════════════════════════════════════
+   STEP 4 — BRIEF DASHBOARD
+   Editable cards · Export · Copy · Download · Share · Layout toggle
+═══════════════════════════════════════════════════════════════ */
 const WEEK_CLR = ['#7c3aed', '#2563eb', '#0d9488', '#16a34a']
 
-function BriefStep({ profile, partner, onBackToMatches, onReset }) {
-  const [brief, setBrief] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  // Editable brief state
+function BriefStep({ profile, partner, founder, onBackToMatches, onReset }) {
+  const [brief, setBrief]         = useState(null)
+  const [loading, setLoading]     = useState(true)
+  const [error, setError]         = useState(null)
   const [editedBrief, setEditedBrief] = useState(null)
-  // Per-card edit mode
   const [editingCard, setEditingCard] = useState(null)
-  // Layout: 'two-col' | 'single'
-  const [layout, setLayout] = useState('two-col')
-  // New metric input
+  const [layout, setLayout]       = useState('two-col')
   const [newMetric, setNewMetric] = useState('')
-
   const { toasts, show: showToast } = useToast()
 
   useConfetti()
@@ -579,146 +824,132 @@ function BriefStep({ profile, partner, onBackToMatches, onReset }) {
       .catch((e) => { setError(e.message); setLoading(false) })
   }, [profile, partner])
 
-  // ── Helpers ────────────────────────────────────────────────
   const eb = editedBrief || {}
 
   const buildText = () => [
     `PARTNERSHIP ACTION BRIEF: ${profile.company_name} × ${partner.partner_name || partner.name}\n`,
-    `Outcome Model: Cross-Border Municipal POC & Pilot\n\n`,
+    `Prepared for: ${founder.name} (${founder.role}) · ${founder.company}\n`,
+    `Generated: ${new Date().toLocaleDateString('en-MY', { dateStyle: 'full' })}\n\n`,
     `OBJECTIVE:\n${eb.objective || ''}\n\n`,
     `COLLABORATION CONCEPT:\n${eb.collaboration_concept || eb.collaborationConcept || ''}\n\n`,
-    `PROPOSED 30-DAY PROOF OF CONCEPT:\n${eb.proposed_poc || eb.proposedPoc || ''}\n\n`,
-    `PILOT TIMELINE:\n${(eb.timeline || []).map((t, i) => `${i + 1}. ${typeof t === 'string' ? t : t.task}`).join('\n')}\n\n`,
+    `PROPOSED 30-DAY POC:\n${eb.proposed_poc || eb.proposedPoc || ''}\n\n`,
+    `30-DAY TIMELINE:\n${(eb.timeline || []).map((t, i) => `Week ${i+1}: ${typeof t === 'string' ? t : t.task}`).join('\n')}\n\n`,
     `SUCCESS METRICS:\n${(eb.success_metrics || eb.successMetrics || []).map((m) => `• ${typeof m === 'string' ? m : m.metric}`).join('\n')}\n\n`,
-    `Generated by PACT with Gemma 4 (open-weight AI). All records illustrative.`,
+    `Generated by PACT with Gemma 4 · All records illustrative.`,
   ].join('')
 
   const buildMarkdown = () => [
-    `# Partnership Action Brief: ${profile.company_name} × ${partner.partner_name || partner.name}\n`,
-    `> **Generated by PACT (Partnership Action & Collaboration Toolkit)**  \n`,
-    `> Powered by Gemma 4 (gemma-4-26b-a4b-it) · All data illustrative\n\n`,
-    `## 1. Strategic Objective\n${eb.objective || ''}\n\n`,
-    `## 2. Collaboration Concept\n${eb.collaboration_concept || eb.collaborationConcept || ''}\n\n`,
-    `## 3. Proposed 30-Day Proof of Concept\n${eb.proposed_poc || eb.proposedPoc || ''}\n\n`,
-    `## 4. 30-Day Implementation Timeline\n`,
-    ...(eb.timeline || []).map((t, i) => `- **Week ${i + 1}:** ${typeof t === 'string' ? t : t.task}\n`),
-    `\n## 5. Measurable Success Metrics\n`,
+    `# Partnership Action Brief\n`,
+    `**${profile.company_name} × ${partner.partner_name || partner.name}**\n\n`,
+    `> Prepared for **${founder.name}** (${founder.role}), ${founder.company}  \n`,
+    `> Powered by **PACT + Gemma 4** · Generated ${new Date().toLocaleDateString()}  \n`,
+    `> ⚠️ All data illustrative — for demonstration purposes only\n\n`,
+    `---\n\n`,
+    `## 🎯 Strategic Objective\n${eb.objective || ''}\n\n`,
+    `## 🤝 Collaboration Concept\n${eb.collaboration_concept || eb.collaborationConcept || ''}\n\n`,
+    `## 🧪 Proposed 30-Day Proof of Concept\n${eb.proposed_poc || eb.proposedPoc || ''}\n\n`,
+    `## 📅 30-Day Implementation Timeline\n`,
+    ...(eb.timeline || []).map((t, i) => `- **Week ${i+1}:** ${typeof t === 'string' ? t : t.task}\n`),
+    `\n## 📊 Measurable Success Metrics\n`,
     ...(eb.success_metrics || eb.successMetrics || []).map((m) => `- [ ] ${typeof m === 'string' ? m : m.metric}\n`),
-    `\n---\n*PACT Hackathon Demo · MLH Hacktoberfest KL 2026*`,
+    `\n---\n`,
+    `*PACT · MLH Hacktoberfest KL 2026 · Compatibility Score: ${partner.score}/100*`,
   ].join('')
 
-  const handleCopy = () => {
-    navigator.clipboard?.writeText(buildText()).then(() => showToast('📋 Brief copied to clipboard!', 'success'))
+  const handleCopy = () =>
+    navigator.clipboard?.writeText(buildText())
+      .then(() => showToast('📋 Brief copied to clipboard!', 'success'))
       .catch(() => showToast('Copy failed — try Download instead', 'info'))
-  }
 
   const handleDownloadMd = () => {
     const blob = new Blob([buildMarkdown()], { type: 'text/markdown' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `PACT_Brief_${profile.company_name}_x_${(partner.partner_name || 'partner').replace(/\s+/g, '_')}.md`
-    a.click()
-    URL.revokeObjectURL(url)
-    showToast('💾 Markdown brief downloaded!', 'success')
+    const a = Object.assign(document.createElement('a'), {
+      href: URL.createObjectURL(blob),
+      download: `PACT_Brief_${profile.company_name}_x_${(partner.partner_name || 'partner').replace(/\s+/g, '_')}.md`
+    }); a.click(); URL.revokeObjectURL(a.href)
+    showToast('💾 Markdown downloaded!', 'success')
   }
 
   const handleDownloadTxt = () => {
     const blob = new Blob([buildText()], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `PACT_Brief_${profile.company_name}.txt`
-    a.click()
-    URL.revokeObjectURL(url)
-    showToast('📄 Text brief downloaded!', 'success')
+    const a = Object.assign(document.createElement('a'), {
+      href: URL.createObjectURL(blob),
+      download: `PACT_Brief_${profile.company_name}.txt`
+    }); a.click(); URL.revokeObjectURL(a.href)
+    showToast('📄 Text file downloaded!', 'success')
   }
 
   const handleExportJSON = () => {
     const payload = {
       generated_at: new Date().toISOString(),
+      prepared_for: { name: founder.name, role: founder.role, company: founder.company },
       startup: profile,
       partner: { id: partner.partner_id, name: partner.partner_name || partner.name, country: partner.country, score: partner.score },
       brief: editedBrief,
       disclaimer: 'All records are illustrative for demo purposes.',
     }
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url; a.download = `PACT_Export_${profile.company_name}.json`; a.click()
-    URL.revokeObjectURL(url)
+    const a = Object.assign(document.createElement('a'), {
+      href: URL.createObjectURL(blob),
+      download: `PACT_Export_${profile.company_name}.json`
+    }); a.click(); URL.revokeObjectURL(a.href)
     showToast('📦 JSON exported!', 'success')
   }
 
   const handleShare = async () => {
     const shareData = {
       title: `PACT Brief: ${profile.company_name} × ${partner.partner_name || partner.name}`,
-      text: `Check out this AI-generated ASEAN partnership brief via PACT!\n\nObjective: ${eb.objective || ''}`,
+      text: `${founder.name} from ${founder.company} generated an ASEAN cross-border partnership brief via PACT!\n\nObjective: ${eb.objective || ''}`,
       url: window.location.href,
     }
     if (navigator.share) {
-      try { await navigator.share(shareData); showToast('Shared successfully!', 'success') }
-      catch { /* user cancelled */ }
+      try { await navigator.share(shareData); showToast('Shared!', 'success') } catch { /* cancelled */ }
     } else {
-      await navigator.clipboard?.writeText(`${shareData.title}\n\n${shareData.text}`)
-      showToast('🔗 Share link copied to clipboard!', 'info')
+      await navigator.clipboard?.writeText(`${shareData.title}\n\n${shareData.text}\n${shareData.url}`)
+      showToast('🔗 Share link copied!', 'info')
     }
   }
 
-  // Timeline item edit
   const updateTimeline = (idx, val) => {
-    const tl = [...(eb.timeline || [])]
-    tl[idx] = val
+    const tl = [...(eb.timeline || [])]; tl[idx] = val
     setEditedBrief((b) => ({ ...b, timeline: tl }))
   }
+  const getMetrics = () => eb.success_metrics || eb.successMetrics || []
+  const setMetrics = (m) => setEditedBrief((b) => ({ ...b, success_metrics: m, successMetrics: m }))
+  const updateMetric = (idx, val) => { const m = [...getMetrics()]; m[idx] = val; setMetrics(m) }
+  const removeMetric = (idx) => setMetrics(getMetrics().filter((_, i) => i !== idx))
+  const addMetric = () => { if (!newMetric.trim()) return; setMetrics([...getMetrics(), newMetric.trim()]); setNewMetric('') }
 
-  // Metric edit / add / remove
-  const updateMetric = (idx, val) => {
-    const m = [...(eb.success_metrics || eb.successMetrics || [])]
-    m[idx] = val
-    setEditedBrief((b) => ({ ...b, success_metrics: m, successMetrics: m }))
-  }
-  const removeMetric = (idx) => {
-    const m = (eb.success_metrics || eb.successMetrics || []).filter((_, i) => i !== idx)
-    setEditedBrief((b) => ({ ...b, success_metrics: m, successMetrics: m }))
-  }
-  const addMetric = () => {
-    if (!newMetric.trim()) return
-    const m = [...(eb.success_metrics || eb.successMetrics || []), newMetric.trim()]
-    setEditedBrief((b) => ({ ...b, success_metrics: m, successMetrics: m }))
-    setNewMetric('')
-  }
-
-  // ── Loading ───────────────────────────────────────────────
-  if (loading) {
-    return (
-      <div className="brief-generating" style={{ minHeight: 300, justifyContent: 'center' }}>
-        <div className="gemma-spinner">
-          <div className="g-ring" />
-          <div className="g-ring r2" />
-        </div>
-        <div>
-          <div className="bgen-title">Gemma 4 is crafting your 30-day POC plan…</div>
-          <div className="bgen-sub">
-            Formulating concrete collaboration milestones between {profile.company_name} and {partner.partner_name || partner.name}
-          </div>
-        </div>
+  if (loading) return (
+    <div className="brief-generating" style={{ minHeight: 320, justifyContent: 'center' }}>
+      <div className="gemma-spinner"><div className="g-ring" /><div className="g-ring r2" /></div>
+      <div>
+        <div className="bgen-title">Gemma 4 is crafting your 30-day POC plan…</div>
+        <div className="bgen-sub">Formulating milestones for {profile.company_name} × {partner.partner_name || partner.name}</div>
       </div>
-    )
-  }
+    </div>
+  )
 
-  if (error) {
-    return (
-      <div className="dash-card" style={{ padding: '2rem', textAlign: 'center' }}>
-        <div className="error-toast" style={{ marginBottom: '1.5rem' }}>⚠️ {error}</div>
-        <button className="btn btn-primary" onClick={onBackToMatches}>← Return to Partner Matches</button>
-      </div>
-    )
-  }
+  if (error) return (
+    <div className="dash-card" style={{ padding: '2rem', textAlign: 'center' }}>
+      <div className="error-toast" style={{ marginBottom: '1.5rem' }}>⚠️ {error}</div>
+      <button className="btn btn-primary" onClick={onBackToMatches}>← Return to Matches</button>
+    </div>
+  )
 
   return (
     <div className="brief-dashboard">
-      {/* ── Dashboard Header Strip ── */}
+      {/* Founder context bar */}
+      <div className="founder-context-bar">
+        <FounderAvatar founder={founder} size={32} />
+        <span className="fcb-name">{founder.name}</span>
+        <span className="fcb-dot">·</span>
+        <span className="fcb-company">{founder.company}</span>
+        <span className="fcb-sep" />
+        <span className="fcb-step">Step 4 of 4 — Your partnership action brief is ready</span>
+      </div>
+
+      {/* Dashboard header strip */}
       <div className="brief-dash-header">
         <div className="bdh-top">
           <div>
@@ -732,7 +963,7 @@ function BriefStep({ profile, partner, onBackToMatches, onReset }) {
               <span className="bdh-title-x">×</span>
               {partner.partner_name || partner.name}
             </div>
-            <div className="bdh-sub">📍 {partner.country} &bull; Powered by Gemma 4 (gemma-4-26b-a4b-it)</div>
+            <div className="bdh-sub">📍 {partner.country} &bull; Powered by Gemma 4</div>
             <div className="bdh-score-pill">
               Compatibility Score &nbsp;<span className="bdh-score-num">{partner.score}</span>&nbsp;/ 100
             </div>
@@ -740,101 +971,76 @@ function BriefStep({ profile, partner, onBackToMatches, onReset }) {
 
           {/* Action Toolbar */}
           <div className="bdh-actions">
-            {/* Layout toggle */}
             <div className="layout-toggle">
               <button className={`layout-btn ${layout === 'two-col' ? 'active' : ''}`}
-                title="2-column layout" onClick={() => setLayout('two-col')}>⊞</button>
+                title="2-col layout" onClick={() => setLayout('two-col')}>⊞</button>
               <button className={`layout-btn ${layout === 'single' ? 'active' : ''}`}
-                title="Single column layout" onClick={() => setLayout('single')}>☰</button>
+                title="Single col" onClick={() => setLayout('single')}>☰</button>
             </div>
-
             <div className="dash-divider" />
-
-            <button className="btn-dash" onClick={handleCopy} title="Copy brief as text">
-              📋 Copy
-            </button>
-            <button className="btn-dash btn-dash-primary" onClick={handleDownloadMd} title="Download Markdown">
-              💾 .md
-            </button>
-            <button className="btn-dash" onClick={handleDownloadTxt} title="Download as .txt">
-              📄 .txt
-            </button>
-            <button className="btn-dash btn-dash-export" onClick={handleExportJSON} title="Export as JSON">
-              📦 Export JSON
-            </button>
-            <button className="btn-dash btn-dash-share" onClick={handleShare} title="Share brief">
-              🔗 Share
-            </button>
-
+            <button className="btn-dash" onClick={handleCopy}>📋 Copy</button>
+            <button className="btn-dash btn-dash-primary" onClick={handleDownloadMd}>💾 .md</button>
+            <button className="btn-dash" onClick={handleDownloadTxt}>📄 .txt</button>
+            <button className="btn-dash btn-dash-export" onClick={handleExportJSON}>📦 JSON</button>
+            <button className="btn-dash btn-dash-share" onClick={handleShare}>🔗 Share</button>
             <div className="dash-divider" />
-
-            <button className="btn-dash" onClick={onBackToMatches}>🤝 Switch Partner</button>
-            <button className="btn-dash" onClick={onReset}>🔄 New Analysis</button>
+            <button className="btn-dash" onClick={onBackToMatches}>🤝 Switch</button>
+            <button className="btn-dash" onClick={onReset}>🔄 Restart</button>
           </div>
         </div>
       </div>
 
-      {/* ── Dashboard Cards Grid ── */}
-      <div className={`dash-grid ${layout === 'single' ? 'dash-grid-single-col' : ''}`}
-        style={layout === 'single' ? { gridTemplateColumns: '1fr' } : {}}>
+      {/* Dashboard cards */}
+      <div className="dash-grid" style={layout === 'single' ? { gridTemplateColumns: '1fr' } : {}}>
 
-        {/* Card 1 — Strategic Objective (full width) */}
+        {/* Objective — full width */}
         <DashCard icon="🎯" title="Strategic Objective" className="dash-grid-full"
           editMode={editingCard === 'objective'}
-          onEdit={() => setEditingCard('objective')}
-          onDone={() => setEditingCard(null)}>
+          onEdit={() => setEditingCard('objective')} onDone={() => setEditingCard(null)}>
           <div className="brief-objective-block">
             <div className="brief-label">Objective</div>
             {editingCard === 'objective' ? (
-              <textarea
-                className="brief-objective-text"
-                style={{ minHeight: 80 }}
+              <textarea className="brief-objective-text" style={{ minHeight: 80 }}
                 value={eb.objective || ''}
-                onChange={(e) => setEditedBrief((b) => ({ ...b, objective: e.target.value }))}
-              />
+                onChange={(e) => setEditedBrief((b) => ({ ...b, objective: e.target.value }))} />
             ) : (
               <div className="brief-objective-text">{eb.objective}</div>
             )}
           </div>
         </DashCard>
 
-        {/* Card 2 — Collaboration Concept */}
+        {/* Collaboration Concept */}
         <DashCard icon="🤝" title="Collaboration Concept"
           editMode={editingCard === 'collab'}
-          onEdit={() => setEditingCard('collab')}
-          onDone={() => setEditingCard(null)}>
+          onEdit={() => setEditingCard('collab')} onDone={() => setEditingCard(null)}>
           {editingCard === 'collab' ? (
             <textarea className="editable-text" rows={6}
               value={eb.collaboration_concept || eb.collaborationConcept || ''}
-              onChange={(e) => setEditedBrief((b) => ({ ...b, collaboration_concept: e.target.value, collaborationConcept: e.target.value }))}
-            />
+              onChange={(e) => setEditedBrief((b) => ({ ...b, collaboration_concept: e.target.value, collaborationConcept: e.target.value }))} />
           ) : (
             <div className="brief-text">{eb.collaboration_concept || eb.collaborationConcept}</div>
           )}
         </DashCard>
 
-        {/* Card 3 — Proof of Concept */}
+        {/* Proof of Concept */}
         <DashCard icon="🧪" title="Proposed Proof of Concept"
           editMode={editingCard === 'poc'}
-          onEdit={() => setEditingCard('poc')}
-          onDone={() => setEditingCard(null)}>
+          onEdit={() => setEditingCard('poc')} onDone={() => setEditingCard(null)}>
           {editingCard === 'poc' ? (
             <div className="poc-block">
               <textarea rows={5}
                 value={eb.proposed_poc || eb.proposedPoc || ''}
-                onChange={(e) => setEditedBrief((b) => ({ ...b, proposed_poc: e.target.value, proposedPoc: e.target.value }))}
-              />
+                onChange={(e) => setEditedBrief((b) => ({ ...b, proposed_poc: e.target.value, proposedPoc: e.target.value }))} />
             </div>
           ) : (
             <div className="poc-block">{eb.proposed_poc || eb.proposedPoc}</div>
           )}
         </DashCard>
 
-        {/* Card 4 — 30-Day Timeline (full width) */}
+        {/* 30-Day Timeline — full width */}
         <DashCard icon="📅" title="30-Day Implementation Timeline" className="dash-grid-full"
           editMode={editingCard === 'timeline'}
-          onEdit={() => setEditingCard('timeline')}
-          onDone={() => setEditingCard(null)}>
+          onEdit={() => setEditingCard('timeline')} onDone={() => setEditingCard(null)}>
           <div className="timeline-stepper">
             {(eb.timeline || []).map((item, i) => {
               const text = typeof item === 'string' ? item : item.task || JSON.stringify(item)
@@ -843,9 +1049,9 @@ function BriefStep({ profile, partner, onBackToMatches, onReset }) {
                   <div className="tl-dot" style={{ background: WEEK_CLR[i % 4] }}>{i + 1}</div>
                   {i < (eb.timeline || []).length - 1 && <div className="tl-connector" />}
                   <div className={`tl-text ${editingCard === 'timeline' ? 'is-editing' : ''}`}>
-                    {editingCard === 'timeline' ? (
-                      <textarea rows={3} value={text} onChange={(e) => updateTimeline(i, e.target.value)} />
-                    ) : text}
+                    {editingCard === 'timeline'
+                      ? <textarea rows={3} value={text} onChange={(e) => updateTimeline(i, e.target.value)} />
+                      : text}
                   </div>
                 </div>
               )
@@ -853,13 +1059,12 @@ function BriefStep({ profile, partner, onBackToMatches, onReset }) {
           </div>
         </DashCard>
 
-        {/* Card 5 — Success Metrics */}
+        {/* Success Metrics — full width */}
         <DashCard icon="📊" title="Measurable Success Metrics" className="dash-grid-full"
           editMode={editingCard === 'metrics'}
-          onEdit={() => setEditingCard('metrics')}
-          onDone={() => setEditingCard(null)}>
+          onEdit={() => setEditingCard('metrics')} onDone={() => setEditingCard(null)}>
           <div className="metrics-chips">
-            {(eb.success_metrics || eb.successMetrics || []).map((m, i) => {
+            {getMetrics().map((m, i) => {
               const text = typeof m === 'string' ? m : m.metric || JSON.stringify(m)
               return (
                 <div key={i} className={`metric-chip ${editingCard === 'metrics' ? 'is-editing' : ''}`}>
@@ -868,9 +1073,7 @@ function BriefStep({ profile, partner, onBackToMatches, onReset }) {
                     <>
                       <textarea rows={1} value={text} onChange={(e) => updateMetric(i, e.target.value)} />
                       <button onClick={() => removeMetric(i)}
-                        style={{ background: 'transparent', border: 'none', color: '#dc2626', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
-                        ✕
-                      </button>
+                        style={{ background: 'none', border: 'none', color: '#dc2626', fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>✕</button>
                     </>
                   ) : text}
                 </div>
@@ -888,16 +1091,16 @@ function BriefStep({ profile, partner, onBackToMatches, onReset }) {
         </DashCard>
       </div>
 
-      {/* ── Dashboard Footer ── */}
+      {/* Footer */}
       <div className="brief-footer">
         <div className="brief-disclaimer">
-          ⚠️ All generated outcomes and partner records are <strong>illustrative</strong> for demonstration purposes.
-          Powered by Gemma 4 · Open source, MIT Licence.
+          ⚠️ All generated outcomes and partner records are <strong>illustrative</strong> for demonstration.
+          Powered by Gemma 4 · MIT Licence.
         </div>
         <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
-          <button className="btn btn-ghost btn-sm" onClick={handleCopy}>📋 Copy Brief</button>
-          <button className="btn btn-ghost btn-sm" onClick={handleDownloadMd}>💾 Download .md</button>
-          <button className="btn btn-primary btn-sm" onClick={onReset}>🔄 Start New Analysis</button>
+          <button className="btn btn-ghost btn-sm" onClick={handleCopy}>📋 Copy</button>
+          <button className="btn btn-ghost btn-sm" onClick={handleDownloadMd}>💾 .md</button>
+          <button className="btn btn-primary btn-sm" onClick={onReset}>🔄 New Analysis</button>
         </div>
       </div>
 
@@ -906,38 +1109,54 @@ function BriefStep({ profile, partner, onBackToMatches, onReset }) {
   )
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* ═══════════════════════════════════════════════════════════════
    MAIN APPLICATION ROOT
-───────────────────────────────────────────────────────────────*/
+   Phase 0: Auth → Phase 1-4: Main flow
+═══════════════════════════════════════════════════════════════ */
 export default function App() {
-  const [step, setStep] = useState(1)
-  const [profile, setProfile] = useState(null)
+  const [founder, setFounder]           = useState(null)   // null = not logged in
+  const [step, setStep]                 = useState(1)       // 1-4 within main flow
+  const [profile, setProfile]           = useState(null)
   const [selectedPartner, setSelectedPartner] = useState(null)
 
-  const handleUploadDone = (p) => { setProfile(p); setStep(2) }
-  const handlePassportConfirmed = (p) => { setProfile(p); setStep(3) }
-  const handlePartnerSelected = (partner) => { setSelectedPartner(partner); setStep(4) }
-  const handleReset = () => { setStep(1); setProfile(null); setSelectedPartner(null) }
+  const handleAuth = (f) => setFounder(f)
+  const handleLogout = () => { setFounder(null); setStep(1); setProfile(null); setSelectedPartner(null) }
 
+  const handleUploadDone = (p)    => { setProfile(p); setStep(2) }
+  const handlePassportOk = (p)    => { setProfile(p); setStep(3) }
+  const handlePartnerPick = (pa)  => { setSelectedPartner(pa); setStep(4) }
+  const handleReset = ()          => { setStep(1); setProfile(null); setSelectedPartner(null) }
+
+  /* ── AUTH GATE ── */
+  if (!founder) return <AuthScreen onAuth={handleAuth} />
+
+  /* ── MAIN APP (authenticated) ── */
   return (
     <>
-      {/* ── Top Navigation Bar ── */}
+      {/* Nav */}
       <nav className="nav">
         <div className="nav-inner">
           <div className="nav-brand">
             <span className="nav-logo">PACT</span>
             <span className="nav-tagline">Partnership Action &amp; Collaboration Toolkit</span>
           </div>
+
           <StepIndicator current={step} onNavigate={(s) => s < step && setStep(s)} />
-          <div className="nav-gemma">✦ Gemma 4</div>
+
+          {/* Founder pill + logout */}
+          <div className="nav-founder-pill">
+            <FounderAvatar founder={founder} size={28} />
+            <span className="nav-founder-name">{founder.name.split(' ')[0]}</span>
+            <button className="nav-logout-btn" onClick={handleLogout} title="Sign out">✕</button>
+          </div>
         </div>
       </nav>
 
-      {/* ── Main Content Area ── */}
       <main className="main">
+        {/* Step 1 — Founder Upload Prompt */}
         {step === 1 && (
           <>
-            {/* Hero Banner — SaaS style with 3-metric bar */}
+            {/* Hero banner above upload */}
             <div className="hero-banner">
               <div className="hero-eyebrow">✦ MLH Hacktoberfest KL 2026 &bull; Best Use of Gemma 4</div>
               <h1 className="hero-title">
@@ -945,11 +1164,9 @@ export default function App() {
                 <span className="hero-gradient">We Automated the POC.</span>
               </h1>
               <p className="hero-sub">
-                Upload your pitch deck or brochure &bull; Gemma 4 builds your Startup Passport &bull;
-                Discover cross-border partner matches &bull; Generate an executable 30-day POC plan.
+                Upload your pitch deck · Gemma 4 builds your Startup Passport · 
+                Discover cross-border matches · Get an executable 30-day POC plan.
               </p>
-
-              {/* 3-Metric Stats Bar (from reference design) */}
               <div className="hero-stats">
                 <div className="hero-stat">
                   <div className="stat-number">30</div>
@@ -964,17 +1181,16 @@ export default function App() {
                   <div className="stat-label">ASEAN ecosystem hubs mapped</div>
                 </div>
               </div>
-
               <div className="hero-badges">
                 <span className="hero-badge">🤖 Gemma 4 Multimodal Vision</span>
-                <span className="hero-badge">🌏 ASEAN Ecosystem Network</span>
-                <span className="hero-badge">⚖️ 30/30/20/20 Weighted Match</span>
-                <span className="hero-badge">📋 Editable 30-Day Action Plans</span>
+                <span className="hero-badge">🌏 ASEAN Network</span>
+                <span className="hero-badge">⚖️ 30/30/20/20 Match Score</span>
+                <span className="hero-badge">📋 Editable 30-Day Plans</span>
               </div>
             </div>
 
             <div className="upload-card">
-              <UploadStep onComplete={handleUploadDone} />
+              <UploadStep founder={founder} onComplete={handleUploadDone} />
             </div>
 
             <div className="disclaimer">
@@ -984,31 +1200,24 @@ export default function App() {
         )}
 
         {step === 2 && profile && (
-          <PassportStep profile={profile} onSave={handlePassportConfirmed} onBack={() => setStep(1)} />
+          <PassportStep profile={profile} founder={founder}
+            onSave={handlePassportOk} onBack={() => setStep(1)} />
         )}
 
         {step === 3 && profile && (
-          <MatchesStep
-            profile={profile}
-            onSelectPartner={handlePartnerSelected}
-            onEditPassport={() => setStep(2)}
-          />
+          <MatchesStep profile={profile} founder={founder}
+            onSelectPartner={handlePartnerPick} onEditPassport={() => setStep(2)} />
         )}
 
         {step === 4 && profile && selectedPartner && (
-          <BriefStep
-            profile={profile}
-            partner={selectedPartner}
-            onBackToMatches={() => setStep(3)}
-            onReset={handleReset}
-          />
+          <BriefStep profile={profile} partner={selectedPartner} founder={founder}
+            onBackToMatches={() => setStep(3)} onReset={handleReset} />
         )}
       </main>
 
-      {/* ── Footer ── */}
       <footer className="footer">
-        Powered by <strong>Gemma 4</strong> (open-weight AI via Gemini API) &bull; Open source, MIT Licence &bull;
-        MLH Hacktoberfest KL 2026 &bull; Team PACT (Yap, Joe, Amn, Yuhang)
+        Powered by <strong>Gemma 4</strong> (open-weight AI via Gemini API) &bull;
+        Open source, MIT Licence &bull; MLH Hacktoberfest KL 2026 &bull; Team PACT
       </footer>
     </>
   )
