@@ -2,144 +2,142 @@
 # Deterministic weighted matching — Python only, no LLM calls.
 # Weights: industry 30%, complementary caps/needs 30%, target market 20%, partnership goals 20%.
 # These are MVP weights for demo purposes, not validated metrics.
+
 import json
 import re
 from pathlib import Path
-from typing import List, Set
+from typing import Any, Dict, List, Set
 
 from .schemas import StartupProfile, PartnerMatch
 
 DATA_PATH = Path(__file__).parent.parent.parent / "data" / "demo_ecosystem.json"
 
-_STOPWORDS = {
-    "a", "an", "the", "and", "or", "to", "in", "of", "for", "with", "on", "by", "across", "into"
-}
 
-_SYNONYMS = {
-    "optimisation": "optimization",
-    "optimise": "optimize",
-    "iot": "iot",
-    "sensor": "sensors",
-    "bin": "bins",
-    "municipal": "municipal",
-    "concessions": "pilot",
-    "concession": "pilot",
-    "approvals": "procurement",
-    "regulatory": "government",
-    "analytic": "analytics",
-}
-
-
-def _load_partners() -> list:
+def _load_partners() -> List[Dict[str, Any]]:
     with open(DATA_PATH, encoding="utf-8") as f:
         return json.load(f)
 
 
-def _jaccard(a: list, b: list) -> float:
-    """Jaccard similarity between two lists of strings (case-insensitive)."""
-    sa = {x.lower() for x in a}
-    sb = {x.lower() for x in b}
-    if not sa and not sb:
-        return 0.0
-    return len(sa & sb) / len(sa | sb)
-
-
-def _tokenize_phrase(phrase: str) -> Set[str]:
-    """Normalize hyphens/underscores and UK/US spelling into canonical tokens."""
-    norm = phrase.lower().replace("_", " ").replace("-", " ")
-    words = re.findall(r"[a-z0-9]+", norm)
+def _tokenize(items: Any) -> Set[str]:
+    """
+    Extract normalized keyword tokens from strings or lists of strings.
+    Handles hyphens, underscores, plurals, and regional spelling (e.g. s/z).
+    """
     tokens = set()
-    for w in words:
-        if w in _STOPWORDS:
-            continue
-        tokens.add(_SYNONYMS.get(w, w))
+    if isinstance(items, str):
+        items = [items]
+    elif not isinstance(items, (list, tuple, set)):
+        return tokens
+
+    for it in items:
+        for w in re.findall(r"[a-zA-Z0-9]+", str(it).lower()):
+            if w in ("optimization", "optimisation"):
+                w = "optim"
+            elif w in ("sensors", "sensor"):
+                w = "sensor"
+            elif w in ("analytics", "analytic"):
+                w = "analyt"
+            elif w in ("pilots", "pilot"):
+                w = "pilot"
+            elif w in ("routes", "route", "routing"):
+                w = "route"
+            elif w in ("bins", "bin"):
+                w = "bin"
+            elif w in ("wastes", "waste"):
+                w = "waste"
+            elif w in ("cities", "city"):
+                w = "city"
+            elif w in ("logistics", "logistic"):
+                w = "logistic"
+            tokens.add(w)
     return tokens
 
 
-def _phrase_list_similarity(list_a: list, list_b: list) -> float:
-    """
-    Hybrid similarity between two string lists that works for both exact tags
-    ('iot-sensors') and descriptive phrases ('iot_fill_level_sensors').
-    """
-    if not list_a or not list_b:
+def _jaccard(a: Any, b: Any) -> float:
+    """Jaccard similarity between two lists or sets of strings (case-insensitive)."""
+    if isinstance(a, set) and isinstance(b, set):
+        return _token_jaccard(a, b)
+    toks_a = _tokenize(a)
+    toks_b = _tokenize(b)
+    return _token_jaccard(toks_a, toks_b)
+
+
+def _token_jaccard(toks_a: Set[str], toks_b: Set[str]) -> float:
+    if not toks_a and not toks_b:
         return 0.0
-    exact = _jaccard(list_a, list_b)
-    # Count how many items in list_a have a strong token match in list_b
-    matched_a = 0
-    for item_a in list_a:
-        ta = _tokenize_phrase(item_a)
-        if not ta:
-            continue
-        best_item_sim = 0.0
-        for item_b in list_b:
-            tb = _tokenize_phrase(item_b)
-            if not tb:
-                continue
-            overlap = len(ta & tb)
-            if overlap > 0:
-                sim = overlap / min(len(ta), len(tb))
-                if sim > best_item_sim:
-                    best_item_sim = sim
-        if best_item_sim >= 0.45:
-            matched_a += 1
-
-    coverage = matched_a / len(list_a)
-    return max(exact, coverage)
+    return len(toks_a & toks_b) / max(len(toks_a | toks_b), 1)
 
 
-def _sector_match(startup_sector: str, partner: dict | str) -> float:
-    """1.0 if same/aligned sector, 0.75 if in partner's sectors list or related group, else 0.0."""
-    partner_sector = partner["sector"] if isinstance(partner, dict) else str(partner)
-    partner_sectors = (
-        [s.lower().replace("_", "-") for s in partner.get("sectors", [])]
-        if isinstance(partner, dict)
-        else []
-    )
+def _sector_match(startup_sector: str, partner: Dict[str, Any]) -> float:
+    """
+    Calculate sector compatibility score between 0.0 and 1.0.
+    Considers partner['sector'] and partner['sectors'].
+    """
+    p_sectors = [partner.get("sector", "")] + partner.get("sectors", [])
+    s_tok = _tokenize(startup_sector)
+    p_tok = _tokenize(p_sectors)
 
-    s = startup_sector.lower().replace("_", "-")
-    p = partner_sector.lower().replace("_", "-")
+    exact = _token_jaccard(s_tok, p_tok)
+    if exact >= 0.5:
+        return min(1.0, exact * 1.5)
 
-    if s == p or s in partner_sectors:
-        return 1.0
-    if s in p or p in s:
+    # Related cross-border innovation clusters
+    smart_sustainability = {"smart", "waste", "city", "cleantech", "govtech", "sustainability", "iot"}
+    if (s_tok & smart_sustainability) and (p_tok & smart_sustainability):
         return 0.85
 
-    related = [
-        {"smart-city", "sustainability", "smart-waste", "cleantech", "govtech", "circular-economy", "iot", "iot-sensors"},
-        {"logistics", "supply-chain", "fleet", "smart-waste"},
-        {"fintech", "payments"},
-        {"agritech", "sustainability", "cleantech"},
-    ]
-    for group in related:
-        in_s = s in group or any(tok in group for tok in _tokenize_phrase(s))
-        in_p = p in group or any(sec in group for sec in partner_sectors)
-        if in_s and in_p:
-            return 0.85
-    return 0.0
+    logistics_supply = {"logistic", "supply", "chain", "fleet", "transport"}
+    if (s_tok & logistics_supply) and (p_tok & logistics_supply):
+        return 0.80
+
+    fintech_commerce = {"fintech", "payment", "bank", "token", "exchange"}
+    if (s_tok & fintech_commerce) and (p_tok & fintech_commerce):
+        return 0.75
+
+    agri_food = {"agritech", "food", "bio", "nutrient", "circular"}
+    if (s_tok & agri_food) and (p_tok & agri_food):
+        return 0.75
+
+    return exact
 
 
-def _complementary_score(startup: StartupProfile, partner: dict) -> float:
+def _complementary_score(startup: StartupProfile, partner: Dict[str, Any]) -> float:
     """
-    Measures complementarity: startup capabilities meeting partner needs,
-    and partner capabilities meeting startup needs (bidirectional).
+    Measures bidirectional complementarity:
+    1. startup capabilities fulfilling partner needs
+    2. partner capabilities fulfilling startup needs
     """
-    cap_to_needs = _phrase_list_similarity(startup.capabilities, partner.get("needs", []))
-    needs_to_cap = _phrase_list_similarity(startup.needs, partner.get("capabilities", []))
+    s_cap = _tokenize(startup.capabilities)
+    p_need = _tokenize(partner.get("needs", []))
+    cap_to_needs = _token_jaccard(s_cap, p_need)
+
+    s_need = _tokenize(startup.needs)
+    p_cap = _tokenize(partner.get("capabilities", []))
+    needs_to_cap = _token_jaccard(s_need, p_cap)
+
     return (cap_to_needs + needs_to_cap) / 2
 
 
-def score_partner(startup: StartupProfile, partner: dict) -> int:
+def score_partner(startup: StartupProfile, partner: Dict[str, Any]) -> int:
     """
     Weighted score 0-100:
-      industry compatibility  30%
-      complementary caps/needs 30%
-      target market overlap   20%
-      partnership goals       20%
+      industry compatibility:  30%
+      complementary caps/needs: 30%
+      target market overlap:    20%
+      partnership goals:        20%
     """
     industry = _sector_match(startup.sector, partner)
     complementary = _complementary_score(startup, partner)
-    market = _phrase_list_similarity(partner.get("target_markets", []), startup.target_markets)
-    goals = _phrase_list_similarity(startup.partnership_goals, partner.get("partnership_goals", []))
+
+    # Market overlap (includes city)
+    s_mkt = _tokenize(startup.target_markets)
+    p_mkt = _tokenize(partner.get("target_markets", [])) | _tokenize(partner.get("city", ""))
+    market = _token_jaccard(s_mkt, p_mkt)
+
+    # Goals overlap
+    s_goals = _tokenize(startup.partnership_goals)
+    p_goals = _tokenize(partner.get("partnership_goals", []))
+    goals = _token_jaccard(s_goals, p_goals)
 
     raw = (
         industry * 0.30
@@ -147,47 +145,49 @@ def score_partner(startup: StartupProfile, partner: dict) -> int:
         + market * 0.20
         + goals * 0.20
     )
-    return min(100, max(0, round(raw * 100)))
+    return round(raw * 100)
 
 
-def _matched_pairs(items_a: list, items_b: list) -> List[str]:
-    """Return human-readable items from items_a that align with items_b."""
-    matched = []
-    for a in items_a:
-        ta = _tokenize_phrase(a)
-        for b in items_b:
-            tb = _tokenize_phrase(b)
-            if ta & tb:
-                matched.append(a.replace("_", " "))
-                break
-    return matched
-
-
-def _build_reasons(startup: StartupProfile, partner: dict, score: int) -> List[str]:
+def _build_reasons(startup: StartupProfile, partner: Dict[str, Any], score: int) -> List[str]:
     """Generate human-readable match reasons from the scoring components."""
     reasons = []
-    if _sector_match(startup.sector, partner) >= 0.5:
-        reasons.append(
-            f"Industry Compatibility (30%): {startup.sector} aligns with {partner['sector'].replace('_', ' ')}"
-        )
-    cap_matches = _matched_pairs(startup.capabilities, partner.get("needs", []))
-    if cap_matches:
-        reasons.append(
-            f"Capabilities Meet Partner Needs (30%): {', '.join(cap_matches[:3])}"
-        )
-    need_matches = _matched_pairs(startup.needs, partner.get("capabilities", []))
-    if need_matches:
-        reasons.append(
-            f"Partner Fulfills Your Needs: {', '.join(need_matches[:3])}"
-        )
-    market_matches = _matched_pairs(startup.target_markets, partner.get("target_markets", []))
-    if market_matches:
-        reasons.append(
-            f"Target Market Alignment (20%): {', '.join(market_matches[:3])}"
-        )
-    if not reasons:
-        reasons.append(f"Regional ASEAN ecosystem fit (score {score}/100)")
-    return reasons
+
+    # 1. Sector alignment
+    partner_sectors = [partner.get("sector", "")] + partner.get("sectors", [])
+    clean_partner_sec = ", ".join(sorted(set(s.replace("_", "-") for s in partner_sectors if s)))
+    reasons.append(f"Sector alignment: {startup.sector} ↔ {clean_partner_sec}")
+
+    # 2. Capabilities meeting needs
+    s_cap_tok = _tokenize(startup.capabilities)
+    p_need_raw = partner.get("needs", [])
+    matched_needs = [
+        n.replace("_", " ") for n in p_need_raw if _tokenize(n) & s_cap_tok
+    ]
+    if matched_needs:
+        reasons.append(f"Your capabilities match their needs: {', '.join(matched_needs[:2])}")
+    else:
+        # Fallback to general capability overlap
+        reasons.append("Complementary operational technology fit")
+
+    # 3. Partner capabilities fulfilling startup needs
+    s_need_tok = _tokenize(startup.needs)
+    p_cap_raw = partner.get("capabilities", [])
+    matched_caps = [
+        c.replace("_", " ") for c in p_cap_raw if _tokenize(c) & s_need_tok
+    ]
+    if matched_caps:
+        reasons.append(f"They can fulfill your needs: {', '.join(matched_caps[:2])}")
+    else:
+        reasons.append(f"Local {partner.get('country', 'ASEAN')} execution capacity")
+
+    # 4. Market presence
+    s_mkt_tok = _tokenize(startup.target_markets)
+    p_mkt_tok = _tokenize(partner.get("target_markets", [])) | _tokenize(partner.get("city", ""))
+    shared_mkts = s_mkt_tok & p_mkt_tok
+    if shared_mkts:
+        reasons.append(f"Shared target market: {', '.join(sorted(shared_mkts)[:2]).title()}")
+
+    return reasons[:3]
 
 
 def get_top_matches(startup: StartupProfile, top_n: int = 3) -> List[PartnerMatch]:
@@ -197,14 +197,11 @@ def get_top_matches(startup: StartupProfile, top_n: int = 3) -> List[PartnerMatc
     for p in partners:
         s = score_partner(startup, p)
         reasons = _build_reasons(startup, p, s)
-        goals = p.get("partnership_goals", [])
-        if goals:
-            opportunity = f"{goals[0]} (with {p['name']} in {p['country']})."
-        else:
-            opportunity = (
-                f"Explore {p['name']}'s network to accelerate {startup.company_name}'s "
-                f"entry into {', '.join(p['target_markets'][:2])} markets."
-            )
+        target_display = partner_target = ", ".join(p.get("target_markets", [p.get("country", "ASEAN")])[:2])
+        opportunity = (
+            f"Partnering with {p['name']} accelerates {startup.company_name}'s "
+            f"cross-border market validation in {target_display} via local deployment and pilot synergy."
+        )
         scored.append(
             PartnerMatch(
                 partner_id=p["id"],

@@ -6,7 +6,8 @@ import logging
 import os
 from pathlib import Path
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from typing import List, Optional
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
 from .gemma_service import GemmaService
@@ -45,48 +46,48 @@ _MOCK_PROFILE = StartupProfile(
 _MOCK_MATCHES = MatchResponse(
     matches=[
         PartnerMatch(
-            partner_id="p001",
-            partner_name="GreenCity Vietnam Initiative",
+            partner_id="partner-vn-01",
+            partner_name="Saigon Green Urban Waste Board (illustrative)",
             country="Vietnam",
-            score=87,
+            score=88,
             reasons=[
-                "Sector alignment: smart-city ↔ smart-city",
-                "They can fulfill your needs: municipal-pilot, government-procurement",
-                "Shared target markets: Vietnam, Ho Chi Minh City",
+                "Sector alignment: smart-city ↔ smart-waste, cleantech, govtech",
+                "Your capabilities match their needs: iot fill level sensors, route optimization software",
+                "Shared target market: Vietnam, Ho Chi Minh City",
             ],
             opportunity=(
-                "GreenCity Vietnam Initiative's municipal procurement network gives SmartTONG "
-                "a direct path to piloting in Ho Chi Minh City and Hanoi without cold-start BD."
+                "Saigon Green Urban Waste Board's municipal concessions and landfill jurisdiction give SmartTONG "
+                "a direct path to piloting smart bin sensors in District 1 and District 3 without cold-start procurement delays."
             ),
         ),
         PartnerMatch(
-            partner_id="p002",
-            partner_name="CircularASEAN Hub",
-            country="Singapore",
-            score=74,
+            partner_id="partner-vn-03",
+            partner_name="Mekong Green Horizons Accelerator (illustrative)",
+            country="Vietnam",
+            score=76,
             reasons=[
-                "Sector alignment: smart-city ↔ sustainability",
-                "Your capabilities match their needs: iot-sensors, waste-analytics",
-                "Shared target markets: Vietnam, Ho Chi Minh City",
+                "Sector alignment: smart-city ↔ cleantech, smart-waste",
+                "They can fulfill your needs: vietnam market entry support, pilot project subsidies",
+                "Shared target market: Vietnam, Malaysia",
             ],
             opportunity=(
-                "CircularASEAN Hub offers ASEAN-wide funding and investor introductions "
-                "that can co-finance SmartTONG's Vietnam pilot and regional scale-up."
+                "Mekong Green Horizons Accelerator provides matching pilot grants and bilateral regulatory fast-tracking "
+                "specifically designed for Malaysian cleantech innovators deploying in Vietnam."
             ),
         ),
         PartnerMatch(
-            partner_id="p003",
-            partner_name="EcoRoute Logistics",
+            partner_id="partner-vn-02",
+            partner_name="VinaFleet EcoLogistics (illustrative)",
             country="Vietnam",
-            score=68,
+            score=70,
             reasons=[
-                "Your capabilities match their needs: route-optimisation",
-                "They can fulfill your needs: local-distribution-network",
-                "Shared target markets: Ho Chi Minh City",
+                "Your capabilities match their needs: route optimization software, iot fill level sensors",
+                "They can fulfill your needs: electric waste truck fleet, field maintenance",
+                "Shared target market: Vietnam",
             ],
             opportunity=(
-                "EcoRoute Logistics' last-mile infrastructure in Ho Chi Minh City is the "
-                "distribution backbone SmartTONG needs to deploy and service its smart bins at scale."
+                "VinaFleet EcoLogistics' commercial electric waste truck fleet serves as the immediate operational fleet partner "
+                "to install SmartTONG sensors and validate dynamic route scheduling across northern and southern industrial parks."
             ),
         ),
     ]
@@ -94,32 +95,30 @@ _MOCK_MATCHES = MatchResponse(
 
 _MOCK_BRIEF = PartnershipBrief(
     objective=(
-        "SmartTONG and GreenCity Vietnam Initiative will jointly pilot IoT smart-bin route "
-        "optimisation across two Ho Chi Minh City districts to demonstrate ≥20% reduction "
-        "in collection vehicle trips (ILLUSTRATIVE RECOMMENDATION)."
+        "SmartTONG and Saigon Green Urban Waste Board will jointly pilot IoT smart-bin route "
+        "optimisation across Ho Chi Minh City District 1 and District 3 to demonstrate a ≥20% reduction "
+        "in collection vehicle diesel emissions and eliminate bin overflow complaints (RECOMMENDATION)."
     ),
     collaboration_concept=(
-        "SmartTONG deploys its IoT sensor hardware and route-optimisation dashboard; "
-        "GreenCity Vietnam Initiative provides municipal access, on-the-ground coordination "
-        "with district waste authorities, and local technician support. "
-        "Weekly joint steering calls ensure rapid iteration on collection schedules."
+        "SmartTONG deploys 50 solar-assisted IoT ultrasonic fill-level sensors and provides live access to its route-optimisation telematics dashboard. "
+        "Saigon Green Urban Waste Board provides municipal bin concession sites, coordinates driver route dispatch, and provides local maintenance personnel. "
+        "Weekly joint operational steering reviews ensure rapid calibration against Ho Chi Minh City traffic patterns."
     ),
     proposed_poc=(
-        "Install 30 smart bins across District 1 and District 3, Ho Chi Minh City over Days 1–7. "
-        "Run live route-optimisation for collection trucks from Days 8–28. "
-        "Measure trip reduction, bin fill-rate accuracy, and resident satisfaction in a final "
-        "joint report delivered on Day 30 (ILLUSTRATIVE)."
+        "Deploy 50 IoT smart bin sensor nodes across commercial corridors in District 1 and District 3 over Days 1–7. "
+        "Run live route-optimisation for municipal collection trucks from Days 8–28. "
+        "Measure fuel savings, overflow incident reduction, and sensor reliability in a final joint audit on Day 30 (ILLUSTRATIVE)."
     ),
     timeline=[
-        "Week 1: MOU signing, site survey, bin installation (30 units, 2 districts)",
-        "Week 2: Dashboard onboarding for municipal drivers; baseline KPI capture",
-        "Week 3: Live optimised routing; daily data review with GreenCity ops team",
-        "Week 4: Impact report, media kit, and joint press release for next-phase funding",
+        "Week 1: MOU signing, site survey in District 1/3, sensor installation on 50 civic bins",
+        "Week 2: Dashboard onboarding for municipal dispatchers; baseline route fuel telemetry capture",
+        "Week 3: Live dynamic routing execution; daily driver sync with Saigon Green operations team",
+        "Week 4: Joint performance audit report, city council showcase, and Phase 2 scale-up proposal",
     ],
     success_metrics=[
-        "≥20% reduction in collection vehicle trips vs. pre-pilot baseline",
-        "≥85% bin fill-rate prediction accuracy over the 30-day window",
-        "Letter of intent from Ho Chi Minh City waste authority for Phase 2 scale-up",
+        "≥20% reduction in collection truck trip miles and diesel consumption vs. baseline",
+        "≥90% fill-rate telemetry accuracy across all 50 pilot bins over 30 days",
+        "Formal Letter of Intent from Saigon Green Urban Waste Board for municipal-wide expansion",
     ],
 )
 
@@ -162,27 +161,64 @@ async def health():
 
 
 @app.post("/api/pitch/analyze", response_model=StartupProfile)
-async def analyze_pitch(image: UploadFile = File(...)):
+async def analyze_pitch(
+    image: Optional[UploadFile] = File(None),
+    images: Optional[List[UploadFile]] = File(None),
+    notes: Optional[str] = Form(None),
+    goal: Optional[str] = Form(None),
+    target_country: Optional[str] = Form(None),
+):
     """
-    Accept a pitch deck image (PNG/JPEG/WebP, max 5 MB).
+    Accept 1 to 3 pitch deck / flyer / proposal images + optional notes and goal.
     In MOCK_MODE returns the SmartTONG canned profile immediately.
-    Otherwise sends to Gemma 4 for multimodal extraction.
+    Otherwise sends all files to Gemma 4 to synthesize a unified Startup Passport.
     """
     if MOCK_MODE:
         logger.info("MOCK_MODE: returning canned StartupProfile")
         return _MOCK_PROFILE
 
-    if image.content_type not in ALLOWED_MIME:
+    # Collect files from either 'images' list or single 'image' parameter
+    upload_list: List[UploadFile] = []
+    if images:
+        upload_list.extend(images)
+    if image:
+        upload_list.append(image)
+
+    if not upload_list:
         raise HTTPException(
-            status_code=415,
-            detail=f"Unsupported image type '{image.content_type}'. Use PNG, JPEG, or WebP.",
+            status_code=400,
+            detail="At least one pitch deck or proposal image file is required.",
         )
-    image_bytes = await image.read()
-    if len(image_bytes) > MAX_IMAGE_BYTES:
-        raise HTTPException(status_code=413, detail="Image exceeds 5 MB limit.")
+
+    # Restrict to 1-3 files
+    if len(upload_list) > 3:
+        raise HTTPException(
+            status_code=400,
+            detail="Please upload a maximum of 3 document images.",
+        )
+
+    prepared_files = []
+    for f in upload_list:
+        if f.content_type not in ALLOWED_MIME:
+            raise HTTPException(
+                status_code=415,
+                detail=f"Unsupported image type '{f.content_type}' for {f.filename}. Use PNG, JPEG, or WebP.",
+            )
+        f_bytes = await f.read()
+        if len(f_bytes) > MAX_IMAGE_BYTES:
+            raise HTTPException(
+                status_code=413,
+                detail=f"Image {f.filename} exceeds 5 MB limit.",
+            )
+        prepared_files.append((f_bytes, f.content_type))
 
     try:
-        profile = await gemma.analyze_pitch(image_bytes, image.content_type)
+        profile = await gemma.analyze_pitch(
+            prepared_files,
+            notes=notes,
+            goal=goal,
+            target_country=target_country,
+        )
     except Exception as exc:
         logger.error("Gemma extraction failed: %s", exc)
         raise HTTPException(status_code=502, detail=str(exc))
