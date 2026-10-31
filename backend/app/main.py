@@ -6,7 +6,8 @@ import logging
 import os
 from pathlib import Path
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from typing import List, Optional
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
 from .gemma_service import GemmaService
@@ -160,27 +161,64 @@ async def health():
 
 
 @app.post("/api/pitch/analyze", response_model=StartupProfile)
-async def analyze_pitch(image: UploadFile = File(...)):
+async def analyze_pitch(
+    image: Optional[UploadFile] = File(None),
+    images: Optional[List[UploadFile]] = File(None),
+    notes: Optional[str] = Form(None),
+    goal: Optional[str] = Form(None),
+    target_country: Optional[str] = Form(None),
+):
     """
-    Accept a pitch deck image (PNG/JPEG/WebP, max 5 MB).
+    Accept 1 to 3 pitch deck / flyer / proposal images + optional notes and goal.
     In MOCK_MODE returns the SmartTONG canned profile immediately.
-    Otherwise sends to Gemma 4 for multimodal extraction.
+    Otherwise sends all files to Gemma 4 to synthesize a unified Startup Passport.
     """
     if MOCK_MODE:
         logger.info("MOCK_MODE: returning canned StartupProfile")
         return _MOCK_PROFILE
 
-    if image.content_type not in ALLOWED_MIME:
+    # Collect files from either 'images' list or single 'image' parameter
+    upload_list: List[UploadFile] = []
+    if images:
+        upload_list.extend(images)
+    if image:
+        upload_list.append(image)
+
+    if not upload_list:
         raise HTTPException(
-            status_code=415,
-            detail=f"Unsupported image type '{image.content_type}'. Use PNG, JPEG, or WebP.",
+            status_code=400,
+            detail="At least one pitch deck or proposal image file is required.",
         )
-    image_bytes = await image.read()
-    if len(image_bytes) > MAX_IMAGE_BYTES:
-        raise HTTPException(status_code=413, detail="Image exceeds 5 MB limit.")
+
+    # Restrict to 1-3 files
+    if len(upload_list) > 3:
+        raise HTTPException(
+            status_code=400,
+            detail="Please upload a maximum of 3 document images.",
+        )
+
+    prepared_files = []
+    for f in upload_list:
+        if f.content_type not in ALLOWED_MIME:
+            raise HTTPException(
+                status_code=415,
+                detail=f"Unsupported image type '{f.content_type}' for {f.filename}. Use PNG, JPEG, or WebP.",
+            )
+        f_bytes = await f.read()
+        if len(f_bytes) > MAX_IMAGE_BYTES:
+            raise HTTPException(
+                status_code=413,
+                detail=f"Image {f.filename} exceeds 5 MB limit.",
+            )
+        prepared_files.append((f_bytes, f.content_type))
 
     try:
-        profile = await gemma.analyze_pitch(image_bytes, image.content_type)
+        profile = await gemma.analyze_pitch(
+            prepared_files,
+            notes=notes,
+            goal=goal,
+            target_country=target_country,
+        )
     except Exception as exc:
         logger.error("Gemma extraction failed: %s", exc)
         raise HTTPException(status_code=502, detail=str(exc))

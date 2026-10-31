@@ -1,26 +1,26 @@
-// frontend/src/App.jsx — PACT UI (purple/violet SaaS theme, UICheatSheet Rule of 3)
-// Hero: Glow-pulse upload zone  |  Micro: Shimmer skeletons  |  Delight: Confetti on brief
+// frontend/src/App.jsx — PACT: AI Cross-Border Startup Partnership Toolkit
+// Designed for Founders: Upload 1-3 files + notes + goal -> Gemma fuses into Passport -> Edit -> Match & Graph -> Brief & 30-Day POC
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { analyzePitch, getMatches, getGraph, getBrief } from './api.js'
 import { EcosystemGraph } from './components/EcosystemGraph.jsx'
 import './index.css'
 
 /* ─────────────────────────────────────────────────────────────
-   DEMO DATA
+   DEMO DATA (SmartTONG — Malaysia to Vietnam)
 ───────────────────────────────────────────────────────────────*/
 const DEMO_PROFILE = {
   company_name: 'SmartTONG',
   country: 'Malaysia',
   sector: 'smart-city',
   solution: 'IoT-enabled smart bins that optimise municipal waste collection routes in real time.',
-  capabilities: ['iot-sensors', 'route-optimisation', 'real-time-dashboard', 'waste-analytics'],
-  needs: ['municipal-pilot', 'government-procurement', 'local-distribution-network'],
+  capabilities: ['IoT Fill-Level Sensors', 'Dynamic Route Optimisation', 'Real-Time Telematics Dashboard', 'Waste Compaction Analytics'],
+  needs: ['Municipal Waste Concessions', 'Local Fleet Logistics Partner', 'Government Procurement Access'],
   target_markets: ['Vietnam', 'Ho Chi Minh City', 'Hanoi'],
-  partnership_goals: ['pilot', 'distribution', 'market-access'],
+  partnership_goals: ['30-Day Municipal POC Pilot', 'Local Distribution Partner', 'Tri-Party LOI Framework'],
 }
 
 /* ─────────────────────────────────────────────────────────────
-   DELIGHT — canvas confetti, no library needed
+   DELIGHT — Canvas Confetti (Milestone Celebration)
 ───────────────────────────────────────────────────────────────*/
 function useConfetti() {
   useEffect(() => {
@@ -32,7 +32,7 @@ function useConfetti() {
     canvas.width = window.innerWidth
     canvas.height = window.innerHeight
 
-    const COLORS = ['#7c3aed', '#a78bfa', '#c4b5fd', '#fbbf24', '#34d399', '#60a5fa', '#f472b6', '#ffffff']
+    const COLORS = ['#7c3aed', '#a78bfa', '#c4b5fd', '#fbbf24', '#10b981', '#38bdf8', '#f472b6', '#ffffff']
     const particles = Array.from({ length: 150 }, () => ({
       x: Math.random() * canvas.width,
       y: -30 - Math.random() * 80,
@@ -70,13 +70,13 @@ function useConfetti() {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   SCORE RING — animated SVG circle
+   SCORE RING — Animated SVG Circle
 ───────────────────────────────────────────────────────────────*/
-function ScoreRing({ score, size = 72 }) {
-  const r = size * 0.39, cx = size / 2, cy = size / 2
+function ScoreRing({ score, size = 68 }) {
+  const r = size * 0.38, cx = size / 2, cy = size / 2
   const circ = 2 * Math.PI * r
-  const offset = circ - (score / 100) * circ
-  const color = score >= 70 ? '#16a34a' : score >= 40 ? '#d97706' : '#dc2626'
+  const offset = circ - (Math.min(100, Math.max(0, score)) / 100) * circ
+  const color = score >= 75 ? '#10b981' : score >= 50 ? '#f59e0b' : '#ef4444'
   return (
     <svg width={size} height={size} style={{ flexShrink: 0 }}>
       <circle cx={cx} cy={cy} r={r} fill="none" stroke="#ede9fe" strokeWidth="5" />
@@ -90,17 +90,18 @@ function ScoreRing({ score, size = 72 }) {
         style={{ transition: 'stroke-dashoffset 1s ease-out' }}
       />
       <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central"
-        fontSize={size * 0.19} fontWeight="700" fill={color}>{score}</text>
+        fontSize={size * 0.22} fontWeight="800" fill={color}>{score}</text>
     </svg>
   )
 }
 
 /* ─────────────────────────────────────────────────────────────
-   SPOTLIGHT CARD — radial glow follows mouse
+   SPOTLIGHT CARD — Radial Cursor Glow
 ───────────────────────────────────────────────────────────────*/
 function SpotlightCard({ children, className = '' }) {
   const ref = useRef(null)
   const onMove = (e) => {
+    if (!ref.current) return
     const rect = ref.current.getBoundingClientRect()
     ref.current.style.setProperty('--mx', `${e.clientX - rect.left}px`)
     ref.current.style.setProperty('--my', `${e.clientY - rect.top}px`)
@@ -113,42 +114,16 @@ function SpotlightCard({ children, className = '' }) {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   MICRO — shimmer skeleton for 3 match cards
-───────────────────────────────────────────────────────────────*/
-function SkeletonMatches() {
-  return (
-    <div className="matches-grid">
-      {[0, 1, 2].map((i) => (
-        <div key={i} className="skeleton-card">
-          <div className="skeleton" style={{ height: 4, borderRadius: '4px 4px 0 0', marginBottom: '1.25rem' }} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
-            <div className="skeleton skeleton-circle" style={{ width: 72, height: 72, borderRadius: '50%' }} />
-            <div style={{ flex: 1 }}>
-              <div className="skeleton" style={{ height: 16, width: '75%', marginBottom: 8 }} />
-              <div className="skeleton" style={{ height: 12, width: '40%' }} />
-            </div>
-          </div>
-          <div className="skeleton" style={{ height: 11, marginBottom: 7 }} />
-          <div className="skeleton" style={{ height: 11, width: '85%', marginBottom: 7 }} />
-          <div className="skeleton" style={{ height: 11, width: '60%', marginBottom: '1.5rem' }} />
-          <div className="skeleton" style={{ height: 40, borderRadius: 8 }} />
-        </div>
-      ))}
-    </div>
-  )
-}
-
-/* ─────────────────────────────────────────────────────────────
    STEP INDICATOR
 ───────────────────────────────────────────────────────────────*/
 const STEPS = [
-  { label: 'Upload', icon: '🖼️' },
-  { label: 'Matches', icon: '🤝' },
-  { label: 'Network', icon: '🌐' },
-  { label: 'Brief', icon: '📄' },
+  { label: 'Upload Files', icon: '📁' },
+  { label: 'Startup Passport', icon: '🛂' },
+  { label: 'Partner Matches', icon: '🤝' },
+  { label: '30-Day POC Plan', icon: '📋' },
 ]
 
-function StepIndicator({ current }) {
+function StepIndicator({ current, onNavigate }) {
   return (
     <div className="steps">
       {STEPS.map((s, i) => {
@@ -157,7 +132,11 @@ function StepIndicator({ current }) {
         const active = n === current
         return (
           <div key={s.label} className="step-item-wrap">
-            <div className={`step-item ${done ? 'done' : ''} ${active ? 'active' : ''}`}>
+            <div
+              className={`step-item ${done ? 'done' : ''} ${active ? 'active' : ''}`}
+              onClick={() => done && onNavigate && onNavigate(n)}
+              style={done ? { cursor: 'pointer' } : {}}
+            >
               <div className="step-dot">{done ? '✓' : active ? s.icon : n}</div>
               <span className="step-label">{s.label}</span>
             </div>
@@ -170,62 +149,190 @@ function StepIndicator({ current }) {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   STEP 1 — UPLOAD
+   STEP 1: UPLOAD (1 to 3 files, note, goal, country)
 ───────────────────────────────────────────────────────────────*/
-function UploadStep({ onProfile }) {
+function UploadStep({ onComplete }) {
+  const [files, setFiles] = useState([])
+  const [goal, setGoal] = useState('cross-border POC')
+  const [targetCountry, setTargetCountry] = useState('Vietnam')
+  const [notes, setNotes] = useState('')
   const [dragging, setDragging] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const inputRef = useRef(null)
 
-  const handleFile = useCallback(async (file) => {
-    if (!file) return
-    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
-      setError('Please upload a PNG, JPG, or WEBP image.')
+  const addFiles = (newFiles) => {
+    setError(null)
+    const valid = Array.from(newFiles).filter((f) =>
+      ['image/png', 'image/jpeg', 'image/webp'].includes(f.type)
+    )
+    if (valid.length === 0) {
+      setError('Please upload PNG, JPEG, or WebP images.')
       return
     }
-    if (file.size > 5 * 1024 * 1024) { setError('Image must be under 5 MB.'); return }
-    setError(null); setLoading(true)
-    try { onProfile(await analyzePitch(file)) }
-    catch (e) { setError(e.message) }
-    finally { setLoading(false) }
-  }, [onProfile])
+    setFiles((prev) => {
+      const combined = [...prev, ...valid].slice(0, 3)
+      if (prev.length + valid.length > 3) {
+        setError('Maximum 3 files allowed. Kept the first 3.')
+      }
+      return combined
+    })
+  }
 
-  if (loading) return (
-    <div className="gemma-loading">
-      <div className="gemma-spinner">
-        <div className="g-ring" />
-        <div className="g-ring r2" />
-        <div className="g-ring r3" />
+  const removeFile = (idx) => {
+    setFiles((prev) => prev.filter((_, i) => i !== idx))
+  }
+
+  const handleAnalyze = async () => {
+    if (files.length === 0) {
+      setError('Please upload at least 1 pitch deck or brochure image.')
+      return
+    }
+    setError(null)
+    setLoading(true)
+    try {
+      const profile = await analyzePitch(files, {
+        notes,
+        goal,
+        target_country: targetCountry,
+      })
+      onComplete(profile)
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="gemma-loading">
+        <div className="gemma-spinner">
+          <div className="g-ring" />
+          <div className="g-ring r2" />
+          <div className="g-ring r3" />
+        </div>
+        <div className="gemma-loading-title">Gemma 4 is synthesizing your documents…</div>
+        <div className="gemma-loading-sub">
+          Reading {files.length} document{files.length > 1 ? 's' : ''} & reconciling into a single Startup Passport
+        </div>
       </div>
-      <div className="gemma-loading-title">Gemma 4 is reading your pitch deck…</div>
-      <div className="gemma-loading-sub">Extracting startup profile via multimodal AI</div>
-    </div>
-  )
+    )
+  }
 
   return (
     <div className="upload-wrap">
+      {/* Upload Zone */}
       <div
         className={`upload-zone ${dragging ? 'drag-over' : ''}`}
         onClick={() => inputRef.current?.click()}
         onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
         onDragLeave={() => setDragging(false)}
-        onDrop={(e) => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files[0]) }}
+        onDrop={(e) => { e.preventDefault(); setDragging(false); addFiles(e.dataTransfer.files) }}
       >
-        <div className="upload-icon-bg">🖼️</div>
-        <div className="upload-label">Drop your pitch deck image here</div>
-        <div className="upload-hint">PNG · JPG · WEBP · max 5 MB</div>
-        <div className="upload-browse-pill">Click to browse files</div>
-        <input ref={inputRef} type="file" accept="image/*" className="upload-input"
-          onChange={(e) => handleFile(e.target.files[0])} />
+        <div className="upload-icon-bg">📑</div>
+        <div className="upload-label">
+          {files.length > 0 ? `Selected ${files.length} of 3 file(s)` : 'Upload Pitch Deck, Brochure, or Proposal'}
+        </div>
+        <div className="upload-hint">Upload 1 to 3 images (PNG, JPG, WEBP, up to 5 MB each)</div>
+        <div className="upload-browse-pill">Click or drag & drop files</div>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          multiple
+          className="upload-input"
+          onChange={(e) => addFiles(e.target.files)}
+        />
       </div>
 
-      <div className="or-divider"><span>or skip to demo</span></div>
+      {/* Uploaded File Badges */}
+      {files.length > 0 && (
+        <div className="uploaded-files-list">
+          {files.map((f, i) => (
+            <div key={i} className="file-chip">
+              <span className="file-name">📄 {f.name}</span>
+              <span className="file-size">({(f.size / 1024).toFixed(0)} KB)</span>
+              <button
+                type="button"
+                className="btn-chip-remove"
+                onClick={(e) => { e.stopPropagation(); removeFile(i) }}
+                title="Remove file"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
-      <button className="btn btn-demo" onClick={() => onProfile(DEMO_PROFILE)}>
-        <span>🚀</span>
-        <span>Use Demo — SmartTONG (Malaysia → Vietnam)</span>
-      </button>
+      {/* Founder Intent Options */}
+      <div className="founder-options-card">
+        <div className="founder-options-grid">
+          <div className="form-group">
+            <label className="form-label">Primary Partnership Objective</label>
+            <select
+              className="form-select"
+              value={goal}
+              onChange={(e) => setGoal(e.target.value)}
+            >
+              <option value="cross-border POC">Cross-border POC / Municipal Pilot</option>
+              <option value="market expansion">Market Expansion & Local Distribution</option>
+              <option value="commercial partnership">Commercial Partnership & Co-development</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Target ASEAN Expansion Market</label>
+            <select
+              className="form-select"
+              value={targetCountry}
+              onChange={(e) => setTargetCountry(e.target.value)}
+            >
+              <option value="Vietnam">Vietnam (Ho Chi Minh City / Hanoi)</option>
+              <option value="Singapore">Singapore</option>
+              <option value="Indonesia">Indonesia (Jakarta / Surabaya)</option>
+              <option value="Thailand">Thailand (Bangkok)</option>
+              <option value="Philippines">Philippines (Manila)</option>
+              <option value="Malaysia">Malaysia</option>
+              <option value="ASEAN">Any ASEAN Nation</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="form-group" style={{ marginTop: '0.85rem' }}>
+          <label className="form-label">Founder Note or Specific Requirements (Optional)</label>
+          <textarea
+            className="form-textarea"
+            rows="2"
+            placeholder="e.g. We have proven IoT sensors in Malaysia and want to test route optimization for 50 municipal bins in District 1, Ho Chi Minh City."
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* CTA Buttons */}
+      <div className="upload-cta-row">
+        <button
+          className="btn btn-primary btn-large"
+          onClick={handleAnalyze}
+          disabled={files.length === 0}
+        >
+          <span>🤖</span>
+          <span>Analyze & Build Startup Passport</span>
+        </button>
+
+        <span className="or-pill">OR</span>
+
+        <button
+          className="btn btn-demo"
+          onClick={() => onComplete(DEMO_PROFILE)}
+        >
+          <span>🚀</span>
+          <span>Use Demo: SmartTONG (Malaysia → Vietnam)</span>
+        </button>
+      </div>
 
       {error && <div className="error-toast">⚠️ {error}</div>}
     </div>
@@ -233,291 +340,411 @@ function UploadStep({ onProfile }) {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   PROFILE CARD
+   STEP 2: STARTUP PASSPORT (Review & Human-in-the-Loop Edit)
 ───────────────────────────────────────────────────────────────*/
-const TAG_COLORS = {
-  capabilities: 'tag-blue',
-  needs: 'tag-purple',
-  target_markets: 'tag-teal',
-  partnership_goals: 'tag-orange',
-}
+function PassportStep({ profile, onSave, onBack }) {
+  const [data, setData] = useState({ ...profile })
+  const [newCap, setNewCap] = useState('')
+  const [newNeed, setNewNeed] = useState('')
+  const [newMarket, setNewMarket] = useState('')
+  const [newGoal, setNewGoal] = useState('')
 
-function ProfileCard({ profile }) {
-  const groups = [
-    { key: 'capabilities',     label: 'Capabilities',    values: profile.capabilities },
-    { key: 'needs',            label: 'Needs',            values: profile.needs },
-    { key: 'target_markets',   label: 'Target Markets',   values: profile.target_markets },
-    { key: 'partnership_goals',label: 'Goals',            values: profile.partnership_goals },
-  ]
+  const handleRemoveChip = (field, idx) => {
+    setData((prev) => ({
+      ...prev,
+      [field]: prev[field].filter((_, i) => i !== idx),
+    }))
+  }
+
+  const handleAddChip = (field, val, setter) => {
+    if (!val || !val.trim()) return
+    setData((prev) => ({
+      ...prev,
+      [field]: [...(prev[field] || []), val.trim()],
+    }))
+    setter('')
+  }
+
   return (
-    <div className="profile-card">
-      <div className="profile-header">
-        <div className="profile-avatar">{profile.company_name[0]}</div>
-        <div className="profile-header-text">
-          <div className="profile-name">{profile.company_name}</div>
-          <div className="profile-meta">
-            <span>📍 {profile.country}</span>
-            <span className="sector-chip">{profile.sector}</span>
-          </div>
-        </div>
-        <div className="profile-gemma-badge">via Gemma 4</div>
-      </div>
-      <div className="profile-solution">"{profile.solution}"</div>
-      <div className="profile-tags-grid">
-        {groups.map(({ key, label, values }) => (
-          <div key={key} className="profile-tag-group">
-            <div className="tag-group-label">{label}</div>
-            <div className="tag-list">
-              {values.map((v) => <span key={v} className={`tag ${TAG_COLORS[key]}`}>{v}</span>)}
+    <div className="step-content">
+      <div className="passport-card">
+        {/* Header */}
+        <div className="passport-header">
+          <div className="passport-badge-icon">🛂</div>
+          <div>
+            <div className="passport-title">Startup Passport</div>
+            <div className="passport-sub">
+              Review and refine what Gemma extracted. You have full control before finding partners.
             </div>
           </div>
-        ))}
+          <div className="passport-ai-tag">Synthesized via Gemma 4</div>
+        </div>
+
+        {/* Editable Primary Fields */}
+        <div className="passport-fields-grid">
+          <div className="form-group">
+            <label className="form-label">Company Name</label>
+            <input
+              type="text"
+              className="form-input"
+              value={data.company_name}
+              onChange={(e) => setData({ ...data, company_name: e.target.value })}
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Home Country</label>
+            <input
+              type="text"
+              className="form-input"
+              value={data.country}
+              onChange={(e) => setData({ ...data, country: e.target.value })}
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Sector</label>
+            <input
+              type="text"
+              className="form-input"
+              value={data.sector}
+              onChange={(e) => setData({ ...data, sector: e.target.value })}
+            />
+          </div>
+
+          <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+            <label className="form-label">Core Solution Statement</label>
+            <textarea
+              className="form-textarea"
+              rows="2"
+              value={data.solution}
+              onChange={(e) => setData({ ...data, solution: e.target.value })}
+            />
+          </div>
+        </div>
+
+        {/* Interactive Chip Groups */}
+        <div className="passport-chips-section">
+          {/* Capabilities */}
+          <div className="chip-editor-group">
+            <label className="chip-group-label">Core Capabilities (What you bring)</label>
+            <div className="chip-list">
+              {(data.capabilities || []).map((c, i) => (
+                <span key={i} className="chip chip-blue">
+                  {c}
+                  <button type="button" onClick={() => handleRemoveChip('capabilities', i)}>✕</button>
+                </span>
+              ))}
+            </div>
+            <div className="chip-add-row">
+              <input
+                type="text"
+                placeholder="+ Add capability..."
+                value={newCap}
+                onChange={(e) => setNewCap(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddChip('capabilities', newCap, setNewCap)}
+              />
+              <button type="button" onClick={() => handleAddChip('capabilities', newCap, setNewCap)}>Add</button>
+            </div>
+          </div>
+
+          {/* Needs */}
+          <div className="chip-editor-group">
+            <label className="chip-group-label">Operational Needs (What you seek)</label>
+            <div className="chip-list">
+              {(data.needs || []).map((n, i) => (
+                <span key={i} className="chip chip-purple">
+                  {n}
+                  <button type="button" onClick={() => handleRemoveChip('needs', i)}>✕</button>
+                </span>
+              ))}
+            </div>
+            <div className="chip-add-row">
+              <input
+                type="text"
+                placeholder="+ Add partner need..."
+                value={newNeed}
+                onChange={(e) => setNewNeed(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddChip('needs', newNeed, setNewNeed)}
+              />
+              <button type="button" onClick={() => handleAddChip('needs', newNeed, setNewNeed)}>Add</button>
+            </div>
+          </div>
+
+          {/* Target Markets */}
+          <div className="chip-editor-group">
+            <label className="chip-group-label">Target Markets</label>
+            <div className="chip-list">
+              {(data.target_markets || []).map((m, i) => (
+                <span key={i} className="chip chip-teal">
+                  {m}
+                  <button type="button" onClick={() => handleRemoveChip('target_markets', i)}>✕</button>
+                </span>
+              ))}
+            </div>
+            <div className="chip-add-row">
+              <input
+                type="text"
+                placeholder="+ Add target market..."
+                value={newMarket}
+                onChange={(e) => setNewMarket(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddChip('target_markets', newMarket, setNewMarket)}
+              />
+              <button type="button" onClick={() => handleAddChip('target_markets', newMarket, setNewMarket)}>Add</button>
+            </div>
+          </div>
+
+          {/* Partnership Goals */}
+          <div className="chip-editor-group">
+            <label className="chip-group-label">Partnership Goals</label>
+            <div className="chip-list">
+              {(data.partnership_goals || []).map((g, i) => (
+                <span key={i} className="chip chip-orange">
+                  {g}
+                  <button type="button" onClick={() => handleRemoveChip('partnership_goals', i)}>✕</button>
+                </span>
+              ))}
+            </div>
+            <div className="chip-add-row">
+              <input
+                type="text"
+                placeholder="+ Add goal..."
+                value={newGoal}
+                onChange={(e) => setNewGoal(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddChip('partnership_goals', newGoal, setNewGoal)}
+              />
+              <button type="button" onClick={() => handleAddChip('partnership_goals', newGoal, setNewGoal)}>Add</button>
+            </div>
+          </div>
+        </div>
+
+        {/* Action Row */}
+        <div className="passport-footer">
+          <button className="btn btn-ghost" onClick={onBack}>
+            ← Upload Different Files
+          </button>
+          <button className="btn btn-primary btn-large" onClick={() => onSave(data)}>
+            <span>🤝</span>
+            <span>Confirm Passport & Find Top Partners →</span>
+          </button>
+        </div>
       </div>
     </div>
   )
 }
 
 /* ─────────────────────────────────────────────────────────────
-   MATCH CARD
+   STEP 3: MATCHES & NETWORK GRAPH
 ───────────────────────────────────────────────────────────────*/
-const RANK_ACCENT = ['#7c3aed', '#0d9488', '#d97706']
+const RANK_ACCENT = ['#7c3aed', '#0d9488', '#ea580c']
 const RANK_LABEL  = ['#1 Best Match', '#2 Strong Match', '#3 Good Match']
 
-function MatchCard({ match, onSelect, rank }) {
-  return (
-    <SpotlightCard className="match-card">
-      <div className="match-stripe" style={{ background: RANK_ACCENT[rank] }}>
-        <span className="match-rank">{RANK_LABEL[rank]}</span>
-        <span className="match-illustrative">illustrative</span>
-      </div>
-      <div className="match-body">
-        <div className="match-top">
-          <div className="match-info">
-            <div className="match-name">{match.partner_name || match.name}</div>
-            <div className="match-country">📍 {match.country}</div>
-          </div>
-          <ScoreRing score={match.score} />
-        </div>
-
-        <div className="match-reasons">
-          <div className="match-section-label">Why it fits</div>
-          <ul>
-            {(match.reasons || []).map((r, i) => (
-              <li key={i}><span className="reason-star">✦</span>{r}</li>
-            ))}
-          </ul>
-        </div>
-
-        {match.opportunity && (
-          <div className="match-opportunity">{match.opportunity}</div>
-        )}
-
-        <button className="btn btn-primary btn-full" onClick={() => onSelect(match)}>
-          Generate Partnership Brief →
-        </button>
-      </div>
-    </SpotlightCard>
-  )
-}
-
-/* ─────────────────────────────────────────────────────────────
-   STEP 2 — PROFILE + MATCHES
-───────────────────────────────────────────────────────────────*/
-function MatchesStep({ profile, onSelectPartner }) {
+function MatchesStep({ profile, onSelectPartner, onEditPassport }) {
   const [matches, setMatches] = useState(null)
-  const [error, setError]     = useState(null)
+  const [error, setError] = useState(null)
+  const [graphData, setGraphData] = useState(null)
 
   useEffect(() => {
     getMatches(profile)
       .then((d) => setMatches(d.matches || d))
       .catch((e) => setError(e.message))
+
+    getGraph()
+      .then(setGraphData)
+      .catch((e) => console.warn('Graph error:', e))
   }, [profile])
 
   return (
     <div className="step-content">
-      <ProfileCard profile={profile} />
+      {/* Mini Profile Summary Bar */}
+      <div className="profile-mini-bar">
+        <div>
+          <span className="mini-company">{profile.company_name}</span>
+          <span className="mini-sub">
+            📍 {profile.country} &bull; Sector: {profile.sector} &bull; Target: {profile.target_markets.slice(0, 2).join(', ')}
+          </span>
+        </div>
+        <button className="btn btn-ghost btn-sm" onClick={onEditPassport}>
+          ✏️ Edit Passport
+        </button>
+      </div>
+
+      {/* Section Header */}
       <div className="matches-header">
         <div>
-          <div className="section-title">Partner Matches</div>
+          <div className="section-title">Top 3 ASEAN Partner Recommendations</div>
           <div className="section-sub">
-            Scored across industry · capabilities · target markets · goals
+            Ranked via deterministic 30/30/20/20 weighted matching. Choose which partner to generate a 30-day POC plan for.
           </div>
         </div>
       </div>
-      {!matches && !error && <SkeletonMatches />}
+
       {error && <div className="error-toast">⚠️ {error}</div>}
-      {matches && (
+
+      {/* Matches Grid */}
+      {matches ? (
         <div className="matches-grid">
           {matches.map((m, i) => (
-            <MatchCard key={m.partner_id || i} match={m} onSelect={onSelectPartner} rank={i} />
+            <SpotlightCard key={m.partner_id || i} className="match-card">
+              <div className="match-stripe" style={{ background: RANK_ACCENT[i] }}>
+                <span className="match-rank">{RANK_LABEL[i]}</span>
+                <span className="match-illustrative">illustrative</span>
+              </div>
+              <div className="match-body">
+                <div className="match-top">
+                  <div className="match-info">
+                    <div className="match-name">{m.partner_name || m.name}</div>
+                    <div className="match-country">📍 {m.country}</div>
+                  </div>
+                  <ScoreRing score={m.score} />
+                </div>
+
+                <div className="match-reasons">
+                  <div className="match-section-label">Why It Fits</div>
+                  <ul>
+                    {(m.reasons || []).map((r, idx) => (
+                      <li key={idx}><span className="reason-star">✦</span>{r}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                {m.opportunity && (
+                  <div className="match-opportunity">{m.opportunity}</div>
+                )}
+
+                <button
+                  className="btn btn-primary btn-full"
+                  onClick={() => onSelectPartner(m)}
+                >
+                  Generate Partnership Brief →
+                </button>
+              </div>
+            </SpotlightCard>
+          ))}
+        </div>
+      ) : (
+        <div className="matches-grid">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="skeleton-card">
+              <div className="skeleton" style={{ height: 32, marginBottom: '1rem' }} />
+              <div className="skeleton" style={{ height: 16, width: '70%', marginBottom: 8 }} />
+              <div className="skeleton" style={{ height: 12, width: '40%', marginBottom: 16 }} />
+              <div className="skeleton" style={{ height: 12, marginBottom: 8 }} />
+              <div className="skeleton" style={{ height: 12, width: '85%', marginBottom: 16 }} />
+              <div className="skeleton" style={{ height: 36, borderRadius: 8 }} />
+            </div>
           ))}
         </div>
       )}
-    </div>
-  )
-}
 
-/* ─────────────────────────────────────────────────────────────
-   NETWORK GRAPH — dark card, glowing SVG nodes
-───────────────────────────────────────────────────────────────*/
-const NODE_COLOR = {
-  programme:    '#a78bfa',
-  organisation: '#2dd4bf',
-  organization: '#2dd4bf',
-  startup:      '#fb923c',
-  default:      '#94a3b8',
-}
-
-function NetworkGraph({ nodes, edges, highlightId }) {
-  const W = 720, H = 400, R = 158, CX = W / 2, CY = H / 2
-
-  const pos = nodes.map((n, i) => {
-    const a = (2 * Math.PI * i) / nodes.length - Math.PI / 2
-    return { ...n, x: CX + R * Math.cos(a), y: CY + R * Math.sin(a) }
-  })
-  const byId = Object.fromEntries(pos.map((n) => [n.id, n]))
-
-  return (
-    <div className="graph-svg-wrap">
-      <svg viewBox={`0 0 ${W} ${H}`} xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          {pos.map((n) => (
-            <radialGradient key={`g-${n.id}`} id={`g-${n.id}`}>
-              <stop offset="0%" stopColor={NODE_COLOR[n.type] || NODE_COLOR.default} stopOpacity="0.7" />
-              <stop offset="100%" stopColor={NODE_COLOR[n.type] || NODE_COLOR.default} stopOpacity="0" />
-            </radialGradient>
-          ))}
-        </defs>
-
-        {/* Edges */}
-        {edges.map((e, i) => {
-          const s = byId[e.source], t = byId[e.target]
-          if (!s || !t) return null
-          return (
-            <line key={i} x1={s.x} y1={s.y} x2={t.x} y2={t.y}
-              stroke="#a78bfa" strokeWidth={1.2}
-              strokeOpacity={0.1 + (e.weight || 0.5) * 0.35} />
-          )
-        })}
-
-        {/* Nodes */}
-        {pos.map((n) => {
-          const hl = n.id === highlightId
-          const col = NODE_COLOR[n.type] || NODE_COLOR.default
-          return (
-            <g key={n.id}>
-              {/* Glow halo */}
-              <circle cx={n.x} cy={n.y} r={hl ? 34 : 18}
-                fill={`url(#g-${n.id})`} opacity={hl ? 0.9 : 0.5} />
-              {/* Pulse on highlighted node */}
-              {hl && (
-                <circle cx={n.x} cy={n.y} r={20} fill="none" stroke={col} strokeWidth={2} opacity={0.7}>
-                  <animate attributeName="r" values="16;28;16" dur="2s" repeatCount="indefinite" />
-                  <animate attributeName="opacity" values="0.7;0;0.7" dur="2s" repeatCount="indefinite" />
-                </circle>
-              )}
-              <circle cx={n.x} cy={n.y} r={hl ? 13 : 8}
-                fill={col} stroke={hl ? '#fff' : 'none'} strokeWidth={hl ? 2.5 : 0} />
-              <text x={n.x} y={n.y + (hl ? 28 : 21)}
-                textAnchor="middle" fontSize={hl ? 10 : 8.5}
-                fontWeight={hl ? 700 : 400}
-                fill={hl ? '#e2e8f0' : '#64748b'}>
-                {(n.label || n.id).slice(0, 18)}
-              </text>
-            </g>
-          )
-        })}
-      </svg>
-    </div>
-  )
-}
-
-/* ─────────────────────────────────────────────────────────────
-   STEP 3 — GRAPH + BRIEF GENERATION
-───────────────────────────────────────────────────────────────*/
-function GraphStep({ profile, partner, onBrief }) {
-  const [graph, setGraph]     = useState(null)
-  const [graphErr, setGErr]   = useState(null)
-  const [briefing, setBrief]  = useState(true)
-  const [briefErr, setBErr]   = useState(null)
-
-  useEffect(() => {
-    getGraph().then(setGraph).catch((e) => setGErr(e.message))
-    getBrief(profile, partner.partner_id || partner.id || partner.name)
-      .then((b) => { setBrief(false); onBrief(b) })
-      .catch((e) => { setBrief(false); setBErr(e.message) })
-  }, []) // eslint-disable-line
-
-  return (
-    <div className="step-content">
-      {/* Selected partner summary */}
-      <div className="selected-card">
-        <div className="selected-label">Selected Partner</div>
-        <div className="selected-row">
-          <div className="selected-avatar">{(partner.partner_name || partner.name || '?')[0]}</div>
-          <div>
-            <div className="selected-name">{partner.partner_name || partner.name}</div>
-            <div className="selected-country">📍 {partner.country}</div>
-          </div>
-          <div style={{ marginLeft: 'auto' }}>
-            <ScoreRing score={partner.score} size={64} />
-          </div>
-        </div>
-      </div>
-
-      {/* Network graph */}
-      <div className="card" style={{ padding: '0.25rem', overflow: 'hidden' }}>
+      {/* Network Graph */}
+      <div className="card" style={{ padding: '0.25rem', overflow: 'hidden', marginTop: '1rem' }}>
         <EcosystemGraph
           startup={profile}
-          highlightIds={[partner.partner_id || partner.id]}
-          nodes={graph?.nodes}
-          edges={graph?.edges}
+          matches={matches || []}
+          nodes={graphData?.nodes}
+          edges={graphData?.edges}
+          onNodeClick={(n) => console.log('Clicked node:', n)}
         />
       </div>
-
-      {/* Brief generation */}
-      {briefing && (
-        <div className="brief-generating">
-          <div className="gemma-spinner sm">
-            <div className="g-ring" /><div className="g-ring r2" />
-          </div>
-          <div>
-            <div className="bgen-title">Gemma 4 is generating your brief…</div>
-            <div className="bgen-sub">Crafting a 30-day partnership POC plan with thinking mode</div>
-          </div>
-        </div>
-      )}
-      {briefErr && <div className="error-toast">⚠️ {briefErr}</div>}
     </div>
   )
 }
 
 /* ─────────────────────────────────────────────────────────────
-   STEP 4 — PARTNERSHIP BRIEF  (confetti on mount 🎉)
+   STEP 4: PARTNERSHIP BRIEF & 30-DAY POC PLAN
 ───────────────────────────────────────────────────────────────*/
 const WEEK_CLR = ['#7c3aed', '#2563eb', '#0d9488', '#16a34a']
 
-function BriefStep({ brief, onReset }) {
+function BriefStep({ profile, partner, onBackToMatches, onReset }) {
+  const [brief, setBrief] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
   useConfetti()
 
-  const obj      = brief.objective
-  const concept  = brief.collaboration_concept || brief.collaborationConcept
-  const poc      = brief.proposed_poc || brief.proposedPoc
-  const timeline = brief.timeline || []
-  const metrics  = brief.success_metrics || brief.successMetrics || []
+  useEffect(() => {
+    setLoading(true)
+    setError(null)
+    getBrief(profile, partner.partner_id || partner.id || partner.name)
+      .then((b) => {
+        setBrief(b)
+        setLoading(false)
+      })
+      .catch((e) => {
+        setError(e.message)
+        setLoading(false)
+      })
+  }, [profile, partner])
 
   const copyBrief = () => {
-    const t = [
-      'PARTNERSHIP BRIEF — Generated by PACT × Gemma 4\n',
-      `Objective:\n${obj}\n`,
-      `\nCollaboration Concept:\n${concept}\n`,
-      `\nProposed POC:\n${poc}\n`,
-      `\n30-Day Timeline:\n${timeline.map((t, i) => `${i + 1}. ${t}`).join('\n')}\n`,
-      `\nSuccess Metrics:\n${metrics.map((m) => `• ${m}`).join('\n')}`,
-      '\n\n⚠️ All content is illustrative and AI-generated for demo purposes.',
+    if (!brief) return
+    const text = [
+      `PARTNERSHIP ACTION BRIEF: ${profile.company_name} × ${partner.partner_name || partner.name}\n`,
+      `Outcome Model: Cross-Border Municipal POC & Pilot\n\n`,
+      `OBJECTIVE:\n${brief.objective}\n\n`,
+      `COLLABORATION CONCEPT:\n${brief.collaboration_concept || brief.collaborationConcept}\n\n`,
+      `PROPOSED 30-DAY PROOF OF CONCEPT:\n${brief.proposed_poc || brief.proposedPoc}\n\n`,
+      `PILOT TIMELINE:\n${(brief.timeline || []).map((t, i) => `${i + 1}. ${t}`).join('\n')}\n\n`,
+      `SUCCESS METRICS:\n${(brief.success_metrics || brief.successMetrics || []).map((m) => `• ${m}`).join('\n')}\n\n`,
+      `Generated by PACT with Gemma 4 (open-weight AI). All records illustrative.`,
     ].join('')
-    navigator.clipboard?.writeText(t).catch(() => {})
+
+    navigator.clipboard?.writeText(text).catch(() => {})
     alert('✅ Brief copied to clipboard!')
+  }
+
+  const downloadMarkdown = () => {
+    if (!brief) return
+    const md = [
+      `# Partnership Action Brief: ${profile.company_name} × ${partner.partner_name || partner.name}\n`,
+      `> **Generated by PACT (Partnership Action & Collaboration Toolkit)**  `,
+      `> Powered by Gemma 4 (gemma-4-26b-a4b-it) · All data illustrative\n\n`,
+      `## 1. Strategic Objective\n${brief.objective}\n\n`,
+      `## 2. Collaboration Concept\n${brief.collaboration_concept || brief.collaborationConcept}\n\n`,
+      `## 3. Proposed 30-Day Proof of Concept\n${brief.proposed_poc || brief.proposedPoc}\n\n`,
+      `## 4. 30-Day Implementation Timeline\n`,
+      ...(brief.timeline || []).map((t, i) => `- **Week ${i + 1}:** ${t}\n`),
+      `\n## 5. Measurable Success Metrics\n`,
+      ...(brief.success_metrics || brief.successMetrics || []).map((m) => `- [ ] ${m}\n`),
+      `\n---\n*PACT Hackathon Demo · MLH Hacktoberfest KL 2026*`,
+    ].join('')
+
+    const blob = new Blob([md], { type: 'text/markdown' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `PACT_Brief_${profile.company_name}_x_${(partner.partner_name || 'partner').replace(/\s+/g, '_')}.md`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  if (loading) {
+    return (
+      <div className="brief-generating" style={{ minHeight: 300, justifyContent: 'center' }}>
+        <div className="gemma-spinner">
+          <div className="g-ring" />
+          <div className="g-ring r2" />
+        </div>
+        <div>
+          <div className="bgen-title">Gemma 4 is crafting your 30-day POC plan…</div>
+          <div className="bgen-sub">
+            Formulating concrete collaboration milestones between {profile.company_name} and {partner.partner_name || partner.name}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="brief-card" style={{ padding: '2rem', textAlign: 'center' }}>
+        <div className="error-toast" style={{ marginBottom: '1.5rem' }}>⚠️ {error}</div>
+        <button className="btn btn-primary" onClick={onBackToMatches}>
+          ← Return to Partner Matches
+        </button>
+      </div>
+    )
   }
 
   return (
@@ -525,155 +752,197 @@ function BriefStep({ brief, onReset }) {
       {/* Header */}
       <div className="brief-header">
         <div>
-          <div className="brief-success">🎉 Partnership Brief Ready</div>
-          <div className="brief-title">30-Day POC Plan</div>
+          <div className="brief-success-badge">
+            <span>🎉 Match Converted to Action Plan</span>
+            <span className="outcome-type-pill">Municipal Pilot Agreement</span>
+          </div>
+          <div className="brief-title">
+            {profile.company_name} <span style={{ color: 'var(--purple-light)' }}>×</span> {partner.partner_name || partner.name}
+          </div>
+          <div className="brief-sub">📍 {partner.country} &bull; Compatibility Score: {partner.score}/100</div>
         </div>
         <div className="brief-actions">
-          <button className="btn btn-ghost" onClick={copyBrief}>📋 Copy</button>
-          <button className="btn btn-ghost" onClick={onReset}>↩ Start Over</button>
+          <button className="btn btn-ghost" onClick={copyBrief} title="Copy to clipboard">
+            📋 Copy Brief
+          </button>
+          <button className="btn btn-ghost" onClick={downloadMarkdown} title="Download Markdown">
+            💾 Download .md
+          </button>
+          <button className="btn btn-ghost" onClick={onBackToMatches}>
+            🤝 Choose Another Partner
+          </button>
         </div>
       </div>
 
-      {/* Objective — hero block */}
+      {/* Objective Hero Block */}
       <div className="brief-objective-block">
-        <div className="brief-label">Objective</div>
-        <div className="brief-objective-text">{obj}</div>
+        <div className="brief-label">Strategic Objective</div>
+        <div className="brief-objective-text">{brief.objective}</div>
       </div>
 
-      {/* Two-col: concept + POC */}
+      {/* Collaboration & POC Columns */}
       <div className="brief-two-col">
         <div className="brief-section">
           <div className="brief-label">Collaboration Concept</div>
-          <p className="brief-text">{concept}</p>
+          <p className="brief-text">{brief.collaboration_concept || brief.collaborationConcept}</p>
         </div>
         <div className="brief-section">
           <div className="brief-label">Proposed Proof of Concept</div>
-          <div className="poc-block">{poc}</div>
+          <div className="poc-block">{brief.proposed_poc || brief.proposedPoc}</div>
         </div>
       </div>
 
-      {/* Timeline stepper */}
-      {timeline.length > 0 && (
-        <div className="brief-section">
-          <div className="brief-label">30-Day Pilot Timeline</div>
-          <div className="timeline-stepper">
-            {timeline.map((item, i) => (
-              <div key={i} className="tl-step">
-                <div className="tl-dot" style={{ background: WEEK_CLR[i % 4] }}>
-                  {i + 1}
-                </div>
-                {i < timeline.length - 1 && <div className="tl-connector" />}
-                <div className="tl-text">
-                  {typeof item === 'string' ? item : item.task || JSON.stringify(item)}
-                </div>
+      {/* 30-Day Timeline Stepper */}
+      <div className="brief-section">
+        <div className="brief-label">30-Day Implementation Timeline</div>
+        <div className="timeline-stepper">
+          {(brief.timeline || []).map((item, i) => (
+            <div key={i} className="tl-step">
+              <div className="tl-dot" style={{ background: WEEK_CLR[i % 4] }}>
+                {i + 1}
               </div>
-            ))}
-          </div>
+              {i < (brief.timeline || []).length - 1 && <div className="tl-connector" />}
+              <div className="tl-text">
+                {typeof item === 'string' ? item : item.task || JSON.stringify(item)}
+              </div>
+            </div>
+          ))}
         </div>
-      )}
+      </div>
 
-      {/* Success metrics */}
-      {metrics.length > 0 && (
-        <div className="brief-section">
-          <div className="brief-label">Success Metrics</div>
-          <div className="metrics-chips">
-            {metrics.map((m, i) => (
-              <div key={i} className="metric-chip">
-                <span className="metric-check">✓</span>
-                {typeof m === 'string' ? m : m.metric || JSON.stringify(m)}
-              </div>
-            ))}
-          </div>
+      {/* Success Metrics */}
+      <div className="brief-section">
+        <div className="brief-label">Measurable Success Metrics</div>
+        <div className="metrics-chips">
+          {(brief.success_metrics || brief.successMetrics || []).map((m, i) => (
+            <div key={i} className="metric-chip">
+              <span className="metric-check">✓</span>
+              {typeof m === 'string' ? m : m.metric || JSON.stringify(m)}
+            </div>
+          ))}
         </div>
-      )}
+      </div>
 
       {/* Footer */}
       <div className="brief-footer">
         <div className="brief-disclaimer">
-          ⚠️ All content is <strong>illustrative</strong> and AI-generated for demo purposes only.
+          ⚠️ All generated outcomes and partner records are <strong>illustrative</strong> for demonstration purposes.
         </div>
-        <button className="btn btn-primary" onClick={onReset}>🔄 Analyse Another Startup</button>
+        <button className="btn btn-primary" onClick={onReset}>
+          🔄 Start New Analysis
+        </button>
       </div>
     </div>
   )
 }
 
 /* ─────────────────────────────────────────────────────────────
-   APP ROOT
+   MAIN APPLICATION ROOT
 ───────────────────────────────────────────────────────────────*/
 export default function App() {
-  const [step, setStep]       = useState(1)
+  const [step, setStep] = useState(1)
   const [profile, setProfile] = useState(null)
-  const [partner, setPartner] = useState(null)
-  const [brief, setBrief]     = useState(null)
+  const [selectedPartner, setSelectedPartner] = useState(null)
 
-  const handleProfile = (p) => { setProfile(p); setStep(2) }
-  const handlePartner = (m) => { setPartner(m); setStep(3) }
-  const handleBrief   = (b) => { setBrief(b);  setStep(4) }
-  const handleReset   = () => { setStep(1); setProfile(null); setPartner(null); setBrief(null) }
+  const handleUploadDone = (p) => {
+    setProfile(p)
+    setStep(2) // Advance to Passport Review
+  }
+
+  const handlePassportConfirmed = (p) => {
+    setProfile(p)
+    setStep(3) // Advance to Matches & Graph
+  }
+
+  const handlePartnerSelected = (partner) => {
+    setSelectedPartner(partner)
+    setStep(4) // Advance to Brief
+  }
+
+  const handleReset = () => {
+    setStep(1)
+    setProfile(null)
+    setSelectedPartner(null)
+  }
 
   return (
     <>
-      {/* ── Nav ── */}
+      {/* ── Top Navigation Bar ── */}
       <nav className="nav">
         <div className="nav-inner">
           <div className="nav-brand">
             <span className="nav-logo">PACT</span>
-            <span className="nav-tagline">ASEAN Partnership Toolkit</span>
+            <span className="nav-tagline">Partnership Action & Collaboration Toolkit</span>
           </div>
-          <StepIndicator current={step} />
+
+          <StepIndicator current={step} onNavigate={(s) => setStep(s)} />
+
           <div className="nav-gemma">✦ Gemma 4</div>
         </div>
       </nav>
 
-      {/* ── Main ── */}
+      {/* ── Main Content Area ── */}
       <main className="main">
         {step === 1 && (
           <>
-            {/* Hero banner */}
             <div className="hero-banner">
-              <div className="hero-eyebrow">MLH Hacktoberfest KL 2026 · Open Source AI</div>
+              <div className="hero-eyebrow">MLH Hacktoberfest KL 2026 &bull; Best Use of Gemma 4</div>
               <h1 className="hero-title">
                 From ASEAN Connections<br />
-                <span className="hero-gradient">to Real Outcomes</span>
+                <span className="hero-gradient">to Real Partner Outcomes</span>
               </h1>
               <p className="hero-sub">
-                Upload your pitch deck · Gemma 4 extracts your startup profile ·
-                Discover top ASEAN partners · Get a 30-day action plan.
+                Upload your pitch deck or brochure &bull; Gemma 4 builds your Startup Passport &bull;
+                Discover verified cross-border partner matches &bull; Generate an executable 30-day POC plan.
               </p>
               <div className="hero-badges">
-                <span className="hero-badge">🤖 Gemma 4 Multimodal</span>
+                <span className="hero-badge">🤖 Gemma 4 Vision</span>
                 <span className="hero-badge">🌏 ASEAN Ecosystem</span>
-                <span className="hero-badge">⚡ 4-hour Hackathon Build</span>
+                <span className="hero-badge">⚖️ Transparent 30/30/20/20 Match</span>
+                <span className="hero-badge">📋 30-Day Action Plans</span>
               </div>
             </div>
-            {/* Upload card */}
+
             <div className="upload-card">
-              <UploadStep onProfile={handleProfile} />
+              <UploadStep onComplete={handleUploadDone} />
             </div>
-            {/* Disclaimer inside step 1 */}
+
             <div className="disclaimer">
-              ⚠️ All partner data shown is <strong>illustrative</strong> and for demonstration purposes only.
-              No real partnerships are claimed or implied.
+              ⚠️ All ecosystem records and partner profiles are <strong>illustrative</strong> for demonstration purposes.
             </div>
           </>
         )}
 
-        {step !== 1 && (
-          <div className="disclaimer">
-            ⚠️ All partner data is <strong>illustrative</strong> — demo purposes only.
-          </div>
+        {step === 2 && profile && (
+          <PassportStep
+            profile={profile}
+            onSave={handlePassportConfirmed}
+            onBack={() => setStep(1)}
+          />
         )}
 
-        {step === 2 && profile && <MatchesStep profile={profile} onSelectPartner={handlePartner} />}
-        {step === 3 && profile && partner && <GraphStep profile={profile} partner={partner} onBrief={handleBrief} />}
-        {step === 4 && brief && <BriefStep brief={brief} onReset={handleReset} />}
+        {step === 3 && profile && (
+          <MatchesStep
+            profile={profile}
+            onSelectPartner={handlePartnerSelected}
+            onEditPassport={() => setStep(2)}
+          />
+        )}
+
+        {step === 4 && profile && selectedPartner && (
+          <BriefStep
+            profile={profile}
+            partner={selectedPartner}
+            onBackToMatches={() => setStep(3)}
+            onReset={handleReset}
+          />
+        )}
       </main>
 
       {/* ── Footer ── */}
       <footer className="footer">
-        Powered by <strong>Gemma 4</strong> (open-weight) · Open source, MIT ·
-        MLH Hacktoberfest KL 2026 · Team PACT (Yap · Joe · Amn · Yuhang)
+        Powered by <strong>Gemma 4</strong> (open-weight AI via Gemini API) &bull; Open source, MIT Licence &bull;
+        MLH Hacktoberfest KL 2026 &bull; Team PACT (Yap, Joe, Amn, Yuhang)
       </footer>
     </>
   )

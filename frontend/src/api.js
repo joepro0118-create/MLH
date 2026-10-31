@@ -11,12 +11,20 @@ async function handleResponse(res) {
 }
 
 /**
- * analyzePitch(file: File): Promise<StartupProfile>
- * Sends the pitch deck image for AI analysis.
+ * analyzePitch(files: File | File[], options: { notes?, goal?, target_country? }): Promise<StartupProfile>
+ * Sends 1 to 3 pitch deck / flyer images + optional founder note & goals for AI analysis.
  */
-export async function analyzePitch(file) {
+export async function analyzePitch(files, options = {}) {
   const form = new FormData();
-  form.append('image', file);
+  if (Array.isArray(files)) {
+    files.forEach((f) => form.append('images', f));
+  } else if (files) {
+    form.append('image', files);
+  }
+  if (options.notes) form.append('notes', options.notes);
+  if (options.goal) form.append('goal', options.goal);
+  if (options.target_country) form.append('target_country', options.target_country);
+
   const res = await fetch(`${BASE}/api/pitch/analyze`, {
     method: 'POST',
     body: form,

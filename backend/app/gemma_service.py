@@ -28,7 +28,8 @@ class GemmaService:
     """
 
     def __init__(self) -> None:
-        self.model = os.environ.get("GEMMA_MODEL", DEFAULT_MODEL)
+        raw_model = os.environ.get("GEMMA_MODEL", DEFAULT_MODEL)
+        self.model = f"models/{raw_model}" if not raw_model.startswith("models/") else raw_model
         api_key = os.environ.get("GEMINI_API_KEY", "")
         if not api_key:
             logger.warning(
@@ -68,30 +69,34 @@ class GemmaService:
         self,
         contents,
         *,
-        temperature: float = 0.3,
-        max_output_tokens: int = 1024,
+        temperature: float = 0.2,
+        max_output_tokens: Optional[int] = 4096,
         use_thinking: bool = False,
     ) -> str:
         """
         Thin wrapper around generate_content.
-        Sets thinking_config when use_thinking=True (supported on gemma-4 models).
         Returns response.text; raises on safety blocks or empty responses.
         """
         client = self._require_client()
 
         config_kwargs: dict = {
             "temperature": temperature,
-            "max_output_tokens": max_output_tokens,
         }
-        if use_thinking:
-            # thinking_level="high" gives the model extra reasoning budget.
-            config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_budget=8192)
+        if max_output_tokens:
+            config_kwargs["max_output_tokens"] = max_output_tokens
 
-        response = client.models.generate_content(
-            model=self.model,
-            contents=contents,
-            config=types.GenerateContentConfig(**config_kwargs),
-        )
+        try:
+            response = client.models.generate_content(
+                model=self.model,
+                contents=contents,
+                config=types.GenerateContentConfig(**config_kwargs),
+            )
+        except Exception as exc:
+            logger.warning("generate_content with config failed (%s); retrying with basic config.", exc)
+            response = client.models.generate_content(
+                model=self.model,
+                contents=contents,
+            )
 
         # Guard against safety blocks
         if not response.candidates:
@@ -101,6 +106,13 @@ class GemmaService:
             raise RuntimeError("Gemma blocked the request due to safety filters.")
 
         text = response.text
+        if not text or not text.strip():
+            if candidate.content and candidate.content.parts:
+                for part in reversed(candidate.content.parts):
+                    if hasattr(part, "text") and part.text and not getattr(part, "thought", False):
+                        text = part.text
+                        break
+
         if not text or not text.strip():
             raise RuntimeError("Gemma returned an empty response.")
         return text
@@ -152,54 +164,79 @@ class GemmaService:
     # Public methods
     # ------------------------------------------------------------------
 
-    async def analyze_pitch(self, image_bytes: bytes, mime_type: str) -> StartupProfile:
+    async def analyze_pitch(
+        self,
+        image_bytes: Any,
+        mime_type: str = "image/png",
+        notes: Optional[str] = None,
+        goal: Optional[str] = None,
+        target_country: Optional[str] = None,
+    ) -> StartupProfile:
         """
-        Multimodal: send pitch deck image to Gemma 4 and extract StartupProfile.
-        Retries once if the model returns malformed JSON.
-        Raises RuntimeError with a human-readable message on failure.
+        Multimodal: analyze 1 to 3 pitch deck / flyer images with Gemma 4,
+        fusing them and founder context into a single unified StartupProfile.
+        Supports passing single image_bytes (bytes) or a list of (bytes, mime_type) tuples.
         """
-        image_b64 = base64.standard_b64encode(image_bytes).decode()
+        # Normalize files list
+        if isinstance(image_bytes, (bytes, bytearray)):
+            files = [(bytes(image_bytes), mime_type)]
+        elif isinstance(image_bytes, list):
+            files = []
+            for item in image_bytes:
+                if isinstance(item, tuple) and len(item) == 2:
+                    files.append(item)
+                elif isinstance(item, (bytes, bytearray)):
+                    files.append((bytes(item), mime_type))
+        else:
+            raise ValueError("image_bytes must be bytes or list of (bytes, mime_type) tuples")
+
+        extra_context = []
+        if notes and notes.strip():
+            extra_context.append(f"- Founder Note: {notes.strip()}")
+        if goal and goal.strip():
+            extra_context.append(f"- Primary Partnership Objective: {goal.strip()}")
+        if target_country and target_country.strip():
+            extra_context.append(f"- Preferred Target Country: {target_country.strip()}")
+
+        context_str = "\n".join(extra_context)
+        if context_str:
+            context_str = f"\n\nAdditional Founder Intent:\n{context_str}\n"
 
         prompt = (
             "You are an ASEAN startup ecosystem analyst.\n"
-            "Analyse this pitch deck image and extract the startup's profile.\n\n"
+            "Analyse the uploaded startup document(s) (pitch deck slide, brochure, or proposal) "
+            "and synthesize them into a single consolidated Startup Profile.\n"
+            f"{context_str}\n"
             "Return ONLY a single valid JSON object — no markdown, no prose, no code fences:\n"
             "{\n"
             '  "company_name": "string",\n'
             '  "country": "string (country where the startup is based)",\n'
             '  "sector": "string — one of: smart-city, sustainability, fintech, agritech, '
             'logistics, healthtech, edtech, govtech, other",\n'
-            '  "solution": "string (one sentence: core product/service)",\n'
-            '  "capabilities": ["3–5 capabilities the startup brings"],\n'
-            '  "needs": ["3–5 things the startup seeks from partners"],\n'
-            '  "target_markets": ["2–4 ASEAN countries or cities"],\n'
-            '  "partnership_goals": ["2–4 goals e.g. pilot, distribution, co-development"]\n'
+            '  "solution": "string (one concise sentence describing the core product/service)",\n'
+            '  "capabilities": ["3–5 core capabilities the startup brings"],\n'
+            '  "needs": ["3–5 operational things the startup seeks from partners"],\n'
+            '  "target_markets": ["2–4 ASEAN countries or cities to expand into"],\n'
+            '  "partnership_goals": ["2–4 actionable goals e.g. pilot, distribution, co-development"]\n'
             "}\n\n"
-            "If a field cannot be determined from the image, use a sensible placeholder. "
+            "If a field cannot be determined from the images, infer a realistic placeholder. "
             "All output is illustrative."
         )
 
-        contents = [
-            types.Content(
-                role="user",
-                parts=[
-                    types.Part(
-                        inline_data=types.Blob(mime_type=mime_type, data=image_b64)
-                    ),
-                    types.Part(text=prompt),
-                ],
-            )
-        ]
+        parts = []
+        for f_bytes, f_mime in files:
+            parts.append(types.Part.from_bytes(data=f_bytes, mime_type=f_mime))
+        parts.append(prompt)
 
         def _parse(raw: str) -> StartupProfile:
             data = self._extract_json(raw)
             return StartupProfile(**data)  # Pydantic validates
 
         return self._call_with_retry(
-            contents,
+            parts,
             parse_fn=_parse,
             temperature=0.2,
-            max_output_tokens=1024,
+            max_output_tokens=3072,
         )
 
     async def generate_brief(
@@ -247,10 +284,16 @@ class GemmaService:
             data = self._extract_json(raw)
             return PartnershipBrief(**data)
 
+        contents = [
+            types.Content(
+                role="user",
+                parts=[types.Part.from_text(text=prompt)],
+            )
+        ]
+
         return self._call_with_retry(
-            prompt,
+            contents,
             parse_fn=_parse,
-            temperature=0.4,
-            max_output_tokens=1024,
-            use_thinking=True,  # thinking_level="high" for brief quality
+            temperature=0.3,
+            max_output_tokens=3072,
         )

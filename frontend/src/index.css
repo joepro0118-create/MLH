@@ -761,3 +761,311 @@ ul { list-style: none }
   .hero-title { font-size: 1.75rem }
   .timeline-stepper { grid-template-columns: 1fr }
 }
+
+
+/* ── Founder Multi-File & Options ─────────────────────────── */
+.uploaded-files-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 580px;
+  justify-content: center;
+}
+.file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--purple-pale);
+  border: 1px solid var(--border);
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--purple-dark);
+}
+.file-name { font-weight: 600 }
+.file-size { color: var(--text-muted); font-size: 0.72rem }
+.btn-chip-remove {
+  background: transparent;
+  border: none;
+  color: var(--red);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  margin-left: 0.2rem;
+  padding: 0 0.2rem;
+  border-radius: 50%;
+}
+.btn-chip-remove:hover { background: rgba(220, 38, 38, 0.1) }
+
+.founder-options-card {
+  width: 100%;
+  max-width: 580px;
+  background: #faf8ff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+}
+.founder-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+@media (max-width: 640px) {
+  .founder-options-grid { grid-template-columns: 1fr }
+}
+
+.form-group { display: flex; flex-direction: column; gap: 0.35rem }
+.form-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.form-select, .form-input, .form-textarea {
+  font-family: inherit;
+  font-size: 0.85rem;
+  color: var(--text);
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.85rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+  width: 100%;
+}
+.form-select:focus, .form-input:focus, .form-textarea:focus {
+  border-color: var(--purple);
+  box-shadow: 0 0 0 3px var(--purple-glow);
+}
+.form-textarea { resize: vertical }
+
+.upload-cta-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.or-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--border-light);
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+}
+.btn-large {
+  padding: 0.8rem 1.75rem;
+  font-size: 0.95rem;
+}
+.btn-sm {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+/* ── Passport Card (Review & Edit) ─────────────────────────── */
+.passport-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+.passport-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem 1.75rem;
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  border-bottom: 1px solid var(--border-light);
+}
+.passport-badge-icon {
+  font-size: 2.2rem;
+  line-height: 1;
+}
+.passport-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+.passport-sub {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+.passport-ai-tag {
+  margin-left: auto;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--purple);
+  background: #ffffff;
+  border: 1px solid var(--border);
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.passport-fields-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  padding: 1.75rem;
+  border-bottom: 1px solid var(--border-light);
+}
+@media (max-width: 768px) {
+  .passport-fields-grid { grid-template-columns: 1fr }
+}
+
+.passport-chips-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+@media (max-width: 768px) {
+  .passport-chips-section { grid-template-columns: 1fr }
+}
+
+.chip-editor-group {
+  padding: 1.5rem 1.75rem;
+  border-right: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+}
+.chip-editor-group:nth-child(even) { border-right: none }
+.chip-editor-group:nth-last-child(-n+2) { border-bottom: none }
+
+.chip-group-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  min-height: 48px;
+  margin-bottom: 0.75rem;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+.chip button {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  opacity: 0.7;
+}
+.chip button:hover { opacity: 1 }
+
+.chip-blue   { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe }
+.chip-purple { background: var(--purple-pale); color: var(--purple-dark); border: 1px solid var(--border) }
+.chip-teal   { background: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4 }
+.chip-orange { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa }
+
+.chip-add-row {
+  display: flex;
+  gap: 0.4rem;
+}
+.chip-add-row input {
+  flex: 1;
+  font-family: inherit;
+  font-size: 0.78rem;
+  padding: 0.35rem 0.65rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  outline: none;
+}
+.chip-add-row input:focus {
+  border-color: var(--purple);
+  border-style: solid;
+}
+.chip-add-row button {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--purple-pale);
+  color: var(--purple-dark);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.chip-add-row button:hover { background: #ddd6fe }
+
+.passport-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.75rem;
+  background: #fafaf9;
+  border-top: 1px solid var(--border-light);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* ── Mini Bar Summary in Step 3 ───────────────────────────── */
+.profile-mini-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 0.85rem 1.25rem;
+  box-shadow: var(--shadow);
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.mini-company {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--purple);
+  margin-right: 0.75rem;
+}
+.mini-sub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ── Brief Badges ─────────────────────────────────────────── */
+.brief-success-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--green);
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+.outcome-type-pill {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  padding: 0.15rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.brief-sub {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
