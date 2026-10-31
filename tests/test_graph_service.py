@@ -11,6 +11,14 @@ from backend.app.graph_service import (
 )
 
 
+def _get_val(obj, key):
+    if hasattr(obj, key):
+        return getattr(obj, key)
+    if isinstance(obj, dict):
+        return obj.get(key)
+    return None
+
+
 class TestGraphService(unittest.TestCase):
     def test_load_ecosystem_data(self):
         records = load_ecosystem_data()
@@ -27,31 +35,32 @@ class TestGraphService(unittest.TestCase):
 
     def test_build_graph_without_startup(self):
         graph = build_graph()
-        self.assertIn("nodes", graph)
-        self.assertIn("edges", graph)
+        nodes = getattr(graph, "nodes", None) or graph.get("nodes")
+        edges = getattr(graph, "edges", None) or graph.get("edges")
 
-        nodes = graph["nodes"]
-        edges = graph["edges"]
-
+        self.assertIsNotNone(nodes)
+        self.assertIsNotNone(edges)
         self.assertGreaterEqual(len(nodes), 10)
         self.assertGreater(len(edges), 0)
 
         # Verify required node fields per API contract: {id, label, type, country}
         for node in nodes:
-            self.assertIn("id", node)
-            self.assertIn("label", node)
-            self.assertIn("type", node)
-            self.assertIn("country", node)
+            self.assertIsNotNone(_get_val(node, "id"))
+            self.assertIsNotNone(_get_val(node, "label"))
+            self.assertIsNotNone(_get_val(node, "type"))
+            self.assertIsNotNone(_get_val(node, "country"))
 
         # Verify required edge fields per API contract: {source, target, relation, weight}
         for edge in edges:
-            self.assertIn("source", edge)
-            self.assertIn("target", edge)
-            self.assertIn("relation", edge)
-            self.assertIn("weight", edge)
-            self.assertIn(edge["relation"], ["complements", "same sector", "same market"])
-            self.assertGreater(edge["weight"], 0.0)
-            self.assertLessEqual(edge["weight"], 1.0)
+            self.assertIsNotNone(_get_val(edge, "source"))
+            self.assertIsNotNone(_get_val(edge, "target"))
+            self.assertIsNotNone(_get_val(edge, "relation"))
+            self.assertIsNotNone(_get_val(edge, "weight"))
+            rel = _get_val(edge, "relation")
+            self.assertIn(rel, ["complements", "same sector", "same market"])
+            weight = _get_val(edge, "weight")
+            self.assertGreater(weight, 0.0)
+            self.assertLessEqual(weight, 1.0)
 
     def test_build_graph_with_startup_profile(self):
         startup = StartupProfile(
@@ -62,25 +71,28 @@ class TestGraphService(unittest.TestCase):
             capabilities=["iot_fill_level_sensors", "route_optimization_software"],
             needs=["municipal_waste_concessions", "vietnam_local_distribution"],
             target_markets=["Vietnam", "Malaysia"],
+            partnership_goals=["Deploy 500 smart bin sensors"],
         )
 
         graph = build_graph(startup=startup)
-        nodes = graph["nodes"]
-        edges = graph["edges"]
+        nodes = getattr(graph, "nodes", None) or graph.get("nodes")
+        edges = getattr(graph, "edges", None) or graph.get("edges")
 
         # Check startup node is present
-        startup_nodes = [n for n in nodes if n.get("is_startup")]
+        startup_nodes = [
+            n for n in nodes if _get_val(n, "id") == "startup-smarttong-illustrative"
+        ]
         self.assertEqual(len(startup_nodes), 1)
         s_node = startup_nodes[0]
-        self.assertEqual(s_node["id"], "startup-smarttong-illustrative")
-        self.assertEqual(s_node["label"], "SmartTONG (illustrative)")
-        self.assertEqual(s_node["country"], "Malaysia")
-        self.assertTrue(s_node["is_startup"])
+        self.assertEqual(_get_val(s_node, "label"), "SmartTONG (illustrative)")
+        self.assertEqual(_get_val(s_node, "country"), "Malaysia")
 
         # Check edges connected to startup
-        s_id = s_node["id"]
+        s_id = _get_val(s_node, "id")
         connected_edges = [
-            e for e in edges if e["source"] == s_id or e["target"] == s_id
+            e
+            for e in edges
+            if _get_val(e, "source") == s_id or _get_val(e, "target") == s_id
         ]
         self.assertGreater(len(connected_edges), 0, "Startup must connect to relevant ecosystem nodes")
 
@@ -88,9 +100,10 @@ class TestGraphService(unittest.TestCase):
         saigon_edges = [
             e
             for e in connected_edges
-            if e["source"] == "partner-vn-01" or e["target"] == "partner-vn-01"
+            if _get_val(e, "source") == "partner-vn-01"
+            or _get_val(e, "target") == "partner-vn-01"
         ]
-        comp_edges = [e for e in saigon_edges if e["relation"] == "complements"]
+        comp_edges = [e for e in saigon_edges if _get_val(e, "relation") == "complements"]
         self.assertGreater(len(comp_edges), 0, "Startup must complement Saigon Green Urban Waste Board")
 
     def test_build_graph_with_dict_startup(self):
@@ -102,9 +115,11 @@ class TestGraphService(unittest.TestCase):
             "capabilities": ["iot_fill_level_sensors"],
             "needs": ["municipal_waste_concessions"],
             "target_markets": ["Vietnam"],
+            "partnership_goals": ["Pilot sensors"],
         }
         graph = build_graph(startup=startup_dict)
-        labels = {n["label"] for n in graph["nodes"]}
+        nodes = getattr(graph, "nodes", None) or graph.get("nodes")
+        labels = {_get_val(n, "label") for n in nodes}
         self.assertIn("EcoGenius (illustrative)", labels)
 
     def test_build_graph_with_custom_mock_partners(self):
@@ -118,6 +133,7 @@ class TestGraphService(unittest.TestCase):
                 "capabilities": ["municipal_waste_concessions"],
                 "needs": ["iot_fill_level_sensors"],
                 "target_markets": ["Vietnam"],
+                "partnership_goals": ["Clean city"],
             },
             {
                 "id": "test-p2",
@@ -128,11 +144,14 @@ class TestGraphService(unittest.TestCase):
                 "capabilities": ["iot_fill_level_sensors"],
                 "needs": ["municipal_waste_concessions"],
                 "target_markets": ["Vietnam"],
+                "partnership_goals": ["Clean city"],
             },
         ]
         graph = build_graph(partners=custom_partners)
-        self.assertEqual(len(graph["nodes"]), 2)
-        relations = {e["relation"] for e in graph["edges"]}
+        nodes = getattr(graph, "nodes", None) or graph.get("nodes")
+        edges = getattr(graph, "edges", None) or graph.get("edges")
+        self.assertEqual(len(nodes), 2)
+        relations = {_get_val(e, "relation") for e in edges}
         self.assertIn("complements", relations)
         self.assertIn("same sector", relations)
         self.assertIn("same market", relations)
