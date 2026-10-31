@@ -1,19 +1,22 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# Environments
 .env
-.env.local
-.venv
-env/
+__pycache__/
+*.pyc
+*.pyo
+.venv/
 venv/
-ENV/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+htmlcov/
+.coverage
 
-# Node / JS
-node_modules/
+# Frontend
+frontend/node_modules/
+frontend/dist/
 
-# OS files
-.DS_Store
-Thumbs.db
+# Editor
+.vscode/
+.idea/
+*.swp
+
