@@ -163,7 +163,10 @@ class GemmaService:
         try:
             config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_level="minimal")
         except Exception:
-            pass
+            try:
+                config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_budget=0)
+            except Exception:
+                pass
 
         try:
             response = client.models.generate_content(
@@ -202,9 +205,14 @@ class GemmaService:
                     if hasattr(part, "text") and part.text and not getattr(part, "thought", False):
                         text = part.text
                         break
+                if not text or not text.strip():
+                    for part in reversed(candidate.content.parts):
+                        if hasattr(part, "text") and part.text and "{" in part.text and "}" in part.text:
+                            text = part.text
+                            break
 
         if not text or not text.strip():
-            raise RuntimeError("Gemma returned an empty response.")
+            raise ValueError("Gemma returned an empty response.")
         return text
 
     def _call_with_retry(self, contents, *, parse_fn, **call_kwargs):
@@ -385,7 +393,7 @@ class GemmaService:
             parts,
             parse_fn=_parse,
             temperature=0.2,
-            max_output_tokens=4096,
+            max_output_tokens=8192,
         )
 
     async def generate_brief(
@@ -504,7 +512,7 @@ class GemmaService:
             contents,
             parse_fn=_parse,
             temperature=0.3,
-            max_output_tokens=2048,
+            max_output_tokens=8192,
         )
 
         chosen_partner_name = partner.get("name", "")
