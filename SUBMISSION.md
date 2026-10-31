@@ -19,14 +19,14 @@ Entering both categories. Evidence for each challenge is documented below.
 
 ## Project links
 
+[![Pitch Deck](https://img.shields.io/badge/Pitch_Deck-Canva_Presentation-00C4CC?style=for-the-badge&logo=canva)](https://canva.link/v6b0hx0p5yl6w4t)
 [![Vercel Deployment](https://img.shields.io/badge/Vercel-Live_App-000000?style=for-the-badge&logo=vercel)](https://mlh-vert.vercel.app/)
 [![YouTube Video Demo](https://img.shields.io/badge/YouTube-Video_Demo-FF0000?style=for-the-badge&logo=youtube)](https://www.youtube.com/)
-[![Pitch Deck](https://img.shields.io/badge/Pitch_Deck-Canva_Presentation-00C4CC?style=for-the-badge&logo=canva)](https://canva.link/v6b0hx0p5yl6w4t)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-BridgeWise_Repo-181717?style=for-the-badge&logo=github)](https://github.com/joepro0118-create/MLH)
 
+- Pitch deck presentation (Canva): [https://canva.link/v6b0hx0p5yl6w4t](https://canva.link/v6b0hx0p5yl6w4t)
 - Live deployment: [https://mlh-vert.vercel.app/](https://mlh-vert.vercel.app/)
 - Video walkthrough: [YouTube Video Walkthrough](https://www.youtube.com/) *(replace with your link)*
-- Pitch deck presentation (Canva): [https://canva.link/v6b0hx0p5yl6w4t](https://canva.link/v6b0hx0p5yl6w4t)
 - Public GitHub repository: [https://github.com/joepro0118-create/MLH](https://github.com/joepro0118-create/MLH)
 - Open-source license: [MIT](LICENSE)
 
