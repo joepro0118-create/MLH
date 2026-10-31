@@ -868,7 +868,7 @@ server {
 | **Yap** | Backend Architecture, Gemma 4 Integration (`gemma_service.py`), Deterministic Matching Engine, API Contract & Guardrails |
 | **Joe** | Frontend Application (`App.jsx`), Multi-Format Intake & `Ctrl+V` Paste, POC Dashboard, Word/PDF Export Suite (`exportUtils.js`) |
 | **Amn** | Illustrative ASEAN Ecosystem Dataset (`demo_ecosystem.json`), Graph Service (`graph_service.py`), Interactive Canvas Network Graph |
-| **Yuhang** | Full-Stack Architecture Integration, Interactive 4-Column 30-Day To-Do Roadmap, QA & Pitch Presentation |
+| **Manjishtha** | Full-Stack Architecture Integration, Interactive 4-Column 30-Day To-Do Roadmap, QA & Pitch Presentation |
 
 ### Contributing
 
