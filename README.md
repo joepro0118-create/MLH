@@ -1,6 +1,11 @@
 # BridgeWise — AI Cross-Border Startup Partnership Intelligence
 
-> **MLH Hacktoberfest Hack Day KL · 31 October 2026 · Team BridgeWise (Yap, Joe, Amn, Yuhang)**
+[![Vercel Deployment](https://img.shields.io/badge/Vercel-Live_App-000000?style=for-the-badge&logo=vercel)](https://mlh-vert.vercel.app/)
+[![YouTube Video Demo](https://img.shields.io/badge/YouTube-Video_Demo-FF0000?style=for-the-badge&logo=youtube)](https://www.youtube.com/)
+[![Pitch Deck](https://img.shields.io/badge/Pitch_Deck-Presentation_Slides-4285F4?style=for-the-badge&logo=googleslides)](https://docs.google.com/presentation/)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-BridgeWise_Repo-181717?style=for-the-badge&logo=github)](https://github.com/joepro0118-create/MLH)
+
+> **MLH Hacktoberfest Hack Day KL · 31 October 2026 · Team BridgeWise (Yap En Thong, Joe Vei Xiang Zu, Manjishtha Chakma, Tan Yong Hung)**
 >
 > **Challenge Entries:** 🏆 **Best Use of Gemma 4** · 🏆 **Best Open-Source AI Project**
 >
@@ -56,8 +61,13 @@ It converts open-ended cross-border networking into concrete, measurable 30-day 
 
 ### Deployment & Live Demo Links
 
+[![Vercel Deployment](https://img.shields.io/badge/Vercel-Live_App-000000?style=for-the-badge&logo=vercel)](https://mlh-vert.vercel.app/)
+[![YouTube Video Demo](https://img.shields.io/badge/YouTube-Video_Demo-FF0000?style=for-the-badge&logo=youtube)](https://www.youtube.com/)
+[![Pitch Deck](https://img.shields.io/badge/Pitch_Deck-Presentation_Slides-4285F4?style=for-the-badge&logo=googleslides)](https://docs.google.com/presentation/)
+
 - 🌐 **Live Web Application (Vercel):** [https://mlh-vert.vercel.app/](https://mlh-vert.vercel.app/)
-- 🎥 **Video Demo Walkthrough:** [Add your YouTube / Loom / Google Drive link here]
+- 🎥 **Video Demo Walkthrough:** [YouTube Video Walkthrough](https://www.youtube.com/) *(replace with your link)*
+- 📑 **Pitch Deck Presentation:** [Google Slides / Canva Pitch Deck](https://docs.google.com/presentation/) *(replace with your link)*
 
 ---
 
@@ -75,7 +85,8 @@ It converts open-ended cross-border networking into concrete, measurable 30-day 
 ### Live Demo & Local Judge Evaluation
 
 - 🌐 **Live Web Application (Vercel):** [https://mlh-vert.vercel.app/](https://mlh-vert.vercel.app/)
-- 🎥 **Video Demo Walkthrough:** [Add your YouTube / Loom / Google Drive link here]
+- 🎥 **Video Demo Walkthrough:** [YouTube Video Walkthrough](https://www.youtube.com/) *(replace with your link)*
+- 📑 **Pitch Deck Presentation:** [Google Slides / Canva Pitch Deck](https://docs.google.com/presentation/) *(replace with your link)*
 
 BridgeWise is designed so judges can evaluate the complete end-to-end product either live in production or locally in **under 2 minutes** — either with **live Gemma 4 multimodal inference** (using a free Google AI Studio key) or **completely offline** using `MOCK_MODE=true` and the built-in **One-Click Demo Login** + **SmartTONG Sample Pitch Deck**.
 
@@ -106,7 +117,7 @@ Southeast Asia's startup ecosystem is vibrant but heavily siloed by national bor
 [Step 0: Founder Demo Auth / Onboarding]
                   │
                   ▼
-[Step 1: Multi-Format Upload (PDF/DOCX/PPTX/Images) or Ctrl+V Paste + Expansion Goal]
+[Step 1: Multi-Format Upload (PDF/DOCX/PPTX/Images) or `Ctrl+V` Paste + Expansion Goal]
                   │
                   ▼  Gemma 4 (gemma-4-26b-a4b-it) Multimodal + Document Synthesis
 [Step 2: Fact-Grounded Startup Passport + Interactive Human-in-the-Loop Chip Editor]
@@ -372,7 +383,7 @@ BridgeWise/
 ### The 5-Stage Outcome Conversion Pipeline
 
 ```text
-Founder Materials (PDF / DOCX / PPTX / XLSX / Images / Ctrl+V Paste / Founder Notes)
+Founder Materials (PDF / DOCX / PPTX / XLSX / Images / `Ctrl+V` Paste / Founder Notes)
                                       │
                                       ▼
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -865,10 +876,10 @@ server {
 
 | Team Member | Role & Focus Area |
 |---|---|
-| **Yap** | Backend Architecture, Gemma 4 Integration (`gemma_service.py`), Deterministic Matching Engine, API Contract & Guardrails |
-| **Joe** | Frontend Application (`App.jsx`), Multi-Format Intake & `Ctrl+V` Paste, POC Dashboard, Word/PDF Export Suite (`exportUtils.js`) |
-| **Amn** | Illustrative ASEAN Ecosystem Dataset (`demo_ecosystem.json`), Graph Service (`graph_service.py`), Interactive Canvas Network Graph |
-| **Manjishtha** | Full-Stack Architecture Integration, Interactive 4-Column 30-Day To-Do Roadmap, QA & Pitch Presentation |
+| **Yap En Thong** | Backend Architecture, Gemma 4 Integration (`gemma_service.py`), Deterministic Matching Engine, API Contract & Guardrails |
+| **Joe Vei Xiang Zu** | Frontend Application (`App.jsx`), Multi-Format Intake & `Ctrl+V` Paste, POC Dashboard, Word/PDF Export Suite (`exportUtils.js`) |
+| **Manjishtha Chakma** | Illustrative ASEAN Ecosystem Dataset (`demo_ecosystem.json`), Graph Service (`graph_service.py`), Interactive Canvas Network Graph |
+| **Tan Yong Hung** | Full-Stack Architecture Integration, Interactive 4-Column 30-Day To-Do Roadmap, QA & Pitch Presentation |
 
 ### Contributing
 
